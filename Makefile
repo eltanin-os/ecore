@@ -5,17 +5,13 @@ include config.mk
 
 INC= inc
 
-HDR=\
-	inc/tertium/cpu.h\
-	inc/tertium/std.h
-
 # SOURCE
 BIN=\
 	src/cat\
 	src/cksum\
 	src/echo
 
-LIB= lib/libc.a
+LIB=
 OBJ= $(BIN:=.o)
 SRC= $(BIN:=.c)
 
