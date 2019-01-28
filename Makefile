@@ -9,7 +9,8 @@ INC= inc
 BIN=\
 	src/cat\
 	src/cksum\
-	src/echo
+	src/echo\
+	src/yes
 
 LIB=
 OBJ= $(BIN:=.o)
