@@ -21,7 +21,7 @@ LIBECSRC=\
 LIBECOBJ= $(LIBECSRC:.c=.o)
 
 LIB= $(LIBEC)
-OBJ= $(BIN:=.o)
+OBJ= $(BIN:=.o) $(LIBECOBJ)
 SRC= $(BIN:=.c)
 
 # VAR RULES
