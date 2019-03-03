@@ -1,7 +1,9 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-static void
+#include "ec.h"
+
+static int
 cksum(char *s)
 {
 	CH32st hs;
@@ -19,11 +21,15 @@ cksum(char *s)
 		goto fallback;
 	}
 
-	if ((fd = c_sys_open(s, C_OREAD, 0)) < 0)
-		return;
+	if ((fd = c_sys_open(s, C_OREAD, 0)) < 0) {
+		ec_err_warn("c_sys_open %s", s);
+		return 1;
+	}
 
-	if (c_sys_fstat(&st, fd) < 0)
-		return;
+	if (c_sys_fstat(&st, fd) < 0) {
+		ec_err_warn("c_sys_fstat %s", s);
+		return 1;
+	}
 
 	n    = st.st_size;
 	hs.a = c_hsh_putfd(c_hsh_crc32p, fd, n);
@@ -38,6 +44,7 @@ fallback:
 	c_hsh_crc32p->end(&hs);
 done:
 	c_ioq_fmt(ioq1, "%ud %d %s\n", hs.a, n, s);
+	return 0;
 }
 
 static void
@@ -51,6 +58,8 @@ usage(void)
 int
 main(int argc, char **argv)
 {
+	int rv;
+
 	c_std_setprogname(argv[0]);
 
 	C_ARGBEGIN {
@@ -58,17 +67,18 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
+	rv = 0;
+
 	if (!argc)
-		cksum(nil);
+		rv = cksum(nil);
 
 	for (; *argv; argc--, argv++) {
 		if (C_ISDASH(*argv))
-			cksum(nil);
-		else
-			cksum(*argv);
+			*argv = nil;
+		rv |= cksum(*argv);
 	}
 
 	c_ioq_flush(ioq1);
 
-	return 0;
+	return rv;
 }

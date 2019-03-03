@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#include "ec.h"
+
 int
 main(int argc, char **argv)
 {
@@ -11,7 +13,7 @@ main(int argc, char **argv)
 
 	nflag = 0;
 
-	if (!c_mem_cmp(*argv, sizeof("-n"), "-n")) {
+	if (!c_mem_cmp(*argv, sizeof("-n")-1, "-n")) {
 		argc--, argv++;
 		nflag++;
 	}

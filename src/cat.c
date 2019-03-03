@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#include "ec.h"
+
 static void
 usage(void)
 {
@@ -12,6 +14,8 @@ usage(void)
 int
 main(int argc, char **argv)
 {
+	int rv;
+
 	c_std_setprogname(argv[0]);
 
 	C_ARGBEGIN {
@@ -22,17 +26,19 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	if (!argc)
-		return c_ioq_putfd(ioq1, C_FD0, 0);
+	rv = 0;
+
+	if (!argc && c_ioq_putfile(ioq1, "<stdin>") < 0)
+		rv = ec_err_warn("putfile <stdin>");
 
 	for (; *argv; argc--, argv++) {
 		if (C_ISDASH(*argv))
-			c_ioq_putfd(ioq1, C_FD0, 0);
-		else
-			c_ioq_putfile(ioq1, *argv);
+			*argv = "<stdin>";
+		if (c_ioq_putfile(ioq1, *argv) < 0)
+			rv = ec_err_warn("putfile %s", *argv);
 	}
 
 	c_ioq_flush(ioq1);
 
-	return 0;
+	return rv;
 }

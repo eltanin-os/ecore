@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#include "ec.h"
+
 static void
 usage(void)
 {
@@ -34,5 +36,5 @@ main(int argc, char **argv)
 	for (;;)
 		c_sys_allrw(c_sys_write, C_FD1, s, n);
 
-	c_std_exit(1);
+	return 1;
 }
