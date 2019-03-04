@@ -4,8 +4,7 @@ include config.mk
 .SUFFIXES: .o .c
 
 INC= inc
-HDR=\
-	inc/ec.h
+HDR=
 
 # SOURCE
 BIN=\
@@ -14,14 +13,8 @@ BIN=\
 	src/echo\
 	src/yes
 
-LIBEC=lib/libec.a
-LIBECSRC=\
-	lib/ec/err.c
-
-LIBECOBJ= $(LIBECSRC:.c=.o)
-
-LIB= $(LIBEC)
-OBJ= $(BIN:=.o) $(LIBECOBJ)
+LIB=
+OBJ= $(BIN:=.o)
 SRC= $(BIN:=.c)
 
 # VAR RULES
@@ -36,11 +29,6 @@ $(OBJ): $(HDR) config.mk
 
 .c.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I $(INC) -o $@ -c $<
-
-# LIB
-$(LIBEC): $(LIBECOBJ)
-	$(AR) rc $@ $?
-	$(RANLIB) $@
 
 # RULES
 install: all

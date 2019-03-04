@@ -1,8 +1,6 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-#include "ec.h"
-
 static void
 usage(void)
 {
@@ -29,13 +27,13 @@ main(int argc, char **argv)
 	rv = 0;
 
 	if (!argc && c_ioq_putfile(ioq1, "<stdin>") < 0)
-		rv = ec_err_warn("putfile <stdin>");
+		rv = c_err_warn("putfile <stdin>");
 
 	for (; *argv; argc--, argv++) {
 		if (C_ISDASH(*argv))
 			*argv = "<stdin>";
 		if (c_ioq_putfile(ioq1, *argv) < 0)
-			rv = ec_err_warn("putfile %s", *argv);
+			rv = c_err_warn("putfile %s", *argv);
 	}
 
 	c_ioq_flush(ioq1);

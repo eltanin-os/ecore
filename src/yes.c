@@ -1,8 +1,6 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-#include "ec.h"
-
 static void
 usage(void)
 {

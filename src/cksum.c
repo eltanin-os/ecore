@@ -1,8 +1,6 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-#include "ec.h"
-
 static int
 cksum(char *s)
 {
@@ -21,15 +19,11 @@ cksum(char *s)
 		goto fallback;
 	}
 
-	if ((fd = c_sys_open(s, C_OREAD, 0)) < 0) {
-		ec_err_warn("c_sys_open %s", s);
-		return 1;
-	}
+	if ((fd = c_sys_open(s, C_OREAD, 0)) < 0)
+		return c_err_warn("c_sys_open %s", s);
 
-	if (c_sys_fstat(&st, fd) < 0) {
-		ec_err_warn("c_sys_fstat %s", s);
-		return 1;
-	}
+	if (c_sys_fstat(&st, fd) < 0)
+		return c_err_warn("c_sys_fstat %s", s);
 
 	n    = st.st_size;
 	hs.a = c_hsh_putfd(c_hsh_crc32p, fd, n);

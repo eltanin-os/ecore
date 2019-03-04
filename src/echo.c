@@ -1,8 +1,6 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-#include "ec.h"
-
 int
 main(int argc, char **argv)
 {
