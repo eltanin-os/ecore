@@ -8,9 +8,11 @@ HDR=
 
 # SOURCE
 BIN=\
+	src/basename\
 	src/cat\
 	src/cksum\
 	src/echo\
+	src/env\
 	src/yes
 
 LIB=
