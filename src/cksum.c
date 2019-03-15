@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#include "common.h"
+
 static int
 cksum(char *s)
 {

@@ -4,18 +4,31 @@ include config.mk
 .SUFFIXES: .o .c
 
 INC= inc
-HDR=
+HDR=\
+	inc/common.h
 
-# SOURCE
+# BIN
 BIN=\
 	src/basename\
 	src/cat\
 	src/cksum\
 	src/echo\
 	src/env\
+	src/head\
 	src/yes
 
-LIB=
+# LIB SRC
+LIBCOMMONSRC=\
+	lib/common/estrtovl.c
+
+# LIB PATH
+LIBCOMMON= lib/libcommon.a
+
+# LIB OBJS
+LIBCOMMONOBJ= $(LIBCOMMONSRC:.c=.o)
+
+# ALL
+LIB= $(LIBCOMMON)
 OBJ= $(BIN:=.o)
 SRC= $(BIN:=.c)
 
@@ -31,6 +44,11 @@ $(OBJ): $(HDR) config.mk
 
 .c.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I $(INC) -o $@ -c $<
+
+# LIBRARIES RULES
+$(LIBCOMMON): $(LIBCOMMONOBJ)
+	$(AR) rc $@ $(LIBCOMMONOBJ)
+	$(RANLIB) $@
 
 # RULES
 install: all
