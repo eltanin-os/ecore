@@ -15,6 +15,9 @@ BIN=\
 	src/echo\
 	src/env\
 	src/head\
+	src/link\
+	src/pwd\
+	src/unlink\
 	src/yes
 
 # LIB SRC
