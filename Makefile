@@ -14,9 +14,11 @@ BIN=\
 	src/cksum\
 	src/echo\
 	src/env\
+	src/false\
 	src/head\
 	src/link\
 	src/pwd\
+	src/true\
 	src/unlink\
 	src/yes
 
