@@ -5,7 +5,6 @@ static void
 usage(void)
 {
 	c_ioq_fmt(ioq2, "usage: %s source target\n", c_std_getprogname());
-	c_ioq_flush(ioq2);
 	c_std_exit(1);
 }
 
