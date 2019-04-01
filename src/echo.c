@@ -13,7 +13,7 @@ main(int argc, char **argv)
 
 	nflag = 0;
 
-	if (!c_mem_cmp(*argv, sizeof("-n")-1, "-n")) {
+	if (!c_str_cmp(*argv, C_USIZEMAX, "-n")) {
 		argc--, argv++;
 		nflag++;
 	}

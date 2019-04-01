@@ -62,8 +62,7 @@ main(int argc, char **argv)
 	if (argc)
 		usage();
 
-	s = lpflag == 'L' ? getpwd() : nil;
-	if (!s && !(s = c_sys_getcwd(buf, sizeof(buf))))
+	if (!(s = (lpflag == 'L') ? getpwd() : c_sys_getcwd(buf, sizeof(buf))))
 		c_err_die(1, "c_sys_getcwd");
 
 	c_ioq_fmt(ioq1, "%s\n", s);

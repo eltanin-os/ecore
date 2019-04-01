@@ -64,8 +64,10 @@ main(int argc, char **argv)
 
 	rv = 0;
 
-	if (!argc)
-		rv = cksum(nil);
+	if (!argc) {
+		argv[0] = "-";
+		argv[1] = nil;
+	}
 
 	for (; *argv; argc--, argv++) {
 		if (C_ISDASH(*argv))

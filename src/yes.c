@@ -30,8 +30,8 @@ main(int argc, char **argv)
 	while (c_arr_fmt(&arr, "%s\n", s) > 0)
 		;
 
-	s = c_arr_get(&arr, 0, sizeof(uchar));
-	n = c_arr_len(&arr, sizeof(uchar));
+	s = c_arr_bget(&arr, 0);
+	n = c_arr_bytes(&arr);
 	for (;;)
 		c_sys_allrw(c_sys_write, C_FD1, s, n);
 

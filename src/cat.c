@@ -27,8 +27,10 @@ main(int argc, char **argv)
 
 	rv = 0;
 
-	if (!argc && c_ioq_putfile(ioq1, "<stdin>") < 0)
-		rv = c_err_warn("putfile <stdin>");
+	if (!argc) {
+		argv[0] = "-";
+		argv[1] = nil;
+	}
 
 	for (; *argv; argc--, argv++) {
 		if (C_ISDASH(*argv))
