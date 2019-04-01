@@ -12,6 +12,8 @@ BIN=\
 	src/basename\
 	src/cat\
 	src/cksum\
+	src/dirname\
+	src/du\
 	src/echo\
 	src/env\
 	src/false\
