@@ -33,6 +33,7 @@ du(char *path, int depth)
 		return st.st_size;
 	}
 
+	dir.depth = depth;
 	rv = 0;
 	sz = 0;
 
