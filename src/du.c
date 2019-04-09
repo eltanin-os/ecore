@@ -1,65 +1,67 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-#define display(a, b) \
-c_ioq_fmt(ioq1, "%lld\t%s\n", C_HOWMANY((b), blksize), (a));
-
 enum {
 	AFLAG = 1 << 0,
 	SFLAG = 1 << 1,
-	XFLAG = 1 << 2,
 };
 
-static uint ropts;
-static uint opts;
-static int  blksize = 512;
+static CNode *hp;
+static uint   ropts;
+static uint   opts;
+static int    blksize = 512;
 
-static size
-du(char *path, int depth)
+static int
+du(char *path, int depth, usize *n)
 {
 	CDir  dir;
-	CStat st;
-	size  r;
-	usize sz;
-	int   rv;
+	usize sbt;
+	int   r, rv;
 
 	if (c_dir_open(&dir, path, ropts) < 0) {
-		if (errno != ENOTDIR)
-			return -c_err_warn("c_dir_open %s", path);
-		if (c_sys_stat(&st, path))
-			return -c_err_warn("c_sys_stat %s", path);
-		if (!depth || (opts & AFLAG))
-			display(path, st.st_blocks);
-		return st.st_size;
+		if (errno != C_ENOTDIR)
+			return c_err_warn("c_dir_open %s", path);
+		sbt = C_HOWMANY(dir.info.st_blocks, blksize);
+		c_ioq_fmt(ioq1, "%lld\t%s\n", sbt, path);
+		return 0;
 	}
 
-	dir.depth = depth;
-	rv = 0;
-	sz = 0;
+	if ((r = c_dir_hist(&hp, &dir.info))) {
+		c_dir_close(&dir);
+		return (r < 0);
+	}
 
-	while ((r = c_dir_read(&dir))) {
-		if (r < 0) {
-			rv = -c_err_warn("c_dir_read %s", dir.path);
-			continue;
-		}
-		sz += dir.info.st_blocks;
-		if (!(depth+1) || (opts & AFLAG))
-			display(dir.path, dir.info.st_blocks);
+	rv = 0;
+	depth++;
+	while ((r = c_dir_read(&dir)) > 0) {
+		sbt = C_HOWMANY(dir.info.st_blocks, blksize);
 		if (C_ISDIR(dir.info.st_mode)) {
-			if ((r = du(dir.path, depth+1)) < 0) {
-				rv = r;
+			if (du(dir.path, depth, &sbt) < 0) {
+				rv = 1;
 				continue;
 			}
-			sz += r;
+		} else if (opts & AFLAG) {
+			switch (c_dir_hist(&hp, &dir.info)) {
+			case -1:
+				c_err_die(1, "c_dir_hist");
+			case  1:
+				continue;
+			}
+			c_ioq_fmt(ioq1, "%lld\t%s\n", sbt, dir.path);
 		}
+		*n += sbt;
 	}
+	depth--;
 
-	if (!depth || (~opts & SFLAG))
-		display(path, sz);
+	if (r < 0)
+		rv = c_err_warn("c_dir_read %s", dir.path);
+
+	if (!depth || !(opts & SFLAG))
+		c_ioq_fmt(ioq1, "%lld\t%s\n", *n, path);
 
 	c_dir_close(&dir);
 
-	return rv ? rv : sz;
+	return rv;
 }
 
 static void
@@ -73,7 +75,8 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	int r;
+	usize n;
+	int   r;
 
 	c_std_setprogname(argv[0]);
 
@@ -103,18 +106,21 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	r = 0;
-	blksize /= 512;
-
 	if (!argc) {
 		argv[0] = ".";
 		argv[1] = nil;
 	}
 
+	r = 0;
+	blksize /= 512;
+
 	for (; *argv; argc--, argv++) {
-		if (du(*argv, 0) < 0)
-			r = 1;
+		n  = 0;
+		r |= du(*argv, 0, &n);
 	}
+
+	while (hp)
+		c_dst_lfree(c_dst_lpop(&hp), nil);
 
 	c_ioq_flush(ioq1);
 
