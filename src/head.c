@@ -24,8 +24,12 @@ head(char *p)
 	c_arr_init(&arr, buf, sizeof(buf));
 	c_ioq_init(&ioq, fd, &arr, c_sys_read);
 
-	for (i = hn; i; i--)
-		c_ioq_getln(&ioq, ioq1->mb);
+	for (i = hn; i; i--) {
+		if (c_ioq_getln(&ioq, ioq1->mb) < 0) {
+			i--;
+			c_ioq_flush(ioq1);
+		}
+	}
 
 	return 0;
 }
@@ -55,11 +59,15 @@ main(int argc, char **argv)
 
 	r = 0;
 
-	if (!argc)
+	switch (argc) {
+	case 0:
 		r = head("-");
-
-	if (!(argc-1))
-		r = head((argc--, *argv++));
+		break;
+	case 1:
+		r = head(*argv);
+		argc--, argv++;
+		break;
+	}
 
 	for (; *argv; argc--, argv++) {
 		c_ioq_fmt(ioq1, "%s==> %s <==\n", hf ? hf--, "" : "\n", *argv);
