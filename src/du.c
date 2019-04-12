@@ -36,7 +36,7 @@ du(char *path, int depth, usize *n)
 	while ((r = c_dir_read(&dir)) > 0) {
 		sbt = C_HOWMANY(dir.info.st_blocks, blksize);
 		if (C_ISDIR(dir.info.st_mode)) {
-			if (du(dir.path, depth, &sbt) < 0) {
+			if (du(dir.path, depth, &sbt)) {
 				rv = 1;
 				continue;
 			}
