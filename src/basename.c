@@ -23,13 +23,15 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	if ((uint)--argc > 1)
+	argc--;
+	if ((uint)argc > 1)
 		usage();
 
-	s = c_gen_basename(*argv++);
+	s = c_gen_basename(*argv);
 	n = c_str_len(s);
 
 	if (argc) {
+		argv++;
 		n -= c_str_len(*argv);
 		if (!c_str_cmp(s+n, C_USIZEMAX, *argv))
 			s[n] = 0;

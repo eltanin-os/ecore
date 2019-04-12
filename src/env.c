@@ -29,12 +29,14 @@ main(int argc, char **argv)
 	if (!argc) {
 		for (; *environ; environ++)
 			c_ioq_fmt(ioq1, "%s\n", *environ);
-		c_ioq_flush(ioq1);
 		c_std_exit(0);
 	}
 
-	for (; *argv && (s = c_str_chr(*argv, C_USIZEMAX, '=')); argv++)
+	for (; *argv; argv++) {
+		if (!(s = c_str_chr(*argv, C_USIZEMAX, '=')))
+			break;
 		c_exc_setenv(*argv, s+1);
+	}
 
 	c_exc_run(*argv, argv);
 	c_err_die(126 + (errno == C_ENOENT), "c_exc_run %s", *argv);

@@ -42,18 +42,20 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	int  lpflag;
-	char buf[C_PATHMAX];
+	int   mode;
 	char *s;
+	char  buf[C_PATHMAX];
 
 	c_std_setprogname(argv[0]);
 
-	lpflag = 'L';
+	mode = 1;
 
 	C_ARGBEGIN {
 	case 'L':
+		mode = 1;
+		break;
 	case 'P':
-		lpflag = C_ARGC();
+		mode = 0;
 		break;
 	default:
 		usage();
@@ -62,7 +64,7 @@ main(int argc, char **argv)
 	if (argc)
 		usage();
 
-	if (!(s = (lpflag == 'L') ? getpwd() : c_sys_getcwd(buf, sizeof(buf))))
+	if (!(s = mode ? getpwd() : c_sys_getcwd(buf, sizeof(buf))))
 		c_err_die(1, "c_sys_getcwd");
 
 	c_ioq_fmt(ioq1, "%s\n", s);

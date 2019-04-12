@@ -14,8 +14,8 @@ main(int argc, char **argv)
 {
 	CArr  arr;
 	usize n;
-	char  buf[C_BIOSIZ];
 	char *s;
+	char  buf[C_BIOSIZ];
 
 	c_std_setprogname(argv[0]);
 
