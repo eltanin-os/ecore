@@ -14,7 +14,7 @@ getpwd(void)
 	if (*s != '/')
 		return nil;
 
-	if ((n = c_str_len(s)) >= C_PATHMAX)
+	if ((n = c_str_len(s, C_PATHMAX)) == C_PATHMAX)
 		return nil;
 
 	if (c_mem_mem(s, n, "/./",  sizeof("/./")-1) ||

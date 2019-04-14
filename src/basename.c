@@ -28,11 +28,11 @@ main(int argc, char **argv)
 		usage();
 
 	s = c_gen_basename(*argv);
-	n = c_str_len(s);
+	n = c_str_len(s, C_USIZEMAX);
 
 	if (argc) {
 		argv++;
-		n -= c_str_len(*argv);
+		n -= c_str_len(*argv, C_USIZEMAX);
 		if (!c_str_cmp(s+n, C_USIZEMAX, *argv))
 			s[n] = 0;
 	}
