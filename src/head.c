@@ -24,10 +24,10 @@ head(char *p)
 	c_arr_init(&arr, buf, sizeof(buf));
 	c_ioq_init(&ioq, fd, &arr, c_sys_read);
 
-	for (i = hn; i; i--) {
+	for (i = 0; i < hn; i++) {
 		if (c_ioq_getln(&ioq, ioq1->mb) < 0) {
-			i--;
 			c_ioq_flush(ioq1);
+			i--;
 		}
 	}
 
