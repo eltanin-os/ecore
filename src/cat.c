@@ -25,12 +25,12 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	rv = 0;
-
 	if (!argc) {
 		argv[0] = "-";
 		argv[1] = nil;
 	}
+
+	rv = 0;
 
 	for (; *argv; argc--, argv++) {
 		if (C_ISDASH(*argv))

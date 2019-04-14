@@ -8,18 +8,13 @@ cksum(char *s)
 {
 	CH32st hs;
 	CStat  st;
-	usize  n;
 	size   rf;
+	usize  n;
 	int    fd;
 	char   buf[C_BIOSIZ];
 
-	fd = C_FD0;
-	n  = 0;
-
-	if (!s) {
-		s = "<stdin>";
+	if (!c_str_cmp(s, C_USIZEMAX, "<stdin>"))
 		goto fallback;
-	}
 
 	if ((fd = c_sys_open(s, C_OREAD, 0)) < 0)
 		return c_err_warn("c_sys_open %s", s);
@@ -32,12 +27,18 @@ cksum(char *s)
 
 	goto done;
 fallback:
+	fd = C_FD0;
+	n  = 0;
+
 	c_hsh_crc32p->init(&hs);
+
 	while ((rf = c_sys_read(fd, buf, sizeof(buf))) > 0) {
 		c_hsh_crc32p->update(&hs, buf, rf);
 		n += rf;
 	}
+
 	c_hsh_crc32p->end(&hs);
+
 done:
 	c_ioq_fmt(ioq1, "%ud %d %s\n", hs.a, n, s);
 	return 0;
@@ -62,16 +63,16 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	rv = 0;
-
 	if (!argc) {
 		argv[0] = "-";
 		argv[1] = nil;
 	}
 
+	rv = 0;
+
 	for (; *argv; argc--, argv++) {
 		if (C_ISDASH(*argv))
-			*argv = nil;
+			*argv = "<stdin>";
 		rv |= cksum(*argv);
 	}
 
