@@ -26,6 +26,7 @@ BIN=\
 
 # LIB SRC
 LIBCOMMONSRC=\
+	lib/common/dir.c\
 	lib/common/estrtovl.c
 
 # LIB PATH

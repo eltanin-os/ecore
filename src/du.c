@@ -1,64 +1,64 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#include "common.h"
+
 enum {
 	AFLAG = 1 << 0,
 	SFLAG = 1 << 1,
 };
 
-static CNode *hp;
-static uint   ropts;
-static uint   opts;
-static int    blksize = 512;
+static uint ropts;
+static uint opts;
+static int  blksize = 512;
 
 static int
-du(char *path, int depth, usize *n)
+du(Dir *p, char *path, uintptr *total)
 {
-	CDir  dir;
-	usize sbt;
-	int   r, rv;
+	CDir dir;
+	uintptr sbt;
+	int r, rv;
 
-	if (c_dir_open(&dir, path, ropts) < 0) {
-		if (errno != C_ENOTDIR)
-			return c_err_warn("c_dir_open %s", path);
-		sbt = C_HOWMANY(dir.info.st_blocks, blksize);
+	switch (dir_open(p, &dir, path, ropts)) {
+	case -1:
+		return -1;
+	case  1:
+		sbt = C_HOWMANY(p->dp->info.st_blocks, blksize);
 		c_ioq_fmt(ioq1, "%lld\t%s\n", sbt, path);
+		/* fallthrough */
+	case  2:
 		return 0;
 	}
 
-	if ((r = c_dir_hist(&hp, &dir.info))) {
-		c_dir_close(&dir);
-		return (r < 0);
-	}
-
 	rv = 0;
-	depth++;
-	while ((r = c_dir_read(&dir)) > 0) {
-		sbt = C_HOWMANY(dir.info.st_blocks, blksize);
-		if (C_ISDIR(dir.info.st_mode)) {
-			if (du(dir.path, depth, &sbt)) {
+	p->depth++;
+	while ((r = c_dir_read(p->dp, &dir)) > 0) {
+		sbt = C_HOWMANY(p->dp->info.st_blocks, blksize);
+		if (C_ISDIR(p->dp->info.st_mode)) {
+			if (du(p, p->dp->path, &sbt)) {
 				rv = 1;
 				continue;
 			}
 		} else if (opts & AFLAG) {
-			switch (c_dir_hist(&hp, &dir.info)) {
+			switch (c_dir_hist(&p->hp, &p->dp->info)) {
 			case -1:
 				c_err_die(1, "c_dir_hist");
 			case  1:
 				continue;
 			}
-			c_ioq_fmt(ioq1, "%lld\t%s\n", sbt, dir.path);
+			c_ioq_fmt(ioq1, "%lld\t%s\n", sbt, p->dp->path);
 		}
-		*n += sbt;
+		*total += sbt;
 	}
-	depth--;
+	p->depth--;
 
 	if (r < 0)
-		rv = c_err_warn("c_dir_read %s", dir.path);
+		r = c_err_warn("c_dir_read %s", dir.path);
 
-	if (!depth || !(opts & SFLAG))
-		c_ioq_fmt(ioq1, "%lld\t%s\n", *n, path);
+	if (!p->depth || !(opts & SFLAG))
+		c_ioq_fmt(ioq1, "%lld\t%s\n", *total, dir.path);
 
+	/* call c_dir_close directly to keep history intact */
 	c_dir_close(&dir);
 
 	return rv;
@@ -75,8 +75,9 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	usize n;
-	int   r;
+	Dir dir;
+	uintptr n;
+	int r;
 
 	c_std_setprogname(argv[0]);
 
@@ -113,14 +114,15 @@ main(int argc, char **argv)
 
 	r = 0;
 	blksize /= 512;
+	c_mem_set(&dir, sizeof(dir), 0);
 
 	for (; *argv; argc--, argv++) {
 		n  = 0;
-		r |= du(*argv, 0, &n);
+		r |= du(&dir, *argv, &n);
 	}
 
-	while (hp)
-		c_dst_lfree(c_dst_lpop(&hp), nil);
+	while (dir.hp)
+		c_dst_lfree(c_dst_lpop(&dir.hp));
 
 	c_ioq_flush(ioq1);
 
