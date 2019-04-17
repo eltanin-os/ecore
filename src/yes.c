@@ -7,6 +7,7 @@ usage(void)
 	c_ioq_fmt(ioq2, "usage: %s [expletive]\n", c_std_getprogname());
 	c_std_exit(1);
 }
+
 int
 main(int argc, char **argv)
 {
