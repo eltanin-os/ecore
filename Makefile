@@ -11,7 +11,10 @@ HDR=\
 BIN=\
 	src/basename\
 	src/cat\
+	src/chgrp\
+	src/chown\
 	src/cksum\
+	src/cp\
 	src/dirname\
 	src/du\
 	src/echo\
@@ -19,7 +22,9 @@ BIN=\
 	src/false\
 	src/head\
 	src/link\
+	src/ln\
 	src/pwd\
+	src/rm\
 	src/true\
 	src/unlink\
 	src/yes
@@ -27,7 +32,8 @@ BIN=\
 # LIB SRC
 LIBCOMMONSRC=\
 	lib/common/dir.c\
-	lib/common/estrtovl.c
+	lib/common/estrtovl.c\
+	lib/common/pathcat.c
 
 # LIB PATH
 LIBCOMMON= lib/libcommon.a

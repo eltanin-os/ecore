@@ -21,7 +21,7 @@ du(Dir *p, char *path, uintptr *total)
 
 	switch (dir_open(p, &dir, path, ropts)) {
 	case -1:
-		return -1;
+		return c_err_warn("dir_open %s", path);
 	case  1:
 		sbt = C_HOWMANY(p->dp->info.st_blocks, blksize);
 		c_ioq_fmt(ioq1, "%lld\t%s\n", sbt, path);

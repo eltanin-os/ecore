@@ -29,7 +29,7 @@ main(int argc, char **argv)
 	while (c_arr_fmt(&arr, "%s\n", s) > 0)
 		;
 
-	s = c_arr_bget(&arr, 0);
+	s = c_arr_data(&arr);
 	n = c_arr_bytes(&arr);
 	for (;;)
 		c_sys_allrw(c_sys_write, C_FD1, s, n);
