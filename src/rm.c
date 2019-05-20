@@ -59,7 +59,7 @@ rm(Dir *p, char *path)
 static void
 usage(void)
 {
-	c_ioq_fmt(ioq2, "usage: %s [-Rfi] file ...", c_std_getprogname());
+	c_ioq_fmt(ioq2, "usage: %s [-Rfi] file ...\n", c_std_getprogname());
 	c_std_exit(1);
 }
 

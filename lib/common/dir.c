@@ -13,7 +13,13 @@ dir_open(Dir *p, CDir *dp, char *path, uint opts)
 
 	p->dp = &__dir_entry;
 
-	stf = C_FSFLW(opts, p->depth) ? c_sys_stat : c_sys_lstat;
+	if (C_FSFLW(opts, p->depth)) {
+		stf = c_sys_stat;
+	} else {
+		stf = c_sys_lstat;
+		p->hp = (void *)-1;
+	}
+
 	if (stf(&p->dp->info, path) < 0)
 		return -1;
 
@@ -25,17 +31,17 @@ dir_open(Dir *p, CDir *dp, char *path, uint opts)
 			return 2;
 		}
 
-	errno = 0;
-	if ((p->maxdepth && p->depth+1 >= p->maxdepth) ||
-	    c_dir_open(dp, path, opts) < 0) {
-		if (errno && errno != C_ENOTDIR)
-			return -1;
+	if (!C_ISDIR(p->dp->info.st_mode) ||
+	    (p->maxdepth && p->depth+1 >= p->maxdepth)) {
 		c_arr_init(&arr, p->dp->path, sizeof(p->dp->path));
 		if (c_arr_fmt(&arr, "%s", path) < 0)
 			return -1;
 		p->dp->plen = p->dp->nlen = c_arr_bytes(&arr);
 		return 1;
 	}
+
+	if (c_dir_open(dp, path, opts) < 0)
+		return -1;
 
 	return 0;
 }
