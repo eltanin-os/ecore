@@ -3,51 +3,6 @@
 
 #include "common.h"
 
-static uint ropts;
-
-static int
-chownf(Dir *p, char *path, uint uid)
-{
-	CDir dir;
-	int r, rv;
-
-	switch (dir_open(p, &dir, path, ropts)) {
-	case -1:
-		return c_err_warn("dir_open %s", path);
-	case  1:
-		if (c_sys_chown(path, uid, p->dp->info.st_gid) < 0)
-			return c_err_warn("c_sys_chown %s", path);
-		/* fallthrough */
-	case  2:
-		return 0;
-	}
-
-	if (c_sys_chown(path, uid, p->dp->info.st_gid) < 0)
-		return c_err_warn("c_sys_chown %s", path);
-
-	rv = 0;
-	p->depth++;
-	while ((r = c_dir_read(p->dp, &dir)) > 0) {
-		if (C_ISDIR(p->dp->info.st_mode)) {
-			if (chownf(p, p->dp->path, uid)) {
-				rv = 1;
-				continue;
-			}
-		} else {
-			if (c_sys_chown(p->dp->path, uid, p->dp->info.st_gid) < 0)
-				return c_err_warn("c_sys_chown %s", path);
-		}
-	}
-	p->depth--;
-
-	if (r < 0)
-		rv = c_err_warn("dir_read %s", dir.path);
-
-	dir_close(p, &dir);
-
-	return 0;
-}
-
 static void
 usage(void)
 {
@@ -59,29 +14,31 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	Dir  dir;
-	int  rv;
-	uint uid;
+	CDir   dir;
+	CDent *p;
+	int    rv;
+	uint   uid;
+	uint   Rflag, opts;
 
 	c_std_setprogname(argv[0]);
 
-	c_mem_set(&dir, sizeof(dir), 0);
-	dir.maxdepth = 1;
+	Rflag = 0;
+	opts = 0;
 
 	C_ARGBEGIN {
-	case 'R':
-		dir.maxdepth = 0;
-		break;
 	case 'H':
-		ropts |= C_FSCOM;
+		opts |= C_FSCOM;
 		break;
 	case 'L':
-		ropts &= ~C_FSPHY;
-		ropts |= C_FSLOG;
+		opts &= ~C_FSPHY;
+		opts |= C_FSLOG;
 		break;
 	case 'P':
-		ropts &= ~C_FSLOG;
-		ropts |= C_FSPHY;
+		opts &= ~C_FSLOG;
+		opts |= C_FSPHY;
+		break;
+	case 'R':
+		Rflag = 1;
 		break;
 	default:
 		usage();
@@ -91,11 +48,38 @@ main(int argc, char **argv)
 		usage();
 
 	uid = estrtovl(argv[0], 0, 0, C_UINTMAX);
-	rv  = 0;
 
 	argv++;
-	for (; *argv; argc--, argv++)
-		rv |= chownf(&dir, *argv, uid);
+	if (c_dir_open(&dir, argv, opts, nil) < 0)
+		c_err_die(1, "c_dir_open");
+
+	rv = 0;
+
+	while ((p = c_dir_read(&dir))) {
+		switch (p->info) {
+		case C_FSD:
+			if (!Rflag)
+				c_dir_set(&dir, p, C_FSSKP);
+			break;
+		case C_FSDNR:
+			rv = c_err_warnx("%s: %s", p->name, serr(p->errno));
+			continue;
+		case C_FSDP:
+			continue;
+		case C_FSERR:
+		case C_FSNS:
+			rv = c_err_warnx("%s: %s", p->name, serr(p->errno));
+			continue;
+		case C_FSSL:
+		case C_FSSLN:
+			continue;
+		}
+
+		if (c_sys_chown(p->path, uid, p->stp->gid) < 0)
+			rv = c_err_warn("c_sys_chown %s", p->path);
+	}
+
+	c_dir_close(&dir);
 
 	return rv;
 }

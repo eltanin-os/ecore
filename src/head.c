@@ -4,7 +4,6 @@
 #include "common.h"
 
 static int hn = 10;
-static int hf =  1;
 
 static int
 head(char *p)
@@ -25,10 +24,8 @@ head(char *p)
 	c_ioq_init(&ioq, fd, &arr, c_sys_read);
 
 	for (i = 0; i < hn; i++) {
-		if (c_ioq_getln(&ioq, ioq1->mb) < 0) {
-			c_ioq_flush(ioq1);
-			i--;
-		}
+		if (c_ioq_getln(&ioq, ioq1->mb) < 0)
+			break;
 	}
 
 	return 0;
@@ -67,10 +64,14 @@ main(int argc, char **argv)
 		r = head(*argv);
 		argc--, argv++;
 		break;
+	default:
+		c_ioq_fmt(ioq1, "==> %s <==\n", *argv);
+		r = head(*argv);
+		argc--, argv++;
 	}
 
 	for (; *argv; argc--, argv++) {
-		c_ioq_fmt(ioq1, "%s==> %s <==\n", hf ? hf--, "" : "\n", *argv);
+		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
 		r |= head(*argv);
 	}
 

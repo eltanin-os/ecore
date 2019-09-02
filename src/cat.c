@@ -17,7 +17,7 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'u':
-		ioq1->mb->a = 0;
+		ioq1->mb = arr_zero;
 		break;
 	default:
 		usage();

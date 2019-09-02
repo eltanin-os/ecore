@@ -24,7 +24,6 @@ main(int argc, char **argv)
 	} C_ARGEND
 
 	s = argc ? *argv : "y";
-
 	c_arr_init(&arr, buf, sizeof(buf));
 	while (c_arr_fmt(&arr, "%s\n", s) > 0)
 		;

@@ -31,9 +31,9 @@ BIN=\
 
 # LIB SRC
 LIBCOMMONSRC=\
-	lib/common/dir.c\
 	lib/common/estrtovl.c\
-	lib/common/pathcat.c
+	lib/common/pathcat.c\
+	lib/common/serr.c
 
 # LIB PATH
 LIBCOMMON= lib/libcommon.a

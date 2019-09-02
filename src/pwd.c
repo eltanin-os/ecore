@@ -25,8 +25,8 @@ getpwd(void)
 	    c_sys_stat(&dot, ".") < 0)
 		return nil;
 
-	if (pwd.st_dev != dot.st_dev ||
-	    pwd.st_ino != dot.st_ino)
+	if (pwd.dev != dot.dev ||
+	    pwd.ino != dot.ino)
 		return nil;
 
 	return s;
