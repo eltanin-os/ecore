@@ -23,7 +23,7 @@ pathcat(char *f1, char *f2, int cat)
 	}
 
 	sep = buf[r - 1] == '/' ? "" : "/";
-	c_arr_fmt(&arr, "%s%s", sep, f1);
+	c_arr_fmt(&arr, "%s%s", sep, c_gen_basename(sdup(f1)));
 
 	return buf;
 }
