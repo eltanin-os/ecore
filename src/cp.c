@@ -12,10 +12,10 @@ enum {
 static int
 copy(char *src, char *dest, ushort mode)
 {
-	CIoq ioq;
-	int  fd;
+	ctype_ioq ioq;
+	int fd;
 
-	if ((fd = c_sys_open(dest, C_OCREATE|C_OWRITE|C_OEXCL, mode)) < 0)
+	if ((fd = c_sys_open(dest, C_OCREATE | C_OWRITE | C_OEXCL, mode)) < 0)
 		return c_err_warn("c_sys_open %s", dest);
 
 	c_ioq_init(&ioq, fd, arr_zero, c_sys_write);
@@ -41,12 +41,12 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	CDir   dir;
-	CDent *p;
-	CStat  st;
-	char  *dest, *ds;
-	int    rv;
-	uint   opts, ropts;
+	ctype_dir dir;
+	ctype_dent *p;
+	ctype_stat st;
+	char *dest, *ds;
+	int rv;
+	uint opts, ropts;
 
 	c_std_setprogname(argv[0]);
 
@@ -125,7 +125,7 @@ main(int argc, char **argv)
 			continue;
 		case C_FSERR:
 		case C_FSNS:
-			rv = c_err_warnx("%s: %s", p->path, serr(p->errno));
+			rv = c_err_warnx("%s: %s", p->path, serr(p->err));
 			continue;
 		}
 

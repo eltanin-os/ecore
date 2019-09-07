@@ -42,9 +42,9 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	CStat st;
-	int   rv;
-	uint  opts;
+	ctype_stat st;
+	int rv;
+	uint opts;
 	char *dest;
 
 	c_std_setprogname(argv[0]);
@@ -57,7 +57,7 @@ main(int argc, char **argv)
 		opts |= LFLAG;
 		break;
 	case 'P':
-		opts &= ~(LFLAG|SFLAG);
+		opts &= ~(LFLAG | SFLAG);
 		break;
 	case 'f':
 		opts |= FFLAG;

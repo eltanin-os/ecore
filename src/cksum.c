@@ -11,7 +11,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	CHst hs;
+	ctype_hst hs;
 	int rv;
 
 	c_std_setprogname(argv[0]);

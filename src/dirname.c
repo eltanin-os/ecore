@@ -18,7 +18,7 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	if (argc-1)
+	if (argc - 1)
 		usage();
 
 	c_ioq_fmt(ioq1, "%s\n", c_gen_dirname(*argv));

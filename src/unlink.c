@@ -18,7 +18,7 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	if (argc-1)
+	if (argc - 1)
 		usage();
 
 	if (c_sys_unlink(*argv) < 0)

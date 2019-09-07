@@ -11,10 +11,10 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	CArr  arr;
+	ctype_arr arr;
 	usize n;
 	char *s;
-	char  buf[C_BIOSIZ];
+	char buf[C_BIOSIZ];
 
 	c_std_setprogname(argv[0]);
 
@@ -25,8 +25,7 @@ main(int argc, char **argv)
 
 	s = argc ? *argv : "y";
 	c_arr_init(&arr, buf, sizeof(buf));
-	while (c_arr_fmt(&arr, "%s\n", s) > 0)
-		;
+	while (c_arr_fmt(&arr, "%s\n", s) > 0) ;
 
 	s = c_arr_data(&arr);
 	n = c_arr_bytes(&arr);

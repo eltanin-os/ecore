@@ -22,10 +22,10 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	CDir   dir;
-	CDent *p;
-	int    rv;
-	uint   opts;
+	ctype_dir dir;
+	ctype_dent *p;
+	int rv;
+	uint opts;
 
 	c_std_setprogname(argv[0]);
 
@@ -73,7 +73,7 @@ main(int argc, char **argv)
 				rv = c_err_warn("c_sys_rmdir %s", p->path);
 			break;
 		case C_FSERR:
-			rv = c_err_warnx("%s: %s", p->path, serr(p->errno));
+			rv = c_err_warnx("%s: %s", p->path, serr(p->err));
 			break;
 		default:
 			if (c_sys_unlink(p->path) < 0)

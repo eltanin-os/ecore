@@ -33,7 +33,7 @@ main(int argc, char **argv)
 	for (; *argv; argv++) {
 		if (!(s = c_str_chr(*argv, C_USIZEMAX, '=')))
 			break;
-		c_exc_setenv(*argv, s+1);
+		c_exc_setenv(*argv, s + 1);
 	}
 
 	c_exc_run(*argv, argv);

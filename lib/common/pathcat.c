@@ -7,8 +7,8 @@ char *
 pathcat(char *f1, char *f2, int cat)
 {
 	static char buf[C_PATHMAX];
-	CArr  arr;
-	CStat st;
+	ctype_arr arr;
+	ctype_stat st;
 	usize r;
 	char *sep;
 
@@ -22,7 +22,7 @@ pathcat(char *f1, char *f2, int cat)
 			return buf;
 	}
 
-	sep = buf[r-1] == '/' ? "" : "/";
+	sep = buf[r - 1] == '/' ? "" : "/";
 	c_arr_fmt(&arr, "%s%s", sep, f1);
 
 	return buf;

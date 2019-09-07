@@ -4,7 +4,7 @@
 static char *
 getpwd(void)
 {
-	CStat pwd, dot;
+	ctype_stat pwd, dot;
 	usize n;
 	char *s;
 
@@ -17,16 +17,14 @@ getpwd(void)
 	if ((n = c_str_len(s, C_PATHMAX)) == C_PATHMAX)
 		return nil;
 
-	if (c_mem_mem(s, n, "/./",  sizeof("/./")-1) ||
-	    c_mem_mem(s, n, "/../", sizeof("/../")-1))
+	if (c_mem_mem(s, n, "/./", sizeof("/./") - 1) ||
+	    c_mem_mem(s, n, "/../", sizeof("/../") - 1))
 		return nil;
 
-	if (c_sys_stat(&pwd, s)   < 0 ||
-	    c_sys_stat(&dot, ".") < 0)
+	if (c_sys_stat(&pwd, s) < 0 || c_sys_stat(&dot, ".") < 0)
 		return nil;
 
-	if (pwd.dev != dot.dev ||
-	    pwd.ino != dot.ino)
+	if (pwd.dev != dot.dev || pwd.ino != dot.ino)
 		return nil;
 
 	return s;
@@ -42,9 +40,9 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	int   mode;
+	int mode;
 	char *s;
-	char  buf[C_PATHMAX];
+	char buf[C_PATHMAX];
 
 	c_std_setprogname(argv[0]);
 

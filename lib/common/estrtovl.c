@@ -5,10 +5,9 @@ vlong
 estrtovl(char *p, int b, vlong l, vlong h)
 {
 	vlong rv;
-	int   e;
-	char *s;
+	int e;
 
-	rv = c_std_strtovl(p, b, l, h, &s, &e);
+	rv = c_std_strtovl(p, b, l, h, nil, &e);
 
 	if (e < 0)
 		c_err_die(1, "c_std_strtovl %s", p);

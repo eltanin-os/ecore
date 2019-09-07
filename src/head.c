@@ -8,9 +8,10 @@ static int hn = 10;
 static int
 head(char *p)
 {
-	CArr arr;
-	CIoq ioq;
-	int  fd, i;
+	ctype_arr arr;
+	ctype_ioq ioq;
+	ctype_fd fd;
+	int i;
 	char buf[C_BIOSIZ];
 
 	if (C_ISDASH(p)) {
@@ -53,8 +54,6 @@ main(int argc, char **argv)
 	default:
 		usage();
 	} C_ARGEND
-
-	r = 0;
 
 	switch (argc) {
 	case 0:

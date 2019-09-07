@@ -14,11 +14,11 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	CDir   dir;
-	CDent *p;
-	int    rv;
-	uint   uid;
-	uint   Rflag, opts;
+	ctype_dir dir;
+	ctype_dent *p;
+	int rv;
+	uint uid;
+	uint Rflag, opts;
 
 	c_std_setprogname(argv[0]);
 
@@ -62,13 +62,13 @@ main(int argc, char **argv)
 				c_dir_set(&dir, p, C_FSSKP);
 			break;
 		case C_FSDNR:
-			rv = c_err_warnx("%s: %s", p->name, serr(p->errno));
+			rv = c_err_warnx("%s: %s", p->name, serr(p->err));
 			continue;
 		case C_FSDP:
 			continue;
 		case C_FSERR:
 		case C_FSNS:
-			rv = c_err_warnx("%s: %s", p->name, serr(p->errno));
+			rv = c_err_warnx("%s: %s", p->name, serr(p->err));
 			continue;
 		case C_FSSL:
 		case C_FSSLN:

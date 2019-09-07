@@ -30,7 +30,7 @@ main(int argc, char **argv)
 	if (argc) {
 		argv++;
 		n = c_str_len(s, C_USIZEMAX) - c_str_len(*argv, C_USIZEMAX);
-		if (!c_str_cmp(s+n, C_USIZEMAX, *argv))
+		if (!c_str_cmp(s + n, C_USIZEMAX, *argv))
 			s[n] = 0;
 	}
 

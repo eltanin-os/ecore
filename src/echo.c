@@ -18,7 +18,7 @@ main(int argc, char **argv)
 
 	for (; *argv; argc--, argv++) {
 		c_ioq_put(ioq1, *argv);
-		if (argc-1)
+		if (argc - 1)
 			c_ioq_put(ioq1, " ");
 	}
 

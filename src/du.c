@@ -19,10 +19,10 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	CDir   dir;
-	CDent *p;
-	int    blksiz, rv;
-	uint   opts, ropts;
+	ctype_dir dir;
+	ctype_dent *p;
+	int blksiz, rv;
+	uint opts, ropts;
 
 	c_std_setprogname(argv[0]);
 
@@ -64,7 +64,7 @@ main(int argc, char **argv)
 	blksiz /= 512;
 	c_mem_set(&dir, sizeof(dir), 0);
 
-	if (c_dir_open(&dir, argv, ropts|C_FSFHT, nil) < 0)
+	if (c_dir_open(&dir, argv, ropts | C_FSFHT, nil) < 0)
 		c_err_die(1, "c_dir_open");
 
 	rv = 0;
@@ -84,7 +84,7 @@ main(int argc, char **argv)
 		case C_FSDNR:
 		case C_FSNS:
 		case C_FSERR:
-			rv = c_err_warnx("%s: %s", p->path, serr(p->errno));
+			rv = c_err_warnx("%s: %s", p->path, serr(p->err));
 			break;
 		default:
 			if ((opts & AFLAG) || !p->depth)
