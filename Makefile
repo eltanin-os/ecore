@@ -31,6 +31,7 @@ BIN=\
 
 # LIB SRC
 LIBCOMMONSRC=\
+	lib/common/cp.c\
 	lib/common/estrtovl.c\
 	lib/common/pathcat.c\
 	lib/common/serr.c\
