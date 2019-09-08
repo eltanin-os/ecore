@@ -34,6 +34,7 @@ LIBCOMMONSRC=\
 	lib/common/cp.c\
 	lib/common/estrtovl.c\
 	lib/common/pathcat.c\
+	lib/common/rm.c\
 	lib/common/serr.c\
 	lib/common/sdup.c
 

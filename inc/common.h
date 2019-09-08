@@ -14,6 +14,14 @@ vlong estrtovl(char *, int, vlong, vlong);
 /* pathcat.c */
 char *pathcat(char *, char *, int);
 
+/* rm.c */
+enum {
+	RM_FFLAG = 1 << 0,
+	RM_RFLAG = 1 << 1,
+};
+
+ctype_status remove(char **, uint);
+
 /* sdup.c */
 char *sdup(char *);
 
