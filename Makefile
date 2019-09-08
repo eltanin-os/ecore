@@ -23,6 +23,7 @@ BIN=\
 	src/head\
 	src/link\
 	src/ln\
+	src/mv\
 	src/pwd\
 	src/rm\
 	src/true\
