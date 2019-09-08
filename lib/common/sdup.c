@@ -7,6 +7,10 @@ char *
 sdup(char *s)
 {
 	static char buf[C_PATHMAX];
+	usize n;
 
-	return c_mem_cpy(buf, c_str_len(s, C_PATHMAX), s);
+	n = c_str_len(s, C_PATHMAX);
+	c_mem_cpy(buf, n, s);
+	buf[n] = 0;
+	return buf;
 }
