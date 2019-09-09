@@ -36,7 +36,7 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 
 	buf[r] = 0;
 
-	if (stp->size < (ctype_fssize)r)
+	if ((size)stp->size < r)
 		return c_err_warnx("%s: not same file\n", src);
 
 	if (c_sys_symlink(buf, dest) < 0)
