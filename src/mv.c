@@ -22,7 +22,7 @@ move(char *src, char *dest)
 	argv[0] = src;
 	argv[1] = nil;
 
-	return (copy(argv, dest, 0, COPTS | tdir) || remove (argv, RMOPTS));
+	return (copy(argv, dest, 0, CPOPTS | tdir) || remove (argv, RMOPTS));
 }
 
 static void
