@@ -27,6 +27,7 @@ BIN=\
 	src/pwd\
 	src/rm\
 	src/true\
+	src/uname\
 	src/unlink\
 	src/yes
 
