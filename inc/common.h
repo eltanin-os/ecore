@@ -11,6 +11,9 @@ ctype_status copy(char **, char *, uint, uint);
 /* estrtovl.c */
 vlong estrtovl(char *, int, vlong, vlong);
 
+/* path.c */
+void trim_trailing_slash(char *);
+
 /* pathcat.c */
 char *pathcat(char *, char *, int);
 

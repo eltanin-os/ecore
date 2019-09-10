@@ -23,9 +23,11 @@ BIN=\
 	src/head\
 	src/link\
 	src/ln\
+	src/mkdir\
 	src/mv\
 	src/pwd\
 	src/rm\
+	src/rmdir\
 	src/true\
 	src/uname\
 	src/unlink\
@@ -35,6 +37,7 @@ BIN=\
 LIBCOMMONSRC=\
 	lib/common/cp.c\
 	lib/common/estrtovl.c\
+	lib/common/path.c\
 	lib/common/pathcat.c\
 	lib/common/rm.c\
 	lib/common/serr.c\
