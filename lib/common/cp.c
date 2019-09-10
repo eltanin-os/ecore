@@ -34,8 +34,6 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 	if ((r = c_sys_readlink(buf, sizeof(buf), src)) < 0)
 		return c_err_warn("readlink %s", src);
 
-	buf[r] = 0;
-
 	if ((size)stp->size < r)
 		return c_err_warnx("%s: not same file\n", src);
 
