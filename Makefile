@@ -12,6 +12,7 @@ BIN=\
 	src/basename\
 	src/cat\
 	src/chgrp\
+	src/chmod\
 	src/chown\
 	src/cksum\
 	src/cp\
