@@ -16,9 +16,8 @@ main(int argc, char **argv)
 {
 	ctype_dir dir;
 	ctype_dent *p;
-	int rv;
-	uint uid;
-	uint Rflag, opts;
+	int Rflag, rv;
+	uint opts, uid;
 
 	c_std_setprogname(argv[0]);
 
@@ -49,7 +48,7 @@ main(int argc, char **argv)
 
 	uid = estrtovl(argv[0], 0, 0, C_UINTMAX);
 
-	argv++;
+	++argv;
 	if (c_dir_open(&dir, argv, opts, nil) < 0)
 		c_err_die(1, "c_dir_open");
 

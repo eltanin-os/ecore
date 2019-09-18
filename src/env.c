@@ -25,12 +25,12 @@ main(int argc, char **argv)
 	} C_ARGEND
 
 	if (!argc) {
-		for (; *environ; environ++)
+		for (; *environ; ++environ)
 			c_ioq_fmt(ioq1, "%s\n", *environ);
 		c_std_exit(0);
 	}
 
-	for (; *argv; argv++) {
+	for (; *argv; --argc, ++argv) {
 		if (!(s = c_str_chr(*argv, C_USIZEMAX, '=')))
 			break;
 		c_exc_setenv(*argv, s + 1);

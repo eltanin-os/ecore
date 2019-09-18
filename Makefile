@@ -34,6 +34,9 @@ BIN=\
 	src/unlink\
 	src/yes
 
+# MAN
+MAN1=
+
 # LIB SRC
 LIBCOMMONSRC=\
 	lib/common/cp.c\
@@ -41,8 +44,9 @@ LIBCOMMONSRC=\
 	lib/common/path.c\
 	lib/common/pathcat.c\
 	lib/common/rm.c\
+	lib/common/sdup.c\
 	lib/common/serr.c\
-	lib/common/sdup.c
+	lib/common/tmpargv.c
 
 # LIB PATH
 LIBCOMMON= lib/libcommon.a
@@ -74,7 +78,11 @@ $(LIBCOMMON): $(LIBCOMMONOBJ)
 	$(RANLIB) $@
 
 # RULES
-install: all
+install-man: all
+	install -dm 755 $(DESTDIR)/$(MANDIR)/man1
+	install -cm 644 $(MAN1) $(DESTDIR)/$(MANDIR)/man1
+
+install: install-man all
 	install -dm 755 $(DESTDIR)/$(PREFIX)/bin
 	install -csm 755 $(BIN) $(DESTDIR)/$(PREFIX)/bin
 

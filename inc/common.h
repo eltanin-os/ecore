@@ -30,3 +30,6 @@ char *sdup(char *);
 
 /* serr.c */
 char *serr(int);
+
+/* tmpargv.c */
+char **tmpargv(char *);

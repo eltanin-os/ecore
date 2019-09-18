@@ -21,7 +21,7 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	argc--;
+	--argc;
 	if ((uint)argc > 1)
 		usage();
 

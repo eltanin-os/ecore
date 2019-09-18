@@ -56,7 +56,7 @@ main(int argc, char **argv)
 	if (argc < 2)
 		usage();
 
-	argc--;
+	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
 
@@ -69,7 +69,7 @@ main(int argc, char **argv)
 
 	rv = 0;
 
-	for (; *argv; argc--, argv++)
+	for (; *argv; --argc, ++argv)
 		rv |= move(*argv, dest);
 
 	return 0;

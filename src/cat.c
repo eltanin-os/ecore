@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#include "common.h"
+
 static void
 usage(void)
 {
@@ -23,14 +25,12 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	if (!argc) {
-		argv[0] = "-";
-		argv[1] = nil;
-	}
+	if (!argc)
+		argv = tmpargv("-");
 
 	rv = 0;
 
-	for (; *argv; argc--, argv++) {
+	for (; *argv; --argc, ++argv) {
 		if (C_ISDASH(*argv))
 			*argv = "<stdin>";
 		if (c_ioq_putfile(ioq1, *argv) < 0)

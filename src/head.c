@@ -24,10 +24,9 @@ head(char *p)
 	c_arr_init(&arr, buf, sizeof(buf));
 	c_ioq_init(&ioq, fd, &arr, c_sys_read);
 
-	for (i = 0; i < hn; i++) {
+	for (i = 0; i < hn; ++i)
 		if (c_ioq_getln(&ioq, ioq1->mb) < 0)
 			break;
-	}
 
 	return 0;
 }
@@ -61,15 +60,17 @@ main(int argc, char **argv)
 		break;
 	case 1:
 		r = head(*argv);
-		argc--, argv++;
+		--argc;
+		++argv;
 		break;
 	default:
 		c_ioq_fmt(ioq1, "==> %s <==\n", *argv);
 		r = head(*argv);
-		argc--, argv++;
+		--argc;
+		++argv;
 	}
 
-	for (; *argv; argc--, argv++) {
+	for (; *argv; --argc, ++argv) {
 		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
 		r |= head(*argv);
 	}

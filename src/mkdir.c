@@ -60,7 +60,7 @@ main(int argc, char **argv)
 	if (!argc)
 		usage();
 
-	for (; *argv; argc--, argv++) {
+	for (; *argv; --argc, ++argv) {
 		trim_trailing_slash(*argv);
 		if (pflag)
 			rv |= mkpath(*argv, mode, dmode);

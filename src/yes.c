@@ -12,7 +12,6 @@ int
 main(int argc, char **argv)
 {
 	ctype_arr arr;
-	usize n;
 	char *s;
 	char buf[C_BIOSIZ];
 
@@ -27,10 +26,9 @@ main(int argc, char **argv)
 	c_arr_init(&arr, buf, sizeof(buf));
 	while (c_arr_fmt(&arr, "%s\n", s) > 0) ;
 
-	s = c_arr_data(&arr);
-	n = c_arr_bytes(&arr);
 	for (;;)
-		c_sys_allrw(c_sys_write, C_FD1, s, n);
+		c_sys_allrw(c_sys_write, C_FD1,
+		    c_arr_data(&arr), c_arr_bytes(&arr));
 
 	return 1;
 }

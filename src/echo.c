@@ -12,11 +12,12 @@ main(int argc, char **argv)
 	nflag = 0;
 
 	if (!c_str_cmp(*argv, C_USIZEMAX, "-n")) {
-		argc--, argv++;
-		nflag++;
+		--argc;
+		++argv;
+		++nflag;
 	}
 
-	for (; *argv; argc--, argv++) {
+	for (; *argv; --argc, ++argv) {
 		c_ioq_put(ioq1, *argv);
 		if (argc - 1)
 			c_ioq_put(ioq1, " ");

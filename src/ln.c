@@ -79,8 +79,9 @@ main(int argc, char **argv)
 		c_std_exit(links(argv[0], pathcat(argv[0], argv[1], 0), opts));
 	}
 
-	dest = argv[argc - 1];
-	argv[argc - 1] = nil;
+	--argc;
+	dest = argv[argc];
+	argv[argc] = nil;
 	if (c_sys_stat(&st, dest) < 0)
 		c_err_die(1, "c_sys_stat %s", dest);
 
@@ -89,7 +90,7 @@ main(int argc, char **argv)
 
 	rv = 0;
 
-	for (; *argv; argc--, argv++)
+	for (; *argv; --argc, ++argv)
 		rv |= links(*argv, pathcat(*argv, dest, 1), opts);
 
 	return rv;

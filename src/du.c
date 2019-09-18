@@ -56,10 +56,8 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	if (!argc) {
-		argv[0] = ".";
-		argv[1] = nil;
-	}
+	if (!argc)
+		argv = tmpargv(".");
 
 	blksiz /= 512;
 	c_mem_set(&dir, sizeof(dir), 0);
@@ -78,6 +76,7 @@ main(int argc, char **argv)
 			if (!(opts & SFLAG) || !p->depth)
 				c_ioq_fmt(ioq1, "%lld\t%s\n",
 				    C_HOWMANY(p->num, blksiz), p->path);
+			p->parent->num += p->num;
 			break;
 		case C_FSFC:
 			break;
@@ -90,7 +89,6 @@ main(int argc, char **argv)
 			if ((opts & AFLAG) || !p->depth)
 				c_ioq_fmt(ioq1, "%lld\t%s\n",
 				    C_HOWMANY(p->stp->blocks, blksiz), p->path);
-
 			p->parent->num += p->stp->blocks;
 		}
 	}
