@@ -1,0 +1,47 @@
+.Dd October 04, 2019
+.Dt DU 1
+.Os
+.Sh NAME
+.Nm du
+.Nd estimate file space usage
+.Sh SYNOPSIS
+.Nm
+.Op Fl kx
+.Op Fl a | s
+.Op Fl H | L
+.Op Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility writes the file system block usage for each
+.Ar file
+argument and for each directory in the file hierarchy rooted
+in each directory argument to the standard output.
+If no
+.Ar file
+is specified, the current directory is used as argument.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl a
+Display file entries.
+.It Fl H
+Dereference symbolic links on command line.
+.It Fl k
+Set the block size to 1024 bytes.
+.It Fl L
+Dereference all symbolic links.
+.It Fl s
+Display only a summary.
+.It Fl x
+Do not traverse file system mount points.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr df 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

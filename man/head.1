@@ -1,0 +1,39 @@
+.Dd October 04, 2019
+.Dt HEAD 1
+.Os
+.Sh NAME
+.Nm head
+.Nd copy the first part of files
+.Sh SYNOPSIS
+.Nm
+.Op Fl n Ar number
+.Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility copies the initial
+.Ar number
+of lines from each
+.Ar file
+to the standard output. If no file is given,
+.Nm
+reads from the standard input.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl n Ar number
+Set the amount of lines to be copied.
+.El
+.Pp
+If
+.Ar number
+is ommited, it defaults to 10.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr tail 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

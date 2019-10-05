@@ -1,0 +1,40 @@
+.Dd October 04, 2019
+.Dt PROGNAME section
+.Os
+.Sh NAME
+.Nm mkdir
+.Nd make directories
+.Sh SYNOPSIS
+.Nm
+.Op Fl p
+.Op Fl m Ar mode
+.Ar dir ...
+.Sh DESCRIPTION
+The
+.Nm
+utility creates a directory for each
+.Ar dir ,
+in the order specified.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl m Ar mode
+Set the file mode of newly created directories.
+.It Fl p
+Create intermediate directories as required.
+.El
+.Pp
+If
+.Ar mode
+is omitted, it defaults to rwxrwxrwx
+.Pq 0777
+modified by the current file mode creation mask.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr chmod 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

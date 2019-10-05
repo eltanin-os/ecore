@@ -1,0 +1,63 @@
+.Dd October 04, 2019
+.Dt CP 1
+.Os
+.Sh NAME
+.Nm cp
+.Nd copy files
+.Sh SYNOPSIS
+.Nm
+.Op Fl fip
+.Op Fl R Op Fl H | L | P
+.Ar source
+.Ar target
+.Nm
+.Op Fl fip
+.Op Fl R Op Fl H | L | P
+.Ar source ...
+.Ar directory
+.Sh DESCRIPTION
+In the first synopsis form,
+.Nm
+copies the content of the
+.Ar source
+to the
+.Ar target .
+In the second synopsis form,
+.Nm
+copies the contents of each
+.Ar source
+to the destination
+.Ar directory .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl f
+Remove existing files.
+.It Fl H
+Dereference symbolic links on command line.
+.It Fl i
+Prompt before overwriting a file.
+.It Fl L
+Dereference all symbolic links.
+.It Fl P
+Preserve symbolic links.
+.It Fl p
+Preserve mode, timestamp and permissions.
+.It Fl R
+Descend recursively through its directories arguments.
+.El
+
+The default is as if the
+.Fl P
+option had been specified.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr cat 1 ,
+.Xr ln 1 ,
+.Xr mv 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

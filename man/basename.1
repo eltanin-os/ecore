@@ -1,0 +1,29 @@
+.Dd April 15, 2019
+.Dt BASENAME 1
+.Os
+.Sh NAME
+.Nm basename
+.Nd return non-directory portion of a pathname
+.Sh SYNOPSIS
+.Nm basename
+.Ar string
+.Op Ar suffix
+.Sh DESCRIPTION
+The
+.Nm
+utility strips any directory component and the
+.Ar suffix ,
+from
+.Ar string ,
+and writes the result to the standard output.
+A non-existent suffix is ignored.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr dirname 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

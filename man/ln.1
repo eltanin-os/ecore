@@ -1,0 +1,57 @@
+.Dd October 04, 2019
+.Dt LN 1
+.Os
+.Sh NAME
+.Nm ln
+.Nd link files
+.Sh SYNOPSIS
+.Nm
+.Op Fl f
+.Op Fl L | P | s
+.Ar source
+.Op Ar target
+.Nm
+.Op Fl f
+.Op Fl L | P | s
+.Ar source ...
+.Ar directory
+.Sh DESCRIPTION
+In the first synopsis,
+.Nm
+creates a hard link
+.Ar target
+to the
+.Ar source .
+If
+.Ar target
+is absent, then a hard link to
+.Ar source
+is created in the current directory.
+In the second synopsis form,
+.Nm
+creates a hard link for each
+.Ar source
+in
+.Ar directory .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl f
+Remove existing files.
+.It Fl L
+Dereference all symbolic links.
+.It Fl P
+Preserve symbolic links.
+.It Fl s
+Create symbolic links.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr cp 1 ,
+.Xr link 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

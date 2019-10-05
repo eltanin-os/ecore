@@ -35,7 +35,31 @@ BIN=\
 	src/yes
 
 # MAN
-MAN1=
+MAN1=\
+	man/basename.1\
+	man/cat.1\
+	man/chgrp.1\
+	man/chmod.1\
+	man/chown.1\
+	man/cksum.1\
+	man/cp.1\
+	man/dirname.1\
+	man/du.1\
+	man/echo.1\
+	man/env.1\
+	man/false.1\
+	man/head.1\
+	man/link.1\
+	man/ln.1\
+	man/mkdir.1\
+	man/mv.1\
+	man/pwd.1\
+	man/rm.1\
+	man/rmdir.1\
+	man/true.1\
+	man/uname.1\
+	man/unlink.1\
+	man/yes.1
 
 # LIB SRC
 LIBCOMMONSRC=\
@@ -84,11 +108,11 @@ install-man: all
 
 install: install-man all
 	install -dm 755 $(DESTDIR)/$(PREFIX)/bin
-	install -csm 755 $(BIN) $(DESTDIR)/$(PREFIX)/bin
+	install -cm 755 $(BIN) $(DESTDIR)/$(PREFIX)/bin
 
 clean:
 	rm -f $(BIN) $(OBJ) $(LIB)
 
 .PHONY:
-	all clean install
+	all clean install install-man
 

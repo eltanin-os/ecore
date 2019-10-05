@@ -1,0 +1,34 @@
+.Dd October 04, 2019
+.Dt CHMOD 1
+.Os
+.Sh NAME
+.Nm chmod
+.Nd change the file modes
+.Sh SYNOPSIS
+.Nm
+.Op Fl R
+.Ar mode
+.Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility modifies the file mode bits of each
+.Ar file
+as specified by the given
+.Ar mode .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl R
+Descend recursively through its directories arguments.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr chgrp 1 ,
+.Xr chown 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

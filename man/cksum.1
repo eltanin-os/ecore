@@ -1,0 +1,30 @@
+.Dd October 04, 2019
+.Dt CKSUM 1
+.Os
+.Sh NAME
+.Nm cksum
+.Nd write file checksums and sizes
+.Sh SYNOPSIS
+.Nm
+.Op Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility calculates the CRC of each
+.Ar file
+and writes it, the number of octets and the path to the standard output.
+If
+.Ar file
+is a single dash
+.Pq Sq \&-
+or absent,
+.Nm
+reads from the standard input.
+.Sh EXIT STATUS
+.Ex -std
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

@@ -1,0 +1,45 @@
+.Dd October 04, 2019
+.Dt MV 1
+.Os
+.Sh NAME
+.Nm mv
+.Nd move files
+.Sh SYNOPSIS
+.Nm
+.Op Fl fi
+.Ar source
+.Ar target
+.Nm
+.Op Fl fi
+.Ar source ...
+.Ar directory
+.Sh DESCRIPTION
+In the first synopsis form,
+.Nm
+moves the
+.Ar source
+to
+.Ar target .
+In the second synopsis form,
+.Nm
+moves each
+.Ar source
+to the destination
+.Ar directory .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl f
+Do not prompt before overwriting a file.
+.It Fl i
+Prompt before overwriting a file.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr cp 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.

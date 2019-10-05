@@ -1,0 +1,39 @@
+.Dd October 05, 2019
+.Dt RM 1
+.Os
+.Sh NAME
+.Nm rm
+.Nd remove directory entries
+.Sh SYNOPSIS
+.Nm
+.Op Fl ifRr
+.Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility removes each
+.Ar file .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl i
+Prompt before removing files.
+.It Fl f
+Do not prompt before removing files, and ignore non-existent files.
+.It Fl R
+Descend recursively through its directories arguments.
+.It Fl r
+Behave as though the
+.Fl R
+option were specified.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr rmdir 1
+.Xr unlink 1 ,
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
