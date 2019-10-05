@@ -6,7 +6,7 @@
 static void
 usage(void)
 {
-	c_ioq_fmt(ioq2, "usage: %s [-Rfi] file ...\n", c_std_getprogname());
+	c_ioq_fmt(ioq2, "usage: %s [-ifRr] file ...\n", c_std_getprogname());
 	c_std_exit(1);
 }
 
@@ -21,6 +21,7 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'R':
+	case 'r':
 		opts |= RM_RFLAG;
 		break;
 	case 'f':
