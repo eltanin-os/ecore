@@ -38,4 +38,6 @@ main(int argc, char **argv)
 
 	c_exc_run(*argv, argv);
 	c_err_die(126 + (errno == C_ENOENT), "c_exc_run %s", *argv);
+	/* NOT REACHED */
+	return 0;
 }

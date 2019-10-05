@@ -53,4 +53,6 @@ main(int argc, char **argv)
 		else if (c_sys_rmdir(*argv) < 0)
 			rv = c_err_warn("c_sys_rmdir %s", *argv);
 	}
+
+	return 0;
 }

@@ -30,5 +30,6 @@ main(int argc, char **argv)
 		c_sys_allrw(c_sys_write, C_FD1,
 		    c_arr_data(&arr), c_arr_bytes(&arr));
 
+	/* NOT REACHED */
 	return 1;
 }
