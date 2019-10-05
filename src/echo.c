@@ -7,14 +7,13 @@ main(int argc, char **argv)
 	int nflag;
 
 	c_std_setprogname(argv[0]);
-	argc--, argv++;
+	--argc, ++argv;
 
 	nflag = 0;
 
-	if (!c_str_cmp(*argv, C_USIZEMAX, "-n")) {
-		--argc;
-		++argv;
-		++nflag;
+	if (*argv && !c_str_cmp(*argv, C_USIZEMAX, "-n")) {
+		nflag = 1;
+		--argc, ++argv;
 	}
 
 	for (; *argv; --argc, ++argv) {
