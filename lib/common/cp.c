@@ -6,23 +6,48 @@
 static int
 regcopy(char *src, ctype_stat *stp, char *dest)
 {
+	ctype_stat st;
 	ctype_ioq ioq;
-	ctype_fd fd;
+	ctype_fd ifd, ofd;
+	int r;
 
-	if ((fd = c_sys_open(dest, C_OCREATE | C_OWRITE | C_OEXCL,
-	    stp->mode)) < 0)
-		return c_err_warn("c_sys_open %s", dest);
+	ifd = -1;
+	r = 0;
 
-	c_ioq_init(&ioq, fd, arr_zero, c_sys_write);
-
-	if (c_ioq_putfile(&ioq, src) < 0) {
-		c_sys_close(fd);
-		return c_err_warn("c_ioq_putfile %s %s", src, dest);
+	if ((ofd = c_sys_open(dest, C_OCREATE | C_OWRITE | C_OEXCL,
+	    stp->mode)) < 0) {
+		r = c_err_warn("c_sys_open %s", dest);
+		goto done;
 	}
 
-	c_sys_close(fd);
+	if ((ifd = c_sys_open(src, C_OREAD, 0)) < 0) {
+		r = c_err_warn("c_sys_open %s", src);
+		goto done;
+	}
 
-	return 0;
+	if (c_sys_fstat(&st, ifd) < 0) {
+		r = c_err_warn("c_sys_fstat %s", src);
+		goto done;
+	}
+
+	if (stp->dev == st.dev && stp->ino == st.ino) {
+		r = c_err_warnx("%s %s: same file", src, dest);
+		goto done;
+	}
+
+	c_ioq_init(&ioq, ofd, arr_zero, c_sys_write);
+
+	if (c_ioq_putfd(&ioq, ifd, st.size) < 0) {
+		r = c_err_warn("c_ioq_putfd %s %s", src, dest);
+		goto done;
+	}
+
+done:
+	if (ifd != -1)
+		c_sys_close(ifd);
+	if (ofd != -1)
+		c_sys_close(ofd);
+	return r;
 }
 
 static int
