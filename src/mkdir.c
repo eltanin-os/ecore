@@ -39,11 +39,13 @@ main(int argc, char **argv)
 	int pflag;
 	int rv;
 	uint dmode, mode;
+	uint mask;
 
 	c_std_setprogname(argv[0]);
 
-	mode = C_ACCESSPERMS & ~c_sys_umask(0);
-	dmode = mode | 0300;
+	mask = c_sys_umask(0);
+	mode = C_ACCESSPERMS & ~mask;
+	dmode = mode | C_IWUSR | C_IXUSR;
 	pflag = 0;
 
 	C_ARGBEGIN {
@@ -51,7 +53,7 @@ main(int argc, char **argv)
 		pflag = 1;
 		break;
 	case 'm':
-		mode = estrtovl(C_EARGF(usage()), 8, 0, 07777) | C_ACCESSPERMS;
+		mode = strtomode(C_EARGF(usage()), C_ACCESSPERMS, mask);
 		break;
 	default:
 		usage();

@@ -15,9 +15,9 @@ main(int argc, char **argv)
 {
 	ctype_dir dir;
 	ctype_dent *p;
-	int Rflag;
-	int rv;
-	uint mode;
+	int Rflag, rv;
+	uint mask;
+	char *m;
 
 	c_std_setprogname(argv[0]);
 
@@ -27,15 +27,23 @@ main(int argc, char **argv)
 	case 'R':
 		Rflag = 1;
 		break;
+	case 'X':
+	case 'r':
+	case 's':
+	case 't':
+	case 'x':
+	case 'w':
+		--argv[0];
+		goto done;
 	default:
 		usage();
 	} C_ARGEND
-
+done:
 	if (argc < 2)
 		usage();
 
-	/* TODO: parse mode */
-	mode = estrtovl(argv[0], 8, 0, 07777);
+	c_sys_umask(mask = c_sys_umask(0));
+	m = *argv;
 	--argc;
 	++argv;
 
@@ -64,7 +72,7 @@ main(int argc, char **argv)
 			continue;
 		}
 
-		if (c_sys_chmod(p->path, mode) < 0)
+		if (c_sys_chmod(p->path, strtomode(m, p->stp->mode, mask)) < 0)
 			rv = c_err_warn("c_sys_chmod %s", p->path);
 	}
 
