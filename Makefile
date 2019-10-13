@@ -25,6 +25,7 @@ BIN=\
 	src/link\
 	src/ln\
 	src/mkdir\
+	src/mktemp\
 	src/mv\
 	src/pwd\
 	src/rm\
@@ -52,6 +53,7 @@ MAN1=\
 	man/link.1\
 	man/ln.1\
 	man/mkdir.1\
+	man/mktemp.1\
 	man/mv.1\
 	man/pwd.1\
 	man/rm.1\

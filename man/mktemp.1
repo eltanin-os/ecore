@@ -1,0 +1,60 @@
+.Dd October 12, 2019
+.Dt MKTEMP 1
+.Os
+.Sh NAME
+.Nm mktemp
+.Nd make temporary file name
+.Sh SYNOPSIS
+.Nm
+.Op Fl dqtu
+.Op Fl p Ar directory
+.Op Ar template
+.Sh DESCRIPTION
+The
+.Nm
+utility creates a temporary file with a unique file name by overwriting
+the trailing
+.Ql X Ns s
+from
+.Ar template ,
+and writes the resulting file name to the standard output.
+If
+.Ar template
+is absent, it defaults to
+.Pa tmp.XXXXXXXXXX
+and the
+.Fl t
+option is implied.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl d
+Create a directory instead of a file.
+.It Fl p Ar directory
+Use the specified
+.Ar directory
+as a prefix when generating the temporary filename.
+The directory will be overridden by the user's
+.Ev TMPDIR
+environment variable if it is set. This option implies the
+.Fl t
+option.
+.It Fl q
+Supress error messages.
+.It Fl t
+Generate a path rooted in a temporary directory.
+.It Fl u
+Unlink file before exiting.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width TMPDIR
+.It Ev TMPDIR
+Directory in which to place the temporary file when
+.Fl t
+option is specified.
+.Ev
+.Sh EXIT STATUS
+.Ex -std
+.Sh CAVEATS
+Specifying the
+.Fl u
+option introduces a race condition.
