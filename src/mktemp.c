@@ -34,6 +34,7 @@ main(int argc, char **argv)
 
 	c_std_setprogname(argv[0]);
 
+	dir = nil;
 	opts = 0;
 
 	C_ARGBEGIN {

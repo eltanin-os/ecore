@@ -62,6 +62,8 @@ main(int argc, char **argv)
 	if (!argc)
 		usage();
 
+	rv = 0;
+
 	for (; *argv; --argc, ++argv) {
 		trim_trailing_slash(*argv);
 		if (pflag)

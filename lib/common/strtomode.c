@@ -55,6 +55,7 @@ op:
 		c_err_diex(1, "strtomode %c: %s", *s, serr(C_EINVAL));
 	}
 
+	op = 0;
 	perm = 0;
 copy:
 	switch (*s) {
