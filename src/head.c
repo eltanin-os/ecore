@@ -3,10 +3,8 @@
 
 #include "common.h"
 
-static int hn = 10;
-
 static int
-head(char *p)
+head(char *p, int hn)
 {
 	ctype_arr arr;
 	ctype_ioq ioq;
@@ -42,9 +40,10 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	int r;
+	int hn, r;
 
 	c_std_setprogname(argv[0]);
+	hn = 10;
 
 	C_ARGBEGIN {
 	case 'n':
@@ -56,23 +55,21 @@ main(int argc, char **argv)
 
 	switch (argc) {
 	case 0:
-		r = head("-");
+		r = head("-", hn);
 		break;
 	case 1:
-		r = head(*argv);
-		--argc;
-		++argv;
+		r = head(*argv, hn);
+		--argc, ++argv;
 		break;
 	default:
 		c_ioq_fmt(ioq1, "==> %s <==\n", *argv);
-		r = head(*argv);
-		--argc;
-		++argv;
+		r = head(*argv, hn);
+		--argc, ++argv;
 	}
 
 	for (; *argv; --argc, ++argv) {
 		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
-		r |= head(*argv);
+		r |= head(*argv, hn);
 	}
 
 	c_ioq_flush(ioq1);

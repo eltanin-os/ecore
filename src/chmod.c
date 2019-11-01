@@ -44,8 +44,7 @@ done:
 
 	c_sys_umask(mask = c_sys_umask(0));
 	m = *argv;
-	--argc;
-	++argv;
+	--argc, ++argv;
 
 	if (c_dir_open(&dir, argv, 0, nil) < 0)
 		c_err_die(1, "c_dir_open");

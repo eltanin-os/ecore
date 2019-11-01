@@ -25,7 +25,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 		goto done;
 	}
 
-	if (c_sys_fstat(&st, ifd) < 0) {
+	if (c_sys_fstat(&st, ofd) < 0) {
 		r = c_err_warn("c_sys_fstat %s", src);
 		goto done;
 	}
@@ -37,7 +37,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 
 	c_ioq_init(&ioq, ofd, arr_zero, c_sys_write);
 
-	if (c_ioq_putfd(&ioq, ifd, st.size) < 0) {
+	if (c_ioq_putfd(&ioq, ifd, stp->size) < 0) {
 		r = c_err_warn("c_ioq_putfd %s %s", src, dest);
 		goto done;
 	}
