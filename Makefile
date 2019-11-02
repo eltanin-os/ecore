@@ -94,7 +94,7 @@ $(OBJ): $(HDR) config.mk
 
 # SUFFIX RULES
 .o:
-	$(CC) $(LDFLAGS) -o $@ $< $(LIB) $(LDLIBS)
+	$(CC) $(LDFLAGS) -o $@ $< $(LIB) -ltertium
 
 .c.o:
 	$(CC) $(CFLAGS) $(CPPFLAGS) -I $(INC) -o $@ -c $<
@@ -105,17 +105,30 @@ $(LIBCOMMON): $(LIBCOMMONOBJ)
 	$(RANLIB) $@
 
 # RULES
-install-man: all
+ecore: build/ecore.sh $(LIB) $(SRC)
+	build/ecore.sh $(SRC)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -I $(INC) -o $@ tmpbuild/*.c $(LIB) -ltertium
+	rm -Rf tmpbuild
+
+install-man:
 	install -dm 755 $(DESTDIR)/$(MANDIR)/man1
 	install -cm 644 $(MAN1) $(DESTDIR)/$(MANDIR)/man1
 
 install: install-man all
-	install -dm 755 $(DESTDIR)/$(PREFIX)/bin
-	install -cm 755 $(BIN) $(DESTDIR)/$(PREFIX)/bin
+	install -dm 755 $(DESTDIR)/$(BINDIR)
+	install -cm 755 $(BIN) $(DESTDIR)/$(BINDIR)
+
+install-ecore: ecore install-man
+	install -dm 755 $(DESTDIR)/$(BINDIR)
+	install -cm 755 ecore $(DESTDIR)/$(BINDIR)
+	for f in $(BIN); do\
+		ln -s ecore $(DESTDIR)/$(BINDIR)/$$(basename $$f);\
+	done
 
 clean:
-	rm -f $(BIN) $(OBJ) $(LIB)
+	rm -Rf tmpbuild
+	rm -f ecore $(BIN) $(OBJ) $(LIB)
 
 .PHONY:
-	all clean install install-man
+	all ecore clean install install-ecore install-man
 
