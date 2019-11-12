@@ -6,7 +6,5 @@
 char *
 serr(int e)
 {
-	static char buf[C_ERRSIZ];
-
-	return c_sys_strerror(e, buf, sizeof(buf));
+	return c_std_strerror(e, gbuf, C_ERRSIZ);
 }

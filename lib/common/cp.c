@@ -56,8 +56,10 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 	size r;
 	char buf[C_PATHMAX];
 
-	if ((r = c_sys_readlink(buf, sizeof(buf), src)) < 0)
+	if ((r = c_sys_readlink(buf, sizeof(buf) - 1, src)) < 0)
 		return c_err_warn("readlink %s", src);
+
+	buf[r] = 0;
 
 	if ((size)stp->size < r)
 		return c_err_warnx("%s: not same file\n", src);
@@ -122,7 +124,6 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 		}
 
 		n = 0;
-
 		if ((opts & CP_TDIR)) {
 			n = c_arr_fmt(&d, "/%s",
 			    p->depth ? p->name : c_gen_basename(sdup(p->name)));

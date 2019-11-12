@@ -10,7 +10,6 @@ main(int argc, char **argv)
 	--argc, ++argv;
 
 	nflag = 0;
-
 	if (*argv && !c_str_cmp(*argv, C_USIZEMAX, "-n")) {
 		nflag = 1;
 		--argc, ++argv;

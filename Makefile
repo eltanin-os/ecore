@@ -72,6 +72,7 @@ LIBCOMMONSRC=\
 	lib/common/rm.c\
 	lib/common/sdup.c\
 	lib/common/serr.c\
+	lib/common/shared.c\
 	lib/common/strtomode.c\
 	lib/common/tmpargv.c
 
