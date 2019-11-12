@@ -19,25 +19,24 @@ strtomode(char *s, uint mode, uint mask)
 
 next:
 	who = 0;
-who:
-	switch (*s) {
-	case 'a':
-		who |= STANDARD_BITS;
+	for (; *s; ++s) {
+		switch (*s) {
+		case 'a':
+			who |= STANDARD_BITS;
+			continue;
+		case 'g':
+			who |= C_ISGID | C_IRWXG;
+			continue;
+		case 'o':
+			who |= C_IRWXO;
+			continue;
+		case 'u':
+			who |= C_ISUID | C_IRWXU;
+			continue;
+		}
 		break;
-	case 'g':
-		who |= C_ISGID | C_IRWXG;
-		break;
-	case 'o':
-		who |= C_IRWXO;
-		break;
-	case 'u':
-		who |= C_ISUID | C_IRWXU;
-	default:
-		goto op;
 	}
-	++s;
-	goto who;
-op:
+
 	if (who) {
 		clr = who;
 	} else {
@@ -55,7 +54,6 @@ op:
 		c_err_diex(1, "strtomode %c: %s", *s, serr(C_EINVAL));
 	}
 
-	op = 0;
 	perm = 0;
 copy:
 	switch (*s) {
