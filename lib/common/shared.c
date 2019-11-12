@@ -1,4 +1,5 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-char gbuf[C_PATHMAX];
+static char buf[C_PATHMAX];
+char *gbuf = buf;
