@@ -30,6 +30,7 @@ main(int argc, char **argv)
 	case 'L':
 		ropts &= ~C_FSPHY;
 		ropts |= C_FSLOG;
+		break;
 	case 'P':
 		ropts &= ~C_FSLOG;
 		ropts |= C_FSPHY;
@@ -57,9 +58,12 @@ main(int argc, char **argv)
 	dest = argv[argc];
 	argv[argc] = nil;
 
-	if (c_sys_stat(&st, dest) < 0 && errno != C_ENOENT)
-		c_err_die(1, "c_sys_stat %s", dest);
-	else if (C_ISDIR(st.mode))
+	if (c_sys_stat(&st, dest) < 0) {
+		if (errno != C_ENOENT)
+			c_err_die(1, "c_sys_stat %s", dest);
+		st.mode = 0;
+	}
+	if (C_ISDIR(st.mode))
 		opts |= CP_TDIR;
 	else if (argc > 1)
 		usage();
