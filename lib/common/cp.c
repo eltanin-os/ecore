@@ -35,7 +35,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 		goto done;
 	}
 
-	c_ioq_init(&ioq, ofd, arr_zero, c_sys_write);
+	c_ioq_init(&ioq, ofd, nil, 0, c_sys_write);
 
 	if (c_ioq_putfd(&ioq, ifd, stp->size) < 0) {
 		r = c_err_warn("c_ioq_putfd %s %s", src, dest);
@@ -117,6 +117,7 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 			c_arr_trunc(&d, c_arr_bytes(&d) - (p->nlen + 1),
 			    sizeof(uchar));
 			continue;
+		case C_FSDNR:
 		case C_FSERR:
 		case C_FSNS:
 			rv = c_err_warnx("%s: %s", p->path, serr(p->err));

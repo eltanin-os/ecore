@@ -6,7 +6,6 @@
 static int
 head(char *p, int hn)
 {
-	ctype_arr arr;
 	ctype_ioq ioq;
 	ctype_fd fd;
 	int i;
@@ -19,11 +18,10 @@ head(char *p, int hn)
 		return 1;
 	}
 
-	c_arr_init(&arr, buf, sizeof(buf));
-	c_ioq_init(&ioq, fd, &arr, c_sys_read);
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
 
 	for (i = 0; i < hn; ++i)
-		if (c_ioq_getln(&ioq, ioq1->mb) < 0)
+		if (c_ioq_getln(&ioq, c_ioq_arr(ioq1)) < 0)
 			break;
 
 	return 0;

@@ -19,7 +19,7 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'u':
-		ioq1->mb = arr_zero;
+		c_mem_set(c_ioq_arr(ioq1), sizeof(ctype_arr), 0);
 		break;
 	default:
 		usage();
