@@ -14,7 +14,7 @@ cat <<EOF > $tmpdir/ecore.c
 #include "names.h"
 #include "prototypes.h"
 
-#define STRCMP(a, b) c_mem_cmp((a), sizeof((a)) - 1, (b))
+#define STRCMP(a, b) c_str_cmp((a), sizeof((a)) - 1, (b))
 
 int
 main(int argc, char **argv) {
