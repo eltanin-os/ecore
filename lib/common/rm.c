@@ -36,7 +36,7 @@ remove(char **argv, uint opts)
 			break;
 		default:
 			if (c_sys_unlink(p->path) < 0 &&
-			    ((opts & RM_FFLAG) && errno != C_ENOENT))
+			    (!(opts & RM_FFLAG) || errno != C_ENOENT))
 				rv = c_err_warn("c_sys_unlink %s", p->path);
 		}
 	}
