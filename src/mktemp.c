@@ -96,33 +96,33 @@ main(int argc, char **argv)
 
 	if (!n)
 		DIEX("Invalid template");
+
 	++tmp;
 	++n;
-
-try:
-	c_rand_name(tmp, n);
-
-	if (opts & DFLAG) {
-		if (c_sys_mkdir(c_arr_data(&arr), 0600) < 0) {
-			if (errno != C_EEXIST)
-				DIE("c_sys_mkdir %s", c_arr_data(&arr));
-			goto try;
+	for (;;) {
+		c_rand_name(tmp, n);
+		if (opts & DFLAG) {
+			if (c_sys_mkdir(c_arr_data(&arr), 0700) < 0) {
+				if (errno != C_EEXIST)
+					DIE("c_sys_mkdir %s", c_arr_data(&arr));
+				continue;
+			}
+			if (opts & UFLAG)
+				c_sys_rmdir(c_arr_data(&arr));
+		} else {
+			if ((fd = c_sys_open(c_arr_data(&arr), C_OCREATE, 0600)) < 0) {
+				if (errno != C_EEXIST)
+					DIE("c_sys_open %s", c_arr_data(&arr));
+				continue;
+			}
+			c_sys_close(fd);
+			if (opts & UFLAG)
+				c_sys_unlink(c_arr_data(&arr));
 		}
-		if (opts & UFLAG)
-			c_sys_rmdir(c_arr_data(&arr));
-	} else {
-		if ((fd = c_sys_open(c_arr_data(&arr), C_OCREATE, 0600)) < 0) {
-			if (errno != C_EEXIST)
-				DIE("c_sys_open %s", c_arr_data(&arr));
-			goto try;
-		}
-		c_sys_close(fd);
-		if (opts & UFLAG)
-			c_sys_unlink(c_arr_data(&arr));
+		break;
 	}
 
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));
 	c_ioq_flush(ioq1);
-
 	return 0;
 }
