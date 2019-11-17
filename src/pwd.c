@@ -62,11 +62,17 @@ main(int argc, char **argv)
 	if (argc)
 		usage();
 
-	if (!(s = mode ? getpwd() : c_sys_getcwd(buf, sizeof(buf))))
-		c_err_die(1, "c_sys_getcwd");
+	switch (mode) {
+	case 1:
+		if ((s = getpwd()))
+			break;
+		/* FALLTHROUGH */
+	case 0:
+		if (!(s = c_sys_getcwd(buf, sizeof(buf))))
+			c_err_die(1, "c_sys_getcwd");
+	}
 
 	c_ioq_fmt(ioq1, "%s\n", s);
 	c_ioq_flush(ioq1);
-
 	return 0;
 }
