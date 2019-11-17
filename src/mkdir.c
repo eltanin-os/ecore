@@ -9,6 +9,8 @@ mkpath(char *dir, uint mode, uint dmode)
 	char *s;
 
 	s = dir;
+	if (*s == '/')
+		++s;
 
 	for (;;) {
 		if (!(s = c_str_chr(s, C_USIZEMAX, '/')))
