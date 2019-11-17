@@ -4,11 +4,8 @@
 #include "common.h"
 
 char *
-sdup(char *s)
+sndup(char *s, usize n)
 {
-	usize n;
-
-	n = c_str_len(s, sizeof(gbuf));
 	c_mem_cpy(gbuf, n, s);
 	gbuf[n] = 0;
 	return gbuf;

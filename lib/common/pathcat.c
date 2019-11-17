@@ -8,11 +8,10 @@ pathcat(char *f1, char *f2, int cat)
 {
 	ctype_arr arr;
 	ctype_stat st;
-	usize r;
-	char *sep;
 
-	c_arr_init(&arr, gbuf, sizeof(gbuf));
-	r = c_arr_fmt(&arr, "%s", f2);
+	c_arr_init(&arr, gbuf, GBUFSIZ);
+	trim_trailing_slash(f2);
+	c_arr_fmt(&arr, "%s", f2);
 
 	if (!cat) {
 		if (c_sys_stat(&st, f2) < 0)
@@ -21,8 +20,6 @@ pathcat(char *f1, char *f2, int cat)
 			return gbuf;
 	}
 
-	sep = gbuf[r - 1] == '/' ? "" : "/";
-	c_arr_fmt(&arr, "%s%s", sep, c_gen_basename(sdup(f1)));
-
-	return gbuf;
+	c_arr_fmt(&arr, "/%s", c_gen_basename(f1));
+	return c_arr_data(&arr);
 }

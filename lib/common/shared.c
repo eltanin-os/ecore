@@ -1,5 +1,7 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-static char buf[C_PATHMAX];
+#include "common.h"
+
+static char buf[GBUFSIZ];
 char *gbuf = buf;
