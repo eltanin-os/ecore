@@ -18,7 +18,7 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'i':
-		environ = nil;
+		*environ = nil;
 		break;
 	default:
 		usage();
