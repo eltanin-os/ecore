@@ -14,7 +14,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 	ifd = -1;
 	r = 0;
 
-	if ((ofd = c_sys_open(dest, C_OCREATE | C_OWRITE | C_OEXCL,
+	if ((ofd = c_sys_open(dest, C_OCREATE | C_OWRITE | C_OTRUNC,
 	    stp->mode)) < 0) {
 		r = c_err_warn("c_sys_open %s", dest);
 		goto done;
