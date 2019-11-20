@@ -13,6 +13,12 @@ enum {
 #define GBUFSIZ C_PATHMAX
 #define sdup(a) sndup((a), c_str_len((a), GBUFSIZ))
 
+#define edyncat(a, b, c, d) \
+if (c_dyn_cat((a), (b), (c), (d)) < 0) c_err_die(1, "c_dyn_cat");
+
+#define edynfmt(a, b, ...) \
+if (c_dyn_fmt((a), (b), __VA_ARGS__) < 0) c_err_die(1, "c_dyn_fmt");
+
 ctype_status copy(char **, char *, uint, uint);
 vlong estrtovl(char *, int, vlong, vlong);
 char *pathcat(char *, char *, int);

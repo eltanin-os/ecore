@@ -15,6 +15,7 @@ BIN=\
 	src/chmod\
 	src/chown\
 	src/cksum\
+	src/cmp\
 	src/cp\
 	src/dirname\
 	src/du\
@@ -27,12 +28,14 @@ BIN=\
 	src/mkdir\
 	src/mktemp\
 	src/mv\
+	src/printf\
 	src/pwd\
 	src/rm\
 	src/rmdir\
 	src/true\
 	src/uname\
 	src/unlink\
+	src/wc\
 	src/yes
 
 # MAN
