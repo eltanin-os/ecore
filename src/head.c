@@ -8,6 +8,7 @@ head(char *p, int hn)
 {
 	ctype_ioq ioq;
 	ctype_fd fd;
+	size r;
 	int i;
 	char buf[C_BIOSIZ];
 
@@ -19,10 +20,16 @@ head(char *p, int hn)
 	}
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
-
-	for (i = 0; i < hn; ++i)
-		if (c_ioq_getln(&ioq, c_ioq_arr(ioq1)) < 0)
+	for (i = 0; i < hn; ++i) {
+		if ((r = c_ioq_getln(&ioq, c_ioq_arr(ioq1))) < 0) {
+			if (errno != C_ENOMEM)
+				c_err_die(1, "c_ioq_getln %s", p);
+			c_ioq_flush(ioq1);
+			continue;
+		}
+		if (!r)
 			break;
+	}
 
 	return 0;
 }
