@@ -33,6 +33,7 @@ BIN=\
 	src/rm\
 	src/rmdir\
 	src/true\
+	src/tail\
 	src/uname\
 	src/unlink\
 	src/wc\
