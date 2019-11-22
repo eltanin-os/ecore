@@ -27,19 +27,20 @@ int
 main(int argc, char **argv)
 {
 	ctype_arr arr;
-	int fd;
-	uint n, opts;
+	ctype_fd fd;
+	uint dflag, opts;
 	char *dir, *template, *tmp;
 	char buf[C_PATHMAX];
 
 	c_std_setprogname(argv[0]);
 
 	dir = nil;
+	dflag = 0;
 	opts = 0;
 
 	C_ARGBEGIN {
 	case 'd':
-		opts |= DFLAG;
+		dflag |= C_ODIRECTORY;
 		break;
 	case 'p':
 		opts |= TFLAG;
@@ -91,36 +92,11 @@ main(int argc, char **argv)
 	if (c_arr_fmt(&arr, "%s", template) < 0)
 		DIE("c_arr_fmt");
 
-	tmp = buf + c_arr_bytes(&arr) - 1;
-	for (n = 0; *tmp == 'X'; --tmp, ++n) ;
+	if ((fd = c_std_mktemp(c_arr_data(&arr), c_arr_bytes(&arr),
+	    (opts & UFLAG), dflag)) < 0)
+		DIE("c_std_mktemp %s", tmp);
 
-	if (!n)
-		DIEX("Invalid template");
-
-	++tmp;
-	++n;
-	for (;;) {
-		c_rand_name(tmp, n);
-		if (opts & DFLAG) {
-			if (c_sys_mkdir(c_arr_data(&arr), 0700) < 0) {
-				if (errno != C_EEXIST)
-					DIE("c_sys_mkdir %s", c_arr_data(&arr));
-				continue;
-			}
-			if (opts & UFLAG)
-				c_sys_rmdir(c_arr_data(&arr));
-		} else {
-			if ((fd = c_sys_open(c_arr_data(&arr), C_OCREATE, 0600)) < 0) {
-				if (errno != C_EEXIST)
-					DIE("c_sys_open %s", c_arr_data(&arr));
-				continue;
-			}
-			c_sys_close(fd);
-			if (opts & UFLAG)
-				c_sys_unlink(c_arr_data(&arr));
-		}
-		break;
-	}
+	c_sys_close(fd);
 
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));
 	c_ioq_flush(ioq1);
