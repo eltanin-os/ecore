@@ -27,10 +27,9 @@ display(char *fname, usize nc, usize nl, usize nw, uint opts)
 }
 
 static int
-wc(struct total *t, char *fname, uint opts)
+wc(struct total *t, ctype_fd fd, char *fname, uint opts)
 {
 	ctype_rune rune;
-	ctype_fd fd;
 	ctype_ioq ioq;
 	size r;
 	usize nc, nl, nw;
@@ -38,16 +37,7 @@ wc(struct total *t, char *fname, uint opts)
 	char buf[C_BIOSIZ];
 	char *p;
 
-	if (C_ISDASH(fname)) {
-		fd = C_FD0;
-		fname = "<stdin>";
-	} else if ((fd = c_sys_open(fname, C_OREAD, 0)) < 0) {
-		c_err_warn("c_sys_open %s", fname);
-		return 1;
-	}
-
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
-
 	nc = nl = nw = 0;
 	for (;;) {
 		if ((r = c_ioq_feed(&ioq)) < 0)
@@ -95,6 +85,7 @@ main(int argc, char **argv)
 {
 	struct total total;
 	struct total *p;
+	ctype_fd fd;
 	int rv;
 	uint opts;
 
@@ -125,14 +116,22 @@ main(int argc, char **argv)
 		opts = CFLAG|LFLAG|WFLAG;
 
 	if (!argc)
-		c_std_exit(wc(nil, "-", opts));
+		c_std_exit(wc(nil, C_FD0, "", opts));
 
 	rv = 0;
 	c_mem_set(&total, sizeof(total), 0);
 
 	p = argc > 1 ? &total : nil;
-	for (; *argv; --argc, ++argv)
-		rv |= wc(p, *argv, opts);
+	for (; *argv; --argc, ++argv) {
+		if (C_ISDASH(*argv)) {
+			fd = C_FD0;
+			*argv = "<stdin>";
+		} else if ((fd = c_sys_open(*argv, C_OREAD, 0)) < 0) {
+			rv = c_err_warn("c_sys_open %s", *argv);
+			continue;
+		}
+		rv |= wc(p, fd, *argv, opts);
+	}
 
 	if (p)
 		display("total", p->nc, p->nl, p->nw, opts);
