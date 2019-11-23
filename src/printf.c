@@ -3,31 +3,43 @@
 
 #include "common.h"
 
-static uchar
-unescape(char *s)
+#define IS_ODIGIT(x) ((x) >= '0' && (x) <= '7')
+
+#define NUMCAT(a, b, c) \
+{ if ((r = numcat((a), (b), (c))) < 0) --argc, ++argv, ++s; else s += r; }
+
+static void
+unescape(char **s)
 {
-	switch (*s) {
-	case '\'':
-		return '\'';
-	case '\\':
-		return '\\';
-	case 'a':
-		return '\a';
-	case 'b':
-		return '\b';
-	case 'f':
-		return '\f';
-	case 'n':
-		return '\n';
-	case 'r':
-		return '\r';
-	case 't':
-		return '\t';
-	case 'v':
-		return '\v';
+	int ch, i;
+	char tab[] = "\\\t \v \a\b   \f     \' \n   \r";
+
+	++*s;
+	if (IS_ODIGIT(*s[0])) {
+		for (ch = i = 0; i < 4 && IS_ODIGIT(*s[0]); ++i) {
+			ch = ch << 3 | (*s[0] - '0');
+			++*s;
+		}
+		--*s;
+		c_ioq_nput(ioq1, (char *)&ch, 1);
+		return;
 	}
 
-	return 0;
+	if (*s[0] == 'c')
+		c_std_exit(0);
+
+	switch (*s[0]) {
+	case 'a':
+	case 'b':
+	case 't':
+	case 'n':
+	case 'v':
+	case 'f':
+	case 'r':
+	case '\'':
+	case '\\':
+		c_ioq_nput(ioq1, tab + (*s[0] % (sizeof(tab) - 1)), 1);
+	}
 }
 
 static vlong
@@ -51,28 +63,34 @@ stovl(char *s)
 static int
 numcat(ctype_arr *fmt, char *s, char *argv)
 {
-	if (*s == '*') {
+	char *p;
+
+	p = s;
+	if (*p == '*') {
 		edynfmt(fmt, "%d", stovl(argv));
-		return 1;
+		return -1;
 	} else {
-		for (; c_str_chr("0123456789", 10, *s); ++s)
-			edyncat(fmt, s, 1, sizeof(uchar));
+		for (; c_str_chr("0123456789", 10, *p); ++p)
+			edyncat(fmt, p, 1, sizeof(uchar));
 	}
-	return 0;
+	return p - s;
 }
 
 static int
 printfmt(char *s, int argc, char **argv)
 {
 	ctype_arr fmt;
+	int ac, r;
 	uchar ch;
 
+	ac = argc;
 	c_mem_set(&fmt, sizeof(fmt), 0);
 	for (; *s; ++s) {
 		ch = *s;
-		if (ch == '\\')
-			ch = unescape(++s);
-		if (ch != '%') {
+		if (ch == '\\') {
+			unescape(&s);
+			continue;
+		} else if (ch != '%') {
 			c_ioq_nput(ioq1, (char *)&ch, 1);
 			continue;
 		}
@@ -81,14 +99,12 @@ printfmt(char *s, int argc, char **argv)
 		edyncat(&fmt, "%", 1, sizeof(uchar));
 		for (; c_str_chr("#-+", 3, *s); ++s)
 			edyncat(&fmt, s, 1, sizeof(uchar));
-		if (numcat(&fmt, s, *argv))
-			--argc, ++argv;
+		NUMCAT(&fmt, s, *argv);
 		if (*s == '.') {
 			edyncat(&fmt, s, 1, sizeof(uchar));
 			++s;
 		}
-		if (numcat(&fmt, s, *argv))
-			--argc, ++argv;
+		NUMCAT(&fmt, s, *argv);
 		switch ((ch = *s)) {
 		case 'u':
 			edyncat(&fmt, "u", 1, sizeof(uchar));
@@ -121,7 +137,7 @@ printfmt(char *s, int argc, char **argv)
 		}
 	}
 
-	return argc;
+	return ac - argc;
 }
 static void
 usage(void)
@@ -145,23 +161,12 @@ main(int argc, char **argv)
 	fmt = *argv;
 	--argc, ++argv;
 
-	if (!argc) {
-		for (; *fmt; ++fmt) {
-			char ch = *fmt;
-			if (ch == '\\')
-				ch = unescape(++fmt);
-			c_ioq_nput(ioq1, &ch, 1);
-		}
-		c_std_exit(0);
-	}
-
-	for (;;) {
+	do {
 		if (!(r = printfmt(fmt, argc, argv)))
 			break;
-		r = argc - r;
 		argv += r;
 		argc -= r;
-	}
+	} while(argc);
 
 	c_ioq_flush(ioq1);
 	return 0;
