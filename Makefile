@@ -47,6 +47,7 @@ MAN1=\
 	man/chmod.1\
 	man/chown.1\
 	man/cksum.1\
+	man/cmp.1\
 	man/cp.1\
 	man/dirname.1\
 	man/du.1\
