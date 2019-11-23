@@ -1,0 +1,102 @@
+.Dd November 23, 2019
+.Dt PRINTF 1
+.Os
+.Sh NAME
+.Nm printf
+.Nd write formatted output
+.Sh SYNOPSIS
+.Nm
+.Ar format
+.Op Ar argument ...
+.Sh DESCRIPTION
+The
+.Nm
+utility formats and writes its arguments, under control of the
+.Ar format ,
+to the standard output. The
+.Ar format
+is a string composed of plain characters, character escape sequences, and
+conversion specifiers.
+.Ss Character escape sequences
+The following character escape sequences, which are in backslash notation,
+are supported:
+.Bl -tag -width Ds -offset indent -compact
+.It Cm \ea
+A
+.Aq bell
+character.
+.It Cm \eb
+A
+.Aq backspace
+character.
+.It Cm \ef
+A
+.Aq form-feed
+character.
+.It Cm \en
+A
+.Aq new-line
+character.
+.It Cm \er
+A
+.Aq carriage return
+character.
+.It Cm \et
+A
+.Aq tabulation
+character.
+.It Cm \ev
+A
+.Aq vertical tabulation
+character.
+.It Cm \e\e
+A backslash character.
+.It Cm \e Ns Ar num
+A 8-bit character represented by a octal number.
+.El
+.Ss Conversion Specifiers
+The following conversion specifiers are supported:
+.Bl -tag -width Ds -offset indent -compact
+.It Cm \&%di
+Signed decimal.
+.It Cm \&%c
+Single character.
+.It Cm \&%o
+Unsigned octal.
+.It Cm \&%s
+Nil-terminated string.
+.It Cm \&%u
+Unsigned decimal.
+.It Cm \&%Xx
+Unsigned hexadecimal.
+.It Cm \&%\&%
+The percent
+.Pq Sq \&%
+character.
+.El
+.Pp
+Along with the following flags:
+.Bl -tag -width Ds -offset indent -compact
+.It Cm #
+The argument is converted to an alternative form.
+.It Cm -
+The argument is left-justified within the field.
+.It Cm +
+The argument is preceded by a sign.
+.It Sq \&\ \&
+The argument, when it is a positive number, is preceded by a blank character.
+.It Cm \&0
+The argument will be zero-padded instead of blank-padded.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr echo 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification except from the
+.Dq Cm \&%b
+conversion specifier.

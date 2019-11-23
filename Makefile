@@ -60,6 +60,7 @@ MAN1=\
 	man/mkdir.1\
 	man/mktemp.1\
 	man/mv.1\
+	man/printf.1\
 	man/pwd.1\
 	man/rm.1\
 	man/rmdir.1\
