@@ -45,12 +45,13 @@ unescape(char **s)
 static vlong
 stovl(char *s)
 {
+	ctype_rune r;
 	vlong x;
 	int e;
 
 	if (*s == '\'' || *s == '"') {
-		c_utf8_chartorune((ctype_rune *)&x, s + 1);
-		return x;
+		c_utf8_chartorune(&r, s + 1);
+		return (vlong)r;
 	}
 
 	x = c_std_strtovl(s, 0, C_VLONGMIN, C_VLONGMAX, nil, &e);
