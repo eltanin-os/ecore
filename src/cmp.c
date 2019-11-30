@@ -7,17 +7,18 @@ enum {
 };
 
 static int
-egetall(ctype_ioq *p, char *s, uint opts, char *b, usize n)
+getbyte(ctype_ioq *p, char *s, uint opts)
 {
 	int r;
+	char ch;
 
-	if ((r = c_ioq_getall(p, b, n)) < 0) {
+	if ((r = c_ioq_get(p, &ch, 1)) < 0) {
 		if (!(opts & SFLAG))
 			c_err_warn("c_ioq_getall %s", s);
 		c_std_exit(2);
 	}
 
-	return r;
+	return r ? ch : -1;
 }
 
 static void
@@ -33,10 +34,10 @@ main(int argc, char **argv)
 	ctype_ioq iqs[2];
 	ctype_fd fds[2];
 	usize line, bno;
+	int ch[2];
 	int i, rval;
 	uint opts;
 	char bufs[C_BIOSIZ][2];
-	char ch[2];
 
 	c_std_setprogname(argv[0]);
 
@@ -71,18 +72,21 @@ main(int argc, char **argv)
 		    sizeof(bufs[i]), &c_sys_read);
 	}
 
-	i = rval = 0;
+	rval = 0;
 	bno = line = 1;
 	for (;;) {
-		if (!egetall(&iqs[0], argv[0], opts, &ch[0], 1))
-			i += 1;
-		if (!egetall(&iqs[1], argv[1], opts, &ch[1], 1))
-			i += 2;
-		if (i)
-			break;
+		ch[0] = getbyte(&iqs[0], argv[0], opts);
+		ch[1] = getbyte(&iqs[1], argv[1], opts);
 		if (ch[0] == ch[1]) {
+			if (ch[0] < 0)
+				break;
 			if (ch[0] == '\n')
 				++line;
+		} else if (ch[0] < 0 || ch[1] < 0) {
+			if (!(opts & SFLAG))
+				c_err_warnx("EOF on %s", argv[ch[1] < 0]);
+			rval = 1;
+			break;
 		} else if (!(opts & LFLAG)) {
 			if (!(opts & SFLAG))
 				c_ioq_fmt(ioq1,
@@ -95,17 +99,6 @@ main(int argc, char **argv)
 			rval = 1;
 		}
 		++bno;
-	}
-
-	if (!(opts & SFLAG)) {
-		switch (i) {
-		case 1:
-			rval = c_err_warnx("EOF on %s", argv[0]);
-			break;
-		case 2:
-		case 3:
-			rval = c_err_warnx("EOF on %s", argv[1]);
-		}
 	}
 
 	c_ioq_flush(ioq1);
