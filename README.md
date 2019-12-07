@@ -10,6 +10,7 @@ secure, small and fast.
 * chmod
 * chown
 * cksum
+* cmp
 * cp
 * dirname
 * du
@@ -21,12 +22,15 @@ secure, small and fast.
 * ln
 * mkdir
 * mv
+* printf
 * pwd
 * rm
 * rmdir
+* tail
 * true
 * uname
 * unlink
+* wc
 * yes
 
 #### Build
