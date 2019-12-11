@@ -39,7 +39,7 @@ for f in $@; do
 EOF
 	echo "\"$p \"\\" >> $tmpdir/names.h
 done
-echo '"\n";' >> $tmpdir/names.h
+printf '"\\n";\n' >> $tmpdir/names.h
 cat <<EOF >> $tmpdir/ecore.c
 	else {
 		c_ioq_put(ioq1, names);
