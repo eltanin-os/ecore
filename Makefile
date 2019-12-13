@@ -67,6 +67,7 @@ MAN1=\
 	man/true.1\
 	man/uname.1\
 	man/unlink.1\
+	man/wc.1\
 	man/yes.1
 
 # LIB SRC

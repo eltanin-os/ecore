@@ -1,0 +1,39 @@
+.Dd December 13, 2019
+.Dt WC 1
+.Os
+.Sh NAME
+.Nm wc
+.Nd word, line, and byte or character count
+.Sh SYNOPSIS
+.Nm wc
+.Op Fl c | m
+.Op Fl lw
+.Op Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility writes, for each
+.Ar file ,
+the number of lines, words, and bytes that it contains
+to the standard output.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl c
+Print the number of bytes.
+.It Fl l
+Print the number of lines.
+.It Fl m
+Print the number of characters.
+.It Fl w
+Print the number of words.
+.El
+.Pp
+When an option is specified only the requested information is reported.
+.Sh EXIT STATUS
+.Ex -std
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2008
+specification.
