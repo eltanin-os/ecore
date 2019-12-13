@@ -12,6 +12,7 @@ secure, small and fast.
 * cksum
 * cmp
 * cp
+* digest
 * dirname
 * du
 * echo

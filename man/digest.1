@@ -1,0 +1,52 @@
+.Dd December 13, 2019
+.Dt DIGEST 1
+.Os
+.Sh NAME
+.Nm digest
+.Nd calculate a message-digest fingerprint
+.Sh SYNOPSIS
+.Nm
+.Op Fl c
+.Op Fl a Ar algorithm
+.Op Ar file ...
+.Sh DESCRIPTION
+In the first synopsis form,
+.Nm
+writes, for each
+.Ar file ,
+the used algorithm, the calculated sum, and the filename
+to the standard output.
+In the second synopsis form,
+.Nm
+reads each
+.Ar file ,
+and compare the sum of the listed files with the real files,
+reporting any mismatch.
+.Pp
+If
+.Ar file
+is a single dash
+.Pq Sq \&-
+or absent,
+.Nm
+reads from the standard input.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl a Ar algorithm
+Set the digest algorithm. Supported algorithms include
+md5, sha1, sha256, sha512, and whirlpool. The algorithm must be given all
+in upper case.
+.It Fl c
+Set the operation to check.
+.El
+.Pp
+The default is as if the
+.Fl a Ar WHIRLPOOL
+option had been specified.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr cksum 1
+.Sh CAVEATS
+The algorithms md5 and sha1 are not considered safe anymore,
+and should be avoided where security matters.

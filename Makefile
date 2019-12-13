@@ -17,6 +17,7 @@ BIN=\
 	src/cksum\
 	src/cmp\
 	src/cp\
+	src/digest\
 	src/dirname\
 	src/du\
 	src/echo\
@@ -49,6 +50,7 @@ MAN1=\
 	man/cksum.1\
 	man/cmp.1\
 	man/cp.1\
+	man/digest.1\
 	man/dirname.1\
 	man/du.1\
 	man/echo.1\
