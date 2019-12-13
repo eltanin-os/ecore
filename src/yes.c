@@ -24,7 +24,7 @@ main(int argc, char **argv)
 	} C_ARGEND
 
 	s = argc ? *argv : "y";
-	c_ioq_setnoflush(ioq1);
+	c_ioq_set(ioq1, C_IOQ_ONOFLUSH);
 	while (c_ioq_fmt(ioq1, "%s\n", s) > 0) ;
 
 	p = c_ioq_arr(ioq1);

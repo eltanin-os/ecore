@@ -15,6 +15,7 @@ main(int argc, char **argv)
 {
 	ctype_hst hs;
 	int rv;
+	char buf[C_H32GEN_DIGEST];
 
 	c_std_setprogname(argv[0]);
 
@@ -33,10 +34,11 @@ main(int argc, char **argv)
 			*argv = "<stdin>";
 		if (c_hsh_putfile(&hs, c_hsh_crc32p, *argv) < 0)
 			rv = c_err_warn("c_hsh_putfile %s", *argv);
-		c_ioq_fmt(ioq1, "%d %d %s\n", c_hsh_state0(&hs), hs.len, *argv);
+		c_hsh_digest(&hs, c_hsh_crc32p, buf);
+		c_ioq_fmt(ioq1, "%d %d %s\n",
+		    *(u32int *)(uintptr)buf, c_hsh_len(&hs), *argv);
 	}
 
 	c_ioq_flush(ioq1);
-
 	return rv;
 }
