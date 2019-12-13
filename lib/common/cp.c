@@ -127,7 +127,7 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 		n = 0;
 		if ((opts & CP_TDIR)) {
 			n = c_arr_fmt(&d, "/%s",
-			    p->depth ? p->name : c_gen_basename(sdup(p->name)));
+			    p->depth ? p->name : c_gen_basename(p->name));
 		} else if (p->depth) {
 			n = c_arr_fmt(&d, "/%s", p->name);
 		}

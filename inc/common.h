@@ -11,7 +11,7 @@ enum {
 };
 
 #define GBUFSIZ C_PATHMAX
-#define sdup(a) sndup((a), c_str_len((a), GBUFSIZ))
+#define CSTRCMP(a, b) c_mem_cmp((a), sizeof((a)), (b))
 
 #define edyncat(a, b, c, d) \
 if (c_dyn_cat((a), (b), (c), (d)) < 0) c_err_die(1, "c_dyn_cat");
@@ -23,7 +23,6 @@ ctype_status copy(char **, char *, uint, uint);
 vlong estrtovl(char *, int, vlong, vlong);
 char *pathcat(char *, char *, int);
 ctype_status remove(char **, uint);
-char *sndup(char *, usize);
 char *serr(int);
 uint strtomode(char *, uint, uint);
 char **tmpargv(char *);

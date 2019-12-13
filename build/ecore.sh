@@ -14,12 +14,10 @@ cat <<EOF > $tmpdir/ecore.c
 #include "names.h"
 #include "prototypes.h"
 
-#define STRCMP(a, b) c_str_cmp((a), sizeof((a)) - 1, (b))
-
 int
 main(int argc, char **argv) {
-	char *s = c_gen_basename(sdup(*argv));
-	if (!STRCMP("ecore", s)) {
+	char *s = c_gen_basename(*argv);
+	if (!CSTRCMP("ecore", s)) {
 		--argc, ++argv;
 		if (argc) s = *argv;
 	}
@@ -33,7 +31,7 @@ for f in $@; do
 	sed "s/\(^main(.*)\)/${p}_\1/" < $f > $tmpdir/$p.c
 	echo "int ${p}_main(int, char **);" >> $tmpdir/prototypes.h
 	cat <<EOF >>$tmpdir/ecore.c
-	else if (!STRCMP("$p", s)) {
+	else if (!CSTRCMP("$p", s)) {
 		return ${p}_main(argc, argv);
 	}
 EOF
