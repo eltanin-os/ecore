@@ -4,6 +4,25 @@
 #include "common.h"
 
 static int
+mkdir(char *s, uint mode)
+{
+	ctype_stat st;
+
+	if (c_sys_mkdir(s, mode) < 0) {
+		if (errno == C_EEXIST) {
+			if ((c_sys_stat(&st, s) < 0) || C_ISDIR(st.mode)) {
+				errno = C_ENOTDIR;
+				return -1;
+			}
+		} else {
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+static int
 mkpath(char *dir, uint mode, uint dmode)
 {
 	char *s;
@@ -16,13 +35,13 @@ mkpath(char *dir, uint mode, uint dmode)
 		if (!(s = c_str_chr(s, C_USIZEMAX, '/')))
 			break;
 		*s = 0;
-		if (c_sys_mkdir(dir, dmode) < 0 && errno != C_EEXIST)
-			return c_err_warn("c_sys_mkdir %s", dir);
+		if (mkdir(dir, dmode) < 0)
+			return c_err_warn("mkdir %s", dir);
 		*s++ = '/';
 	}
 
-	if (c_sys_mkdir(dir, mode) < 0 && errno != C_EEXIST)
-		return c_err_warn("c_sys_mkdir %s", dir);
+	if (mkdir(dir, mode) < 0)
+		return c_err_warn("mkdir %s", dir);
 
 	return 0;
 }
