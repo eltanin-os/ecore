@@ -4,7 +4,7 @@
 #include "common.h"
 
 static int
-mkdir(char *s, uint mode)
+makedir(char *s, uint mode)
 {
 	ctype_stat st;
 
@@ -35,13 +35,13 @@ mkpath(char *dir, uint mode, uint dmode)
 		if (!(s = c_str_chr(s, C_USIZEMAX, '/')))
 			break;
 		*s = 0;
-		if (mkdir(dir, dmode) < 0)
-			return c_err_warn("mkdir %s", dir);
+		if (makedir(dir, dmode) < 0)
+			return c_err_warn("makedir %s", dir);
 		*s++ = '/';
 	}
 
-	if (mkdir(dir, mode) < 0)
-		return c_err_warn("mkdir %s", dir);
+	if (makedir(dir, mode) < 0)
+		return c_err_warn("makedir %s", dir);
 
 	return 0;
 }
