@@ -21,7 +21,7 @@ tailbytes(ctype_fd fd, char *fname, usize cnt)
 		c_err_die(1, "c_sys_fstat %s", fname);
 
 	siz = st.size - cnt;
-	if (c_sys_seek(fd, siz, SEEK_SET) < 0)
+	if (c_sys_seek(fd, siz, C_SEEKSET) < 0)
 		c_err_die(1, "c_sys_seek %s", fname);
 
 	if (c_ioq_putfd(ioq1, fd, 0) < 0)
@@ -66,7 +66,7 @@ tail(ctype_fd fd, char *fname, usize cnt)
 	}
 
 	p = c_arr_get(&arr, nl, sizeof(*p));
-	if (c_sys_seek(fd, *p, SEEK_SET) < 0)
+	if (c_sys_seek(fd, *p, C_SEEKSET) < 0)
 		c_err_die(1, "c_sys_seek %s", fname);
 
 	if (c_ioq_putfd(ioq1, fd, 0) < 0)
@@ -80,6 +80,7 @@ main(int argc, char **argv)
 	int fflag;
 	usize cnt;
 	void (*tailfn)(ctype_fd, char *, usize);
+	char tmp[18];
 
 	c_std_setprogname(argv[0]);
 
@@ -104,8 +105,12 @@ main(int argc, char **argv)
 	} C_ARGEND
 
 	if (!argc || C_ISDASH(*argv)) {
-		fd = C_FD0;
 		*argv = "<stdin>";
+		c_mem_cpy(tmp, sizeof(tmp), "/tmp/.tmp.XXXXXXXX");
+		if ((fd = c_std_mktemp(tmp, sizeof(tmp), 1, 0)) < 0)
+			c_err_die(1, "c_std_mktemp");
+		c_std_fdcat(fd, C_FD0);
+		c_sys_seek(fd, 0, C_SEEKSET);
 	} else if ((fd = c_sys_open(*argv, C_OREAD, 0)) < 0) {
 		c_err_die(1, "c_sys_open %s", *argv);
 	}
@@ -115,10 +120,9 @@ main(int argc, char **argv)
 
 	if (fflag) {
 		c_mem_set(c_ioq_arr(ioq1), sizeof(ctype_arr), 0);
-		for (;;) {
+		for (;;)
 			if (c_ioq_putfd(ioq1, fd, 0) < 0)
 				c_err_die(1, "c_ioq_putfd %s", *argv);
-		}
 	}
 
 	return 0;
