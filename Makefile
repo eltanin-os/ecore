@@ -76,6 +76,7 @@ MAN1=\
 LIBCOMMONSRC=\
 	lib/common/cp.c\
 	lib/common/estrtovl.c\
+	lib/common/head.c\
 	lib/common/path.c\
 	lib/common/pathcat.c\
 	lib/common/rm.c\

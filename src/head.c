@@ -4,33 +4,18 @@
 #include "common.h"
 
 static int
-head(char *p, int hn)
+phead(char *p, usize hn)
 {
-	ctype_ioq ioq;
 	ctype_fd fd;
-	size r;
-	int i;
-	char buf[C_BIOSIZ];
 
 	if (C_ISDASH(p)) {
-		fd = 0;
+		fd = C_FD0;
 	} else if ((fd = c_sys_open(p, C_OREAD, 0)) < 0) {
 		c_err_warn("c_sys_open %s", p);
 		return 1;
 	}
 
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
-	for (i = 0; i < hn; ++i) {
-		if ((r = c_ioq_getln(&ioq, c_ioq_arr(ioq1))) < 0) {
-			if (errno != C_ENOMEM)
-				c_err_die(1, "c_ioq_getln %s", p);
-			c_ioq_flush(ioq1);
-			continue;
-		}
-		if (!r)
-			break;
-	}
-
+	head(fd, p, hn);
 	return 0;
 }
 
@@ -45,14 +30,15 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	int hn, r;
+	usize hn;
+	int r;
 
 	c_std_setprogname(argv[0]);
 	hn = 10;
 
 	C_ARGBEGIN {
 	case 'n':
-		hn = estrtovl(C_EARGF(usage()), 0, 0, C_INTMAX);
+		hn = estrtovl(C_EARGF(usage()), 0, 0, C_USIZEMAX);
 		break;
 	default:
 		usage();
@@ -60,21 +46,21 @@ main(int argc, char **argv)
 
 	switch (argc) {
 	case 0:
-		r = head("-", hn);
+		r = phead("-", hn);
 		break;
 	case 1:
-		r = head(*argv, hn);
+		r = phead(*argv, hn);
 		--argc, ++argv;
 		break;
 	default:
 		c_ioq_fmt(ioq1, "==> %s <==\n", *argv);
-		r = head(*argv, hn);
+		r = phead(*argv, hn);
 		--argc, ++argv;
 	}
 
 	for (; *argv; --argc, ++argv) {
 		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
-		r |= head(*argv, hn);
+		r |= phead(*argv, hn);
 	}
 
 	c_ioq_flush(ioq1);

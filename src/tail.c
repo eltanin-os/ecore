@@ -12,7 +12,19 @@ usage(void)
 }
 
 static void
-tailbytes(ctype_fd fd, char *fname, usize cnt)
+headb(ctype_fd fd, char *fname, usize cnt)
+{
+	ctype_stat st;
+
+	if (c_sys_fstat(&st, fd) < 0)
+		c_err_die(1, "c_sys_fstat %s", fname);
+
+	if (c_ioq_putfd(ioq1, fd, C_MIN(cnt, st.size)) < 0)
+		c_err_die(1, "c_ioq_putfd %s", fname);
+}
+
+static void
+tailb(ctype_fd fd, char *fname, usize cnt)
 {
 	ctype_stat st;
 	ctype_fssize siz;
@@ -80,6 +92,7 @@ main(int argc, char **argv)
 	int fflag;
 	usize cnt;
 	void (*tailfn)(ctype_fd, char *, usize);
+	char *s;
 	char tmp[18];
 
 	c_std_setprogname(argv[0]);
@@ -90,15 +103,17 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'c':
-		tailfn = tailbytes;
-		cnt = estrtovl(C_EARGF(usage()), 0, 0, C_USIZEMAX);
+		s = C_EARGF(usage());
+		tailfn = (*s == '+') ? (++s, headb) : (s += (*s == '-'), tailb);
+		cnt = estrtovl(s, 0, 1, C_USIZEMAX);
 		break;
 	case 'f':
 		fflag = 1;
 		break;
 	case 'n':
-		tailfn = tail;
-		cnt = estrtovl(C_EARGF(usage()), 0, 0, C_USIZEMAX);
+		s = C_EARGF(usage());
+		tailfn = (*s == '+') ? (++s, head) : (s += (*s == '-'), tail);
+		cnt = estrtovl(s, 0, 1, C_USIZEMAX);
 		break;
 	default:
 		usage();

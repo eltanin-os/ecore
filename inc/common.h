@@ -21,6 +21,7 @@ if (c_dyn_fmt((a), (b), __VA_ARGS__) < 0) c_err_die(1, "c_dyn_fmt");
 
 ctype_status copy(char **, char *, uint, uint);
 vlong estrtovl(char *, int, vlong, vlong);
+void head(ctype_fd, char *, usize);
 char *pathcat(char *, char *, int);
 ctype_status remove(char **, uint);
 char *serr(int);
