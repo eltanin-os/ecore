@@ -3,10 +3,13 @@
 
 #include "common.h"
 
-static int
-phead(char *p, usize hn)
+ctype_status
+head(char *p, usize cnt)
 {
+	ctype_ioq ioq;
 	ctype_fd fd;
+	size r;
+	char buf[C_BIOSIZ];
 
 	if (C_ISDASH(p)) {
 		fd = C_FD0;
@@ -15,7 +18,18 @@ phead(char *p, usize hn)
 		return 1;
 	}
 
-	head(fd, p, hn);
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
+
+	do {
+		if ((r = c_ioq_getln(&ioq, c_ioq_arr(ioq1))) < 0) {
+			if (errno != C_ENOMEM)
+				c_err_die(1, "c_ioq_getln %s", p);
+			c_ioq_flush(ioq1);
+			continue;
+		}
+		--cnt;
+	} while(cnt && r);
+
 	return 0;
 }
 
@@ -44,26 +58,28 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
+	if (!hn)
+		return 0;
+
 	switch (argc) {
 	case 0:
-		r = phead("-", hn);
+		r = head("-", hn);
 		break;
 	case 1:
-		r = phead(*argv, hn);
+		r = head(*argv, hn);
 		--argc, ++argv;
 		break;
 	default:
 		c_ioq_fmt(ioq1, "==> %s <==\n", *argv);
-		r = phead(*argv, hn);
+		r = head(*argv, hn);
 		--argc, ++argv;
 	}
 
 	for (; *argv; --argc, ++argv) {
 		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
-		r |= phead(*argv, hn);
+		r |= head(*argv, hn);
 	}
 
 	c_ioq_flush(ioq1);
-
 	return r;
 }
