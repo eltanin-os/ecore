@@ -1,0 +1,54 @@
+.Dd $Mdocdate: December 28 2019 $
+.Dt TAIL 1
+.Os
+.Sh NAME
+.Nm tail
+.Nd copy the last part of a file
+.Sh SYNOPSIS
+.Nm tail
+.Op Fl f
+.Op Fl c Ar number | Fl n Ar number
+.Ar file
+.Sh DESCRIPTION
+The
+.Nm
+utility copies the contents of
+.Ar file
+to the standard output.
+If
+.Ar file
+is a single dash
+.Pq Sq \&-
+or absent,
+.Nm
+reads from the standard input.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl c Ar number
+Set the number of bytes to be copied.
+.It Fl f
+Watch the given file. If no file was given, this option is ignored.
+.It Fl n Ar number
+Set the number of lines to be copied.
+.El
+.Pp
+Numbers having a leading plus
+.Pq Sq \&+
+sign are relative to the beggining of the input.
+Numbers having a leading minus
+.Pq Sq \&-
+sign are relative to the end of the input.
+If
+.Ar number
+is ommited, it defaults to 10.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr cat 1 ,
+.Xr head 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2017
+specification.
