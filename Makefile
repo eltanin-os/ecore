@@ -78,6 +78,7 @@ LIBCOMMONSRC=\
 	lib/common/estrtovl.c\
 	lib/common/path.c\
 	lib/common/pathcat.c\
+	lib/common/pdb.c\
 	lib/common/rm.c\
 	lib/common/serr.c\
 	lib/common/shared.c\

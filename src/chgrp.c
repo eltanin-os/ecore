@@ -58,7 +58,8 @@ main(int argc, char **argv)
 	if (!(ropts & RFLAG))
 		opts = (ropts & HFLAG) ? C_FSCOM : 0;
 
-	gid = estrtovl(argv[0], 0, 0, C_UINTMAX);
+	if ((gid = gidfromname(argv[0])) == (uint)-1)
+		gid = estrtovl(argv[0], 0, 0, C_UINTMAX);
 
 	++argv;
 	if (c_dir_open(&dir, argv, opts, nil) < 0)

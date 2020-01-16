@@ -21,11 +21,15 @@ if (c_dyn_fmt((a), (b), __VA_ARGS__) < 0) c_err_die(1, "c_dyn_fmt");
 
 ctype_status copy(char **, char *, uint, uint);
 vlong estrtovl(char *, int, vlong, vlong);
+char *namefromuid(uint);
+char *namefromgid(uint);
 char *pathcat(char *, char *, int);
 ctype_status remove(char **, uint);
 char *serr(int);
 uint strtomode(char *, uint, uint);
 char **tmpargv(char *);
 void trim_trailing_slash(char *);
+uint uidfromname(char *);
+uint gidfromname(char *);
 
 extern char *gbuf;

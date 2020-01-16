@@ -8,6 +8,8 @@ enum {
 	RFLAG = 1 << 1,
 };
 
+#define G(a, b) (((a) == (uint)-1) ? (b) : (a))
+
 static void
 usage(void)
 {
@@ -23,8 +25,9 @@ main(int argc, char **argv)
 	ctype_dir dir;
 	ctype_dent *p;
 	int rv;
-	uint uid;
+	uint gid, uid;
 	uint opts, ropts;
+	char *grp;
 
 	c_std_setprogname(argv[0]);
 
@@ -59,7 +62,15 @@ main(int argc, char **argv)
 	if (!(ropts & RFLAG))
 		opts = (ropts & HFLAG) ? C_FSCOM : 0;
 
-	uid = estrtovl(argv[0], 0, 0, C_UINTMAX);
+	gid = -1;
+	if ((grp = c_str_chr(argv[0], C_USIZEMAX, ':'))) {
+		*grp++ = 0;
+		if ((gid = gidfromname(grp)) == (uint)-1)
+			gid = estrtovl(grp, 0, 0, C_UINTMAX);
+	}
+
+	if ((uid = uidfromname(argv[0])) == (uint)-1)
+		uid = estrtovl(argv[0], 0, 0, C_UINTMAX);
 
 	++argv;
 	if (c_dir_open(&dir, argv, opts, nil) < 0)
@@ -83,14 +94,14 @@ main(int argc, char **argv)
 			rv = c_err_warnx("%s: %s", p->name, serr(p->err));
 			continue;
 		case C_FSSL:
-			if (c_sys_lchown(p->path, uid, p->stp->gid) < 0)
+			if (c_sys_lchown(p->path, uid, G(gid, p->stp->gid)) < 0)
 				rv = c_err_warn("c_sys_chown %s", p->path);
 			continue;
 		case C_FSSLN:
 			continue;
 		}
 
-		if (c_sys_chown(p->path, uid, p->stp->gid) < 0)
+		if (c_sys_chown(p->path, uid, G(gid, p->stp->gid)) < 0)
 			rv = c_err_warn("c_sys_chown %s", p->path);
 	}
 
