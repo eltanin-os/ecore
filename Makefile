@@ -26,6 +26,7 @@ BIN=\
 	src/head\
 	src/link\
 	src/ln\
+	src/ls\
 	src/mkdir\
 	src/mktemp\
 	src/mv\
