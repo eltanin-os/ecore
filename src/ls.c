@@ -27,6 +27,9 @@ enum {
 	UFLAG  = 1 << 20,
 };
 
+#define SECSPERDAY (24 * 60 * 60)
+#define SIXMONTHS  (180 * SECSPERDAY)
+
 #define TM(a) \
 ((opts & CFLAG) ? (a)->stp->ctim :\
  (opts & UFLAG) ? (a)->stp->atim : (a)->stp->mtim)
@@ -51,6 +54,12 @@ struct max {
 	uint total;
 };
 
+static char *mtab[] = {
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+};
+
+static u64int now;
 static u32int opts;
 static int blksize = 512;
 static int first;
@@ -102,8 +111,22 @@ mkcol(struct column *col, struct max *max)
 	return 0;
 }
 
+static void
+printid(int type, ctype_fsid id, usize max)
+{
+	char *s;
+
+	s = nil;
+	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id)))
+		c_ioq_fmt(ioq1, "%-*llud ", max, (uvlong)id);
+	else
+		c_ioq_fmt(ioq1, "%-*s ", max, (uvlong)s);
+
+	c_std_free(s);
+}
+
 static int
-pwdsize(int type, ctype_fsid id)
+idsize(int type, ctype_fsid id)
 {
 	char *s;
 	int n;
@@ -119,13 +142,14 @@ static int
 noprint(ctype_dent *p)
 {
 	switch (p->info) {
-	case C_FSDOT:
-		if (!(opts & AFLAG))
-			return 1;
-		break;
 	case C_FSD:
 		if (!(opts & DFLAG) && !p->depth)
 			return 1;
+		break;
+	case C_FSDNR:
+	case C_FSNS:
+	case C_FSERR:
+		return 1;
 	}
 	if (*p->name == '.' && !(opts & (AFLAG | AAFLAG)))
 		return 1;
@@ -148,23 +172,24 @@ mkmax(struct max *max, ctype_dir *dir)
 		if (noprint(p))
 			continue;
 		++max->total;
-		max->btotal += C_HOWMANY(p->stp->blocks, blksize);
 		max->len = C_MAX(max->len, p->nlen);
 		if (opts & IFLAG)
 			ino = C_MAX(ino, (ctype_fsid)p->stp->ino);
 		if (opts & SFLAG)
 			block = C_MAX(block, (ctype_fssize)p->stp->blocks);
+		if (opts & (GFLAG | IFLAG | LFLAG | OFLAG | SFLAG))
+			max->btotal += C_HOWMANY(p->stp->blocks, blksize);
 		/* long format */
 		if (!(opts & LFLAG))
 			continue;
 		nlink = C_MAX(nlink, p->stp->nlink);
 		size = C_MAX(size, (ctype_fssize)p->stp->size);
 		if (opts & OFLAG) {
-			tmp = pwdsize(0, p->stp->gid);
+			tmp = idsize(0, p->stp->gid);
 			max->gid = C_MAX(max->gid, tmp);
 		}
 		if (opts & GFLAG) {
-			tmp = pwdsize(1, p->stp->uid);
+			tmp = idsize(1, p->stp->uid);
 			max->uid = C_MAX(max->uid, tmp);
 		}
 	} while ((p = c_dir_list(dir)));
@@ -179,8 +204,26 @@ mkmax(struct max *max, ctype_dir *dir)
 	}
 }
 
+static int
+printtype(ctype_stat *st)
+{
+	if ((opts & (FFFLAG | PFLAG)) && C_ISDIR(st->mode)) {
+		return c_ioq_fmt(ioq1, "/");
+	} else if ((opts & FFFLAG)) {
+		if (C_ISFIFO(st->mode))
+			return c_ioq_fmt(ioq1, "|");
+		else if (C_ISLNK(st->mode))
+			return c_ioq_fmt(ioq1, "@");
+		else if (C_ISSCK(st->mode))
+			return c_ioq_fmt(ioq1, "=");
+		else if (st->mode & (C_IXUSR | C_IXGRP | C_IXOTH))
+			return c_ioq_fmt(ioq1, "*");
+	}
+	return 0;
+}
+
 static size
-pname(ctype_dent *p, int ino, int blk)
+printname(ctype_dent *p, int ino, int blk)
 {
 	ctype_rune rune;
 	size n;
@@ -195,32 +238,107 @@ pname(ctype_dent *p, int ino, int blk)
 
 	for (s = p->name; *s; s += len) {
 		len = c_utf8_chartorune(&rune, s);
-		if (!(opts & QFLAG) || 1) {
-			(void)c_ioq_nput(ioq1, s, len);
+		if (!(opts & QFLAG) || c_utf8_isprint(rune)) {
+			c_ioq_nput(ioq1, s, len);
 			n += len;
 		} else {
-			(void)c_ioq_put(ioq1, "?");
+			c_ioq_put(ioq1, "?");
 			n += sizeof(uchar);
 		}
 	}
-
-	if ((opts & (FFFLAG | PFLAG)) && C_ISDIR(p->stp->mode)) {
-		(void)c_ioq_put(ioq1, "/");
-		++n;
-	} else if ((opts & FFFLAG)) {
-		++n;
-		if (C_ISFIFO(p->stp->mode))
-			(void)c_ioq_put(ioq1, "|");
-		else if (C_ISLNK(p->stp->mode))
-			(void)c_ioq_put(ioq1, "@");
-		else if (C_ISSCK(p->stp->mode))
-			(void)c_ioq_put(ioq1, "=");
-		else if (p->stp->mode & (C_IXUSR | C_IXGRP | C_IXOTH))
-			(void)c_ioq_put(ioq1, "*");
-		else
-			--n;
-	}
+	n += printtype(p->stp);
 	return n;
+}
+
+static void
+printmode(ctype_stat *p)
+{
+	uint m;
+	char mode[11];
+	char *s;
+
+	c_mem_cpy(mode, sizeof(mode), "?---------");
+	switch (p->mode & C_IFMT) {
+	case C_IFBLK:
+		mode[0] = 'b';
+		break;
+	case C_IFCHR:
+		mode[0] = 'c';
+		break;
+	case C_IFDIR:
+		mode[0] = 'd';
+		break;
+	case C_IFIFO:
+		mode[0] = 'p';
+		break;
+	case C_IFLNK:
+		mode[0] = 'l';
+		break;
+	case C_IFREG:
+		mode[0] = '-';
+		break;
+	}
+
+	s = mode + 1;
+	m = p->mode;
+	do {
+		if (m & C_IRUSR)
+			s[0] = 'r';
+		if (m & C_IWUSR)
+			s[1] = 'w';
+		if (m & C_IXUSR)
+			s[2] = 'x';
+		m <<= 3;
+	} while ((s += 3) <= mode + 7);
+
+	if (p->mode & C_ISUID)
+		mode[3] = (mode[3] == 'x') ? 's' : 'S';
+	if (p->mode & C_ISGID)
+		mode[6] = (mode[6] == 'x') ? 's' : 'S';
+	if (p->mode & C_ISVTX)
+		mode[9] = (mode[9] == 'x') ? 't' : 'T';
+
+	c_ioq_fmt(ioq1, "%s ", mode);
+}
+
+static void
+printtime(ctype_dent *p)
+{
+	ctype_caltime ct;
+	ctype_tai t;
+	ctype_time tm;
+
+	tm = TM(p);
+	c_tai_fromtime(&t, &tm);
+	c_cal_timeutc(&ct, &t);
+	if (now > (c_tai_approx(&t) + SIXMONTHS)) {
+		c_ioq_fmt(ioq1, "%s %02d %04ld ",
+		    mtab[ct.date.month - 1], ct.date.day, ct.date.year);
+	} else {
+		c_ioq_fmt(ioq1, "%s %02d %02d:%02d ",
+		    mtab[ct.date.month - 1], ct.date.day, ct.hour, ct.minute);
+	}
+}
+
+static void
+printlink(char *s)
+{
+	ctype_stat st;
+	size r;
+	char buf[C_PATHMAX];
+
+	if ((r = c_sys_readlink(buf, sizeof(buf) - 1, s)) < 0) {
+		c_err_warn("readlink %s", s);
+		return;
+	}
+
+	if (c_sys_stat(&st, s) < 0) {
+		c_err_warn("c_sys_stat %s", s);
+		return;
+	}
+
+	c_ioq_fmt(ioq1, " -> %.*s", r, buf);
+	printtype(&st);
 }
 
 static void
@@ -234,11 +352,33 @@ print1(ctype_dir *dir, struct max *max)
 		if (noprint(p))
 			continue;
 		if (!(opts & LFLAG)) {
-			(void)pname(p, max->ino, max->block);
-			(void)c_ioq_put(ioq1, "\n");
+			printname(p, max->ino, max->block);
+			c_ioq_put(ioq1, "\n");
 			continue;
 		}
-		/* TODO: LONG FORMAT */
+		if (opts & IFLAG)
+			c_ioq_fmt(ioq1, "%*llud ",
+			    max->ino, (uvlong)p->stp->ino);
+		if (opts & SFLAG)
+			c_ioq_fmt(ioq1, "%*llud ",
+			    max->block, (uvlong)p->stp->blocks);
+		printmode(p->stp);
+		c_ioq_fmt(ioq1, "%*lud ", max->nlink, p->stp->nlink);
+		if (!(opts & GFLAG))
+			printid(0, p->stp->uid, max->uid);
+		if (!(opts & OFLAG))
+			printid(1, p->stp->gid, max->gid);
+		if (C_ISBLK(p->stp->mode) || C_ISCHR(p->stp->mode))
+			c_ioq_fmt(ioq1, "%3d, %3d ",
+			    C_MAJOR(p->stp->rdev), C_MINOR(p->stp->rdev));
+		else
+			c_ioq_fmt(ioq1, "%*s%*lld ",
+			    8 - max->size, "", max->size, (vlong)p->stp->size);
+		printtime(p);
+		printname(p, max->ino, max->block);
+		if (C_ISLNK(p->stp->mode))
+			printlink(p->path);
+		c_ioq_put(ioq1, "\n");
 	} while ((p = c_dir_list(dir)));
 }
 
@@ -276,13 +416,12 @@ printc(ctype_dir *dir, struct max *max)
 
 	for (row = 0; row < nrows; ++row) {
 		for (base = row, col = 0; col < cols.num; ++col) {
-			chcnt = pname(pa[base], max->ino, max->block);
+			chcnt = printname(pa[base], max->ino, max->block);
 			if ((base += nrows) >= num)
 				break;
-			while (chcnt++ < cols.width)
-				(void)c_ioq_put(ioq1, " ");
+			c_ioq_fmt(ioq1, "%*s", cols.width - chcnt, "");
 		}
-		(void)c_ioq_put(ioq1, "\n");
+		c_ioq_put(ioq1, "\n");
 	}
 	c_std_free(pa);
 }
@@ -308,17 +447,18 @@ printm(ctype_dir *dir, struct max *max)
 		if (noprint(p))
 			continue;
 		if (chcnt > 0) {
-			(void)c_ioq_put(ioq1, ",");
+			c_ioq_put(ioq1, ",");
 			if ((chcnt += 3) + width + (size)p->len >= termwidth) {
-				(void)c_ioq_put(ioq1, "\n");
+				c_ioq_put(ioq1, "\n");
 				chcnt = 0;
 			} else {
-				(void)c_ioq_put(ioq1, " ");
+				c_ioq_put(ioq1, " ");
 			}
 		}
-		chcnt += pname(p, max->ino, max->block);
+		chcnt += printname(p, max->ino, max->block);
 	} while ((p = c_dir_list(dir)));
-	(void)c_ioq_put(ioq1, "\n");
+	if (chcnt)
+		c_ioq_put(ioq1, "\n");
 }
 
 static void
@@ -336,19 +476,20 @@ printx(ctype_dir *dir, struct max *max)
 
 	if (!(p = c_dir_list(dir)))
 		return;
-	col = 0;
+	chcnt = col = 0;
 	do {
 		if (noprint(p))
 			continue;
 		if (col >= cols.num) {
 			col = 0;
-			(void)c_ioq_put(ioq1, "\n");
+			c_ioq_put(ioq1, "\n");
 		}
-		chcnt = pname(p, max->ino, max->block);
-		while (chcnt++ < cols.width)
-			(void)c_ioq_put(ioq1, " ");
+		chcnt = printname(p, max->ino, max->block);
+		c_ioq_fmt(ioq1, "%*s", cols.width - chcnt, "");
+		++col;
 	} while ((p = c_dir_list(dir)));
-	(void)c_ioq_put(ioq1, "\n");
+	if (chcnt)
+		c_ioq_put(ioq1, "\n");
 }
 
 static void
@@ -365,6 +506,7 @@ main(int argc, char **argv)
 	struct max max;
 	ctype_dir dir;
 	ctype_dent *p;
+	ctype_tai t;
 	int rv;
 	uint ropts;
 	void (*plist)(ctype_dir *, struct max *);
@@ -401,6 +543,7 @@ main(int argc, char **argv)
 		break;
 	case 'a':
 		opts = (opts & ~AAFLAG) | AFLAG;
+		ropts |= C_FSVDT;
 		break;
 	case 'c':
 		opts = (opts & ~UFLAG) | CFLAG;
@@ -422,6 +565,7 @@ main(int argc, char **argv)
 		blksize = 1024;
 		break;
 	case 'l':
+		plist = &print1;
 		opts |= LFLAG;
 		break;
 	case 'm':
@@ -452,6 +596,7 @@ main(int argc, char **argv)
 		break;
 	case 'u':
 		opts = (opts & ~CFLAG) | UFLAG;
+		break;
 	case 'x':
 		plist = printx;
 		break;
@@ -462,10 +607,18 @@ main(int argc, char **argv)
 	if (!argc)
 		argv = tmpargv(".");
 
+	if (opts & LFLAG) {
+		c_tai_now(&t);
+		now = c_tai_approx(&t);
+	} else if (!(opts & (FFFLAG | GFLAG | IFLAG | OFLAG | PFLAG | SFLAG))) {
+		ropts |= C_FSNOI;
+	}
+
 	if (c_dir_open(&dir, argv, ropts, (opts & FFLAG) ? nil : &sort) < 0)
 		c_err_die(1, "c_dir_open");
 
-	(void)c_mem_set(&max, sizeof(max), 0);
+	blksize /= 512;
+	c_mem_set(&max, sizeof(max), 0);
 	mkmax(&max, &dir);
 	plist(&dir, &max);
 
@@ -495,10 +648,15 @@ main(int argc, char **argv)
 		if (p->parent->num)
 			continue;
 
-		(void)c_mem_set(&max, sizeof(max), 0);
+		c_mem_set(&max, sizeof(max), 0);
 		mkmax(&max, &dir);
+
+		if (opts & (GFLAG | LFLAG | OFLAG | SFLAG))
+			c_ioq_fmt(ioq1, "total %ud\n", max.btotal);
+
 		plist(&dir, &max);
 	}
-	(void)c_ioq_flush(ioq1);
-	return 0;
+	c_dir_close(&dir);
+	c_ioq_flush(ioq1);
+	return rv;
 }
