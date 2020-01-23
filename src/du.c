@@ -59,12 +59,10 @@ main(int argc, char **argv)
 	if (!argc)
 		argv = tmpargv(".");
 
-	blksiz /= 512;
-	c_mem_set(&dir, sizeof(dir), 0);
-
 	if (c_dir_open(&dir, argv, ropts | C_FSFHT, nil) < 0)
 		c_err_die(1, "c_dir_open");
 
+	blksiz /= 512;
 	rv = 0;
 
 	while ((p = c_dir_read(&dir))) {

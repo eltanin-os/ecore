@@ -4,31 +4,30 @@
 #include "common.h"
 
 ctype_status
-head(char *p, usize cnt)
+head(ctype_arr *p, char *s, usize n)
 {
 	ctype_ioq ioq;
 	ctype_fd fd;
 	size r;
 	char buf[C_BIOSIZ];
 
-	if (C_ISDASH(p)) {
+	if (C_ISDASH(s)) {
 		fd = C_FD0;
-	} else if ((fd = c_sys_open(p, C_OREAD, 0)) < 0) {
-		c_err_warn("c_sys_open %s", p);
+	} else if ((fd = c_sys_open(s, C_OREAD, 0)) < 0) {
+		c_err_warn("c_sys_open %s", s);
 		return 1;
 	}
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
 
-	do {
-		if ((r = c_ioq_getln(&ioq, c_ioq_arr(ioq1))) < 0) {
-			if (errno != C_ENOMEM)
-				c_err_die(1, "c_ioq_getln %s", p);
-			c_ioq_flush(ioq1);
-			continue;
-		}
-		--cnt;
-	} while(cnt && r);
+	while (n--) {
+		c_arr_trunc(p, 0, sizeof(uchar));
+		if ((r = c_ioq_getln(&ioq, p)) < 0)
+			c_err_die(1, "c_ioq_getln %s", s);
+		if (!r)
+			break;
+		c_ioq_fmt(ioq1, "%s", c_arr_data(p));
+	}
 
 	return 0;
 }
@@ -44,42 +43,46 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	usize hn;
+	ctype_arr arr;
+	usize n;
 	int r;
 
 	c_std_setprogname(argv[0]);
-	hn = 10;
+	n = 10;
 
 	C_ARGBEGIN {
 	case 'n':
-		hn = estrtovl(C_EARGF(usage()), 0, 0, C_USIZEMAX);
+		n = estrtovl(C_EARGF(usage()), 0, 0, C_USIZEMAX);
 		break;
 	default:
 		usage();
 	} C_ARGEND
 
-	if (!hn)
+	if (!n)
 		return 0;
+
+	c_mem_set(&arr, sizeof(arr), 0);
 
 	switch (argc) {
 	case 0:
-		r = head("-", hn);
+		r = head(&arr, "-", n);
 		break;
 	case 1:
-		r = head(*argv, hn);
+		r = head(&arr, *argv, n);
 		--argc, ++argv;
 		break;
 	default:
 		c_ioq_fmt(ioq1, "==> %s <==\n", *argv);
-		r = head(*argv, hn);
+		r = head(&arr, *argv, n);
 		--argc, ++argv;
 	}
 
 	for (; *argv; --argc, ++argv) {
 		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
-		r |= head(*argv, hn);
+		r |= head(&arr, *argv, n);
 	}
 
+	c_dyn_free(&arr);
 	c_ioq_flush(ioq1);
 	return r;
 }
