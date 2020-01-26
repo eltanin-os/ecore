@@ -4,27 +4,26 @@
 #include "common.h"
 
 enum {
-	AAFLAG = 1 << 0,
-	AFLAG  = 1 << 1,
-	CFLAG  = 1 << 2,
-	DFLAG  = 1 << 3,
-	FFFLAG = 1 << 4,
-	FFLAG  = 1 << 5,
-	GFLAG  = 1 << 6,
-	HFLAG  = 1 << 7,
-	IFLAG  = 1 << 8,
-	LLFLAG = 1 << 9,
-	LFLAG  = 1 << 10,
-	NFLAG  = 1 << 11,
-	OFLAG  = 1 << 12,
-	PFLAG  = 1 << 13,
-	QFLAG  = 1 << 14,
-	RRFLAG = 1 << 15,
-	RFLAG  = 1 << 16,
-	SSFLAG = 1 << 17,
-	SFLAG  = 1 << 18,
-	TFLAG  = 1 << 19,
-	UFLAG  = 1 << 20,
+	AFLAG  = 1 << 0,
+	CFLAG  = 1 << 1,
+	DFLAG  = 1 << 2,
+	FFFLAG = 1 << 3,
+	FFLAG  = 1 << 4,
+	GFLAG  = 1 << 5,
+	HFLAG  = 1 << 6,
+	IFLAG  = 1 << 7,
+	LLFLAG = 1 << 8,
+	LFLAG  = 1 << 9,
+	NFLAG  = 1 << 10,
+	OFLAG  = 1 << 11,
+	PFLAG  = 1 << 12,
+	QFLAG  = 1 << 13,
+	RRFLAG = 1 << 14,
+	RFLAG  = 1 << 15,
+	SSFLAG = 1 << 16,
+	SFLAG  = 1 << 17,
+	TFLAG  = 1 << 18,
+	UFLAG  = 1 << 19,
 };
 
 #define SECSPERDAY (24 * 60 * 60)
@@ -151,7 +150,7 @@ noprint(ctype_dent *p)
 	case C_FSERR:
 		return 1;
 	}
-	if (*p->name == '.' && !(opts & (AFLAG | AAFLAG)))
+	if (*p->name == '.' && !(opts & AFLAG))
 		return 1;
 	return 0;
 }
@@ -509,6 +508,7 @@ main(int argc, char **argv)
 	ctype_tai t;
 	int rv;
 	uint ropts;
+	char *tmp;
 	void (*plist)(ctype_dir *, struct max *);
 
 	c_std_setprogname(argv[0]);
@@ -521,7 +521,8 @@ main(int argc, char **argv)
 		plist = &print1;
 		break;
 	case 'A':
-		opts = (opts & ~AFLAG) | AAFLAG;
+		opts |= AFLAG;
+		ropts &= ~C_FSVDT;
 		break;
 	case 'C':
 		plist = &printc;
@@ -542,7 +543,7 @@ main(int argc, char **argv)
 		opts = (opts & ~(FFLAG | TFLAG)) | SSFLAG;
 		break;
 	case 'a':
-		opts = (opts & ~AAFLAG) | AFLAG;
+		opts |= AFLAG;
 		ropts |= C_FSVDT;
 		break;
 	case 'c':
@@ -552,7 +553,8 @@ main(int argc, char **argv)
 		opts = (opts & ~RRFLAG) | DFLAG;
 		break;
 	case 'f':
-		opts = (opts & ~(TFLAG | SSFLAG)) | FFLAG;
+		opts = (opts & ~(TFLAG | SSFLAG)) | AFLAG | FFLAG;
+		ropts |= C_FSVDT;
 		break;
 	case 'g':
 		plist = &print1;
@@ -618,6 +620,9 @@ main(int argc, char **argv)
 		c_err_die(1, "c_dir_open");
 
 	blksize /= 512;
+	if ((tmp = c_std_getenv("COLUMNS")))
+		termwidth = estrtovl(tmp, 0, 0, C_UINTMAX);
+
 	c_mem_set(&max, sizeof(max), 0);
 	mkmax(&max, &dir);
 	plist(&dir, &max);
