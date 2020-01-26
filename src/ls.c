@@ -513,7 +513,7 @@ main(int argc, char **argv)
 
 	c_std_setprogname(argv[0]);
 
-	plist = c_sys_isatty(C_FD1) ? printc : print1;
+	plist = c_std_isatty(C_FD1) ? printc : print1;
 	ropts = 0;
 
 	C_ARGBEGIN {

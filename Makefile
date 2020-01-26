@@ -34,8 +34,8 @@ BIN=\
 	src/pwd\
 	src/rm\
 	src/rmdir\
-	src/true\
 	src/tail\
+	src/true\
 	src/uname\
 	src/unlink\
 	src/wc\

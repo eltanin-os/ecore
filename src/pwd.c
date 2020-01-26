@@ -8,7 +8,7 @@ getpwd(void)
 	usize n;
 	char *s;
 
-	if (!(s = c_sys_getenv("PWD")))
+	if (!(s = c_std_getenv("PWD")))
 		return nil;
 
 	if (*s != '/')

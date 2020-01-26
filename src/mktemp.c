@@ -78,7 +78,7 @@ main(int argc, char **argv)
 		if (c_str_chr(template, C_USIZEMAX, '/'))
 			DIEX("Template must not contain directory "
 			    "separators in -t mode");
-		if (!(tmp = c_sys_getenv("TMPDIR"))) {
+		if (!(tmp = c_std_getenv("TMPDIR"))) {
 			if (dir)
 				tmp = dir;
 			else

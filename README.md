@@ -21,6 +21,7 @@ secure, small and fast.
 * head
 * link
 * ln
+* ls
 * mkdir
 * mv
 * printf
