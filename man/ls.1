@@ -1,0 +1,155 @@
+.Dd $Mdocdate: January 26 2020 $
+.Dt LS 1
+.Os
+.Sh NAME
+.Nm ls
+.Nd list directory contents
+.Sh SYNOPSIS
+.Nm
+.Op Fl giklnoqrs
+.Op Fl A | a
+.Op Fl 1 | C | m | x
+.Op Fl F | p
+.Op Fl H | L
+.Op Fl R | d
+.Op Fl S | f | t
+.Op Fl c | u
+.Op Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility writes each given file, and the contents of each given
+directory to the standard output. If no
+.Ar file
+is given the contents of the current directory are written on the
+standard output.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl 1
+Output one entry per-line.
+.It Fl A
+List all entries except for
+.Sq \&.
+and
+.Sq \&.. .
+.It Fl a
+List entries whose name begin with a dot
+.Pq Sq \&. ,
+along with the default output.
+.It Fl C
+Output multi-column entries sorted down the columns.
+.It Fl c
+Use time file's status was last changed for sorting or writing.
+.It Fl d
+Treat directories as plain files.
+.It Fl F
+Append a file type indicator to all special files.
+.It Fl f
+Do not sort. This option implies
+.Fl a .
+.It Fl g
+Supress owner name. This option implies
+.Fl l .
+.It Fl H
+Follow symbolic links on the command line.
+.It Fl i
+Write the inode number of each file.
+.It Fl k
+Set the block size to 1024 bytes.
+.It Fl L
+Follow all symbolic links.
+.It Fl l
+Output entries in long format.
+.It Fl m
+Output entries across the page, separated by commas.
+.It Fl n
+Write user and group IDs in a numeric format. This option implies
+.Fl l .
+.It Fl o
+Supress group. This option implies
+.Fl l .
+.It Fl p
+Append a file type indicator to directories.
+.It Fl q
+Replace non-printable characters in filename with
+.Sq \&? .
+.It Fl R
+Descend recursively through its directories arguments.
+.It Fl r
+Reverse the sort order.
+.It Fl S
+Sort files by size, in decreasing order.
+.It Fl s
+Write the number of file system blocks actually used by each file.
+.It Fl t
+Use file's last modification time for sorting or writing.
+.It Fl u
+Use file's last access time for sorting or writing.
+.It Fl x
+Output multi-column entries sorted across the page.
+.El
+.Ss The Long Format
+The long format consists of the entry type, permissions,
+links, owner, group, size or major and minor numbers if
+the file is a character/block device, and last file modification
+time.
+.Pp
+The mode field consists of eleven characters. The first character
+describes the type entry:
+.Pp
+.Bl -tag -width 4n -offset indent -compact
+.It Sy \-
+Regular file.
+.It Sy b
+Block special file.
+.It Sy c
+Character special file.
+.It Sy d
+Directory.
+.It Sy l
+Symbolic link.
+.It Sy p
+FIFO
+.El
+.Pp
+The last nine characters are interpreted as three sets of three bits each.
+The first set refers to the owner permissions; the next to group permissions;
+and the last to others permissions. Within each set, the three characters
+indicate permission to read, to write, and to execute, respectively.
+The permissions are indicated as follow:
+.Pp
+.Bl -tag -width 4n -offset indent -compact
+.It Sy \-
+The indicated permission is not granted.
+.It Sy r
+The file is readable.
+.It Sy S
+The set-user-ID or set-group-ID is on, and execution is off.
+.It Sy s
+The set-user-ID or set-group-ID is on, and execution is on.
+.It Sy T
+The sticky bit is set, and execution is off.
+.It Sy t
+The sticky bit is set, and execution is on.
+.It Sy w
+The file is writable.
+.It Sy x
+The file is executable.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width COLUMNS
+.It Ev COLUMNS
+Output is formatted to the given width in columns. Otherwise,
+.Nm
+defaults to 80 columns.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr find 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2017
+specification.

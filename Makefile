@@ -60,6 +60,7 @@ MAN1=\
 	man/head.1\
 	man/link.1\
 	man/ln.1\
+	man/ls.1\
 	man/mkdir.1\
 	man/mktemp.1\
 	man/mv.1\
