@@ -46,7 +46,6 @@ cmpsum(struct hash *hp, ctype_hst *p, char *s)
 	int i;
 
 	c_hsh_digest(p, hp->md, buf);
-
 	for (i = 0; i < hp->siz; ++i) {
 		if (((HDEC(s[0]) << 4) | HDEC(s[1])) != (uchar)buf[i])
 			return -1;
@@ -64,7 +63,7 @@ checkfile(struct hash *hp, char *file)
 	ctype_hst hs;
 	ctype_ioq ioq;
 	usize n;
-	int rv;
+	int r;
 	char *p, *s;
 	char buf[C_BIOSIZ];
 
@@ -74,8 +73,7 @@ checkfile(struct hash *hp, char *file)
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
 	c_mem_set(&arr, sizeof(arr), 0);
 
-	rv = 0;
-
+	r = 0;
 	while (c_ioq_getln(&ioq, &arr) > 0 ) {
 		s = c_arr_data(&arr);
 		n = c_arr_bytes(&arr);
@@ -93,15 +91,17 @@ checkfile(struct hash *hp, char *file)
 			c_err_diex(1, "%s: file in wrong format", file);
 
 		*p++ = 0;
+		hp->md->init(&hs);
 		if (c_hsh_putfile(&hs, hp->md, p) < 0)
-			rv = c_err_warn("c_hsh_putfile %s", s);
-		else if (cmpsum(hp, &hs, s) < 0)
-			rv = c_err_warnx("%s: checksum mismatch", s);
+			r = c_err_warn("c_hsh_putfile %s", s);
+		hp->md->end(&hs);
+		if (cmpsum(hp, &hs, s) < 0)
+			r = c_err_warnx("%s: checksum mismatch", s);
 
 		c_arr_trunc(&arr, 0, sizeof(uchar));
 	}
 	c_dyn_free(&arr);
-	return rv;
+	return r;
 }
 
 static void
@@ -118,13 +118,12 @@ main(int argc, char **argv)
 	struct hash hst;
 	ctype_hst hs;
 	int cflag;
-	int i, rv;
+	int i, r;
 	char buf[64];
 
 	c_std_setprogname(argv[0]);
 
 	cflag = 0;
-	rv = 0;
 
 	C_ARGBEGIN {
 	case 'a':
@@ -143,20 +142,19 @@ main(int argc, char **argv)
 	if (!argc)
 		argv = tmpargv("-");
 
-	rv = 0;
-
+	r = 0;
 	if (cflag) {
 		for (; *argv; ++argv) {
 			if (C_ISDASH(*argv))
 				*argv = "<stdin>";
-			rv |= checkfile(&hst, *argv);
+			r |= checkfile(&hst, *argv);
 		}
 	} else {
 		for (; *argv; ++argv) {
 			if (C_ISDASH(*argv))
 				*argv = "<stdin>";
 			if (c_hsh_putfile(&hs, hst.md, *argv) < 0) {
-				rv = c_err_warn("c_hsh_putfile %s", *argv);
+				r = c_err_warn("c_hsh_putfile %s", *argv);
 				continue;
 			}
 			c_hsh_digest(&hs, hst.md, buf);
@@ -166,7 +164,6 @@ main(int argc, char **argv)
 			c_ioq_fmt(ioq1, " %s\n", *argv);
 		}
 	}
-
 	c_ioq_flush(ioq1);
-	return rv;
+	return r;
 }
