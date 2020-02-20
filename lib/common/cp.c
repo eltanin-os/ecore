@@ -25,7 +25,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 		goto done;
 	}
 
-	if (c_sys_fstat(&st, ofd) < 0) {
+	if (c_sys_fstat(ofd, &st) < 0) {
 		r = c_err_warn("c_sys_fstat %s", src);
 		goto done;
 	}
@@ -56,7 +56,7 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 	size r;
 	char buf[C_PATHMAX];
 
-	if ((r = c_sys_readlink(buf, sizeof(buf) - 1, src)) < 0)
+	if ((r = c_sys_readlink(src, buf, sizeof(buf) - 1)) < 0)
 		return c_err_warn("readlink %s", src);
 
 	buf[r] = 0;

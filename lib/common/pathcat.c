@@ -14,7 +14,7 @@ pathcat(char *f1, char *f2, int cat)
 	c_arr_fmt(&arr, "%s", f2);
 
 	if (!cat) {
-		if (c_sys_stat(&st, f2) < 0)
+		if (c_sys_stat(f2, &st) < 0)
 			return gbuf;
 		if (!C_ISDIR(st.mode))
 			return gbuf;

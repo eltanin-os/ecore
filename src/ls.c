@@ -326,12 +326,12 @@ printlink(char *s)
 	size r;
 	char buf[C_PATHMAX];
 
-	if ((r = c_sys_readlink(buf, sizeof(buf) - 1, s)) < 0) {
+	if ((r = c_sys_readlink(s, buf, sizeof(buf) - 1)) < 0) {
 		c_err_warn("readlink %s", s);
 		return;
 	}
 
-	if (c_sys_stat(&st, s) < 0) {
+	if (c_sys_stat(s, &st) < 0) {
 		c_err_warn("c_sys_stat %s", s);
 		return;
 	}
