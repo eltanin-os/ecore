@@ -3,25 +3,19 @@
 
 #include "common.h"
 
-static int
+static ctype_status
 regcopy(char *src, ctype_stat *stp, char *dest)
 {
 	ctype_stat st;
 	ctype_ioq ioq;
 	ctype_fd ifd, ofd;
-	int r;
+	ctype_status r;
 
 	ifd = -1;
 	r = 0;
-
 	if ((ofd = c_sys_open(dest, C_OCREATE | C_OWRITE | C_OTRUNC,
 	    stp->mode)) < 0) {
 		r = c_err_warn("c_sys_open %s", dest);
-		goto done;
-	}
-
-	if ((ifd = c_sys_open(src, C_OREAD, 0)) < 0) {
-		r = c_err_warn("c_sys_open %s", src);
 		goto done;
 	}
 
@@ -35,13 +29,16 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 		goto done;
 	}
 
-	c_ioq_init(&ioq, ofd, nil, 0, c_sys_write);
+	if ((ifd = c_sys_open(src, C_OREAD, 0)) < 0) {
+		r = c_err_warn("c_sys_open %s", src);
+		goto done;
+	}
 
+	c_ioq_init(&ioq, ofd, nil, 0, c_sys_write);
 	if (c_ioq_putfd(&ioq, ifd, stp->size) < 0) {
 		r = c_err_warn("c_ioq_putfd %s %s", src, dest);
 		goto done;
 	}
-
 done:
 	if (ifd != -1)
 		c_sys_close(ifd);
@@ -85,8 +82,8 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 	ctype_arr d;
 	ctype_dir dir;
 	ctype_dent *p;
+	ctype_status r;
 	usize n;
-	int rv;
 	char buf[C_PATHMAX];
 
 	if (c_dir_open(&dir, argv, ropts, nil) < 0)
@@ -94,15 +91,13 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 
 	c_arr_init(&d, buf, sizeof(buf));
 	c_arr_fmt(&d, "%s", dest);
-
-	rv = 0;
-
+	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch(p->info) {
 		case C_FSD:
 			if (!(opts & CP_RFLAG)) {
 				c_dir_set(&dir, p, C_FSSKP);
-				rv = c_err_warnx("%s: %s",
+				r = c_err_warnx("%s: %s",
 				    p->path, serr(C_EISDIR));
 				continue;
 			}
@@ -110,7 +105,7 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 				c_arr_fmt(&d, "/%s", p->name);
 			if (c_sys_mkdir(c_arr_data(&d), p->stp->mode) < 0 &&
 			    errno != C_EEXIST)
-				rv = c_err_warn("c_sys_mkdir %s",
+				r = c_err_warn("c_sys_mkdir %s",
 				    c_arr_data(&d));
 			continue;
 		case C_FSDP:
@@ -120,7 +115,7 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 		case C_FSDNR:
 		case C_FSERR:
 		case C_FSNS:
-			rv = c_err_warnx("%s: %s", p->path, serr(p->err));
+			r = c_err_warnx("%s: %s", p->path, serr(p->err));
 			continue;
 		}
 
@@ -137,19 +132,17 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 
 		switch (p->info) {
 		case C_FSF:
-			rv = regcopy(p->path, p->stp, c_arr_data(&d));
+			r = regcopy(p->path, p->stp, c_arr_data(&d));
 			break;
 		case C_FSSL:
-			rv = lncopy(p->path, p->stp, c_arr_data(&d));
+			r = lncopy(p->path, p->stp, c_arr_data(&d));
 			break;
 		default:
-			rv = ndcopy(c_arr_data(&d), p->stp);
+			r = ndcopy(c_arr_data(&d), p->stp);
 		}
 
 		c_arr_trunc(&d, c_arr_bytes(&d) - n, sizeof(uchar));
 	}
-
 	c_dir_close(&dir);
-
-	return rv;
+	return r;
 }

@@ -10,10 +10,10 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
-	int rv;
+	ctype_status r;
 
 	c_std_setprogname(argv[0]);
 
@@ -28,16 +28,13 @@ main(int argc, char **argv)
 	if (!argc)
 		argv = tmpargv("-");
 
-	rv = 0;
-
+	r = 0;
 	for (; *argv; --argc, ++argv) {
 		if (C_ISDASH(*argv))
 			*argv = "<stdin>";
 		if (c_ioq_putfile(ioq1, *argv) < 0)
-			rv = c_err_warn("putfile %s", *argv);
+			r = c_err_warn("putfile %s", *argv);
 	}
-
 	c_ioq_flush(ioq1);
-
-	return rv;
+	return r;
 }

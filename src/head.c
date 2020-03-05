@@ -19,7 +19,6 @@ head(ctype_arr *p, char *s, usize n)
 	}
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
-
 	while (n--) {
 		c_arr_trunc(p, 0, sizeof(uchar));
 		if ((r = c_ioq_getln(&ioq, p)) < 0)
@@ -28,7 +27,6 @@ head(ctype_arr *p, char *s, usize n)
 			break;
 		c_ioq_fmt(ioq1, "%s", c_arr_data(p));
 	}
-
 	return 0;
 }
 
@@ -40,12 +38,12 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_arr arr;
+	ctype_status r;
 	usize n;
-	int r;
 
 	c_std_setprogname(argv[0]);
 	n = 10;
@@ -62,7 +60,6 @@ main(int argc, char **argv)
 		return 0;
 
 	c_mem_set(&arr, sizeof(arr), 0);
-
 	switch (argc) {
 	case 0:
 		r = head(&arr, "-", n);
@@ -76,12 +73,10 @@ main(int argc, char **argv)
 		r = head(&arr, *argv, n);
 		--argc, ++argv;
 	}
-
 	for (; *argv; --argc, ++argv) {
 		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
 		r |= head(&arr, *argv, n);
 	}
-
 	c_dyn_free(&arr);
 	c_ioq_flush(ioq1);
 	return r;

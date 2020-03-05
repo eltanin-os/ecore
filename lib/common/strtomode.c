@@ -13,10 +13,8 @@ strtomode(char *s, uint mode, uint mask)
 	char *end, op;
 
 	m = c_std_strtovl(s, 8, 0, 07777, &end, nil);
-
 	if (!*end)
 		return (m & C_ALLPERMS);
-
 next:
 	who = 0;
 	for (; *s; ++s) {
@@ -36,7 +34,6 @@ next:
 		}
 		break;
 	}
-
 	if (who) {
 		clr = who;
 	} else {
@@ -115,11 +112,9 @@ apply:
 		mode &= ~clr;
 		mode |= (perm & who);
 	}
-
 	if (*s == ',') {
 		++s;
 		goto next;
 	}
-
 	return mode;
 }

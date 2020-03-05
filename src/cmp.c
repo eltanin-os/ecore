@@ -6,18 +6,24 @@ enum {
 	SFLAG = 1 << 1,
 };
 
+struct file {
+	ctype_ioq ioq;
+	ctype_fd fd;
+	int ch;
+	char buf[C_BIOSIZ];
+};
+
 static int
 getbyte(ctype_ioq *p, char *s, uint opts)
 {
-	int r;
+	ctype_status r;
 	char ch;
 
-	if ((r = c_ioq_get(p, &ch, 1)) < 0) {
+	if ((r = c_ioq_get(p, &ch, sizeof(ch))) < 0) {
 		if (!(opts & SFLAG))
 			c_err_warn("c_ioq_getall %s", s);
 		c_std_exit(2);
 	}
-
 	return r ? ch : -1;
 }
 
@@ -31,13 +37,11 @@ usage(void)
 ctype_status
 main(int argc, char **argv)
 {
-	ctype_ioq iqs[2];
-	ctype_fd fds[2];
+	struct file sf[2];
+	ctype_status r;
 	usize line, bno;
-	int ch[2];
-	int i, rval;
+	int i;
 	uint opts;
-	char bufs[C_BIOSIZ][2];
 
 	c_std_setprogname(argv[0]);
 
@@ -61,46 +65,45 @@ main(int argc, char **argv)
 
 	for (i = 0; i < 2; ++i) {
 		if (C_ISDASH(argv[i])) {
-			fds[i] = C_FD0;
+			sf[i].fd = C_FD0;
 			argv[i] = "<stdin>";
-		} else if ((fds[i] = c_sys_open(argv[i], C_OREAD, 0)) < 0) {
+		} else if ((sf[i].fd = c_sys_open(argv[i], C_OREAD, 0)) < 0) {
 			if (!(opts & SFLAG))
 				c_err_warn("c_sys_open %s", argv[i]);
 			c_std_exit(2);
 		}
-		c_ioq_init(&iqs[i], fds[i], bufs[i],
-		    sizeof(bufs[i]), &c_sys_read);
+		c_ioq_init(&sf[i].ioq, sf[i].fd,
+		    sf[i].buf, sizeof(sf[i].buf), &c_sys_read);
 	}
 
-	rval = 0;
+	r = 0;
 	bno = line = 1;
 	for (;;) {
-		ch[0] = getbyte(&iqs[0], argv[0], opts);
-		ch[1] = getbyte(&iqs[1], argv[1], opts);
-		if (ch[0] == ch[1]) {
-			if (ch[0] < 0)
+		sf[0].ch = getbyte(&sf[0].ioq, argv[0], opts);
+		sf[1].ch = getbyte(&sf[1].ioq, argv[1], opts);
+		if (sf[0].ch == sf[1].ch) {
+			if (sf[0].ch < 0)
 				break;
-			if (ch[0] == '\n')
+			if (sf[0].ch == '\n')
 				++line;
-		} else if (ch[0] < 0 || ch[1] < 0) {
+		} else if (sf[0].ch < 0 || sf[1].ch < 0) {
 			if (!(opts & SFLAG))
-				c_err_warnx("EOF on %s", argv[ch[1] < 0]);
-			rval = 1;
+				c_err_warnx("EOF on %s", argv[sf[1].ch < 0]);
+			r = 1;
 			break;
 		} else if (!(opts & LFLAG)) {
 			if (!(opts & SFLAG))
 				c_ioq_fmt(ioq1,
 				    "%s %s differ: char %ud, line %ud\n",
 				    argv[0], argv[1], bno, line);
-			rval = 1;
+			r = 1;
 			break;
 		} else {
-			c_ioq_fmt(ioq1, "%ud %o %o\n", bno, ch[0], ch[1]);
-			rval = 1;
+			c_ioq_fmt(ioq1, "%ud %o %o\n", bno, sf[0].ch, sf[1].ch);
+			r = 1;
 		}
 		++bno;
 	}
-
 	c_ioq_flush(ioq1);
-	return rval;
+	return r;
 }

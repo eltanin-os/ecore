@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#define DISPLAY(a) c_ioq_fmt(ioq1, "%s%s", first++ ? " " : "", (a));
+
 enum {
 	AFLAG = 0x1F,
 	MFLAG = 1 << 0,
@@ -10,12 +12,7 @@ enum {
 	VFLAG = 1 << 4,
 };
 
-static void
-display(char *s)
-{
-	static int first;
-	c_ioq_fmt(ioq1, "%s%s", first++ ? " " : "", s);
-}
+static int first;
 
 static void
 usage(void)
@@ -24,13 +21,14 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_utsname uts;
 	uint opts;
 
 	c_std_setprogname(argv[0]);
+
 	opts = 0;
 
 	C_ARGBEGIN {
@@ -63,18 +61,17 @@ main(int argc, char **argv)
 		c_err_die(1, "c_sys_uname");
 
 	if (!opts || (opts & SFLAG))
-		display(uts.sysname);
+		DISPLAY(uts.sysname);
 	if (opts & NFLAG)
-		display(uts.nodename);
+		DISPLAY(uts.nodename);
 	if (opts & RFLAG)
-		display(uts.release);
+		DISPLAY(uts.release);
 	if (opts & VFLAG)
-		display(uts.version);
+		DISPLAY(uts.version);
 	if (opts & MFLAG)
-		display(uts.machine);
+		DISPLAY(uts.machine);
 
 	c_ioq_put(ioq1, "\n");
 	c_ioq_flush(ioq1);
-
 	return 0;
 }

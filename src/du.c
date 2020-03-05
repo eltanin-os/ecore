@@ -16,12 +16,13 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_dir dir;
 	ctype_dent *p;
-	int blksiz, rv;
+	ctype_status r;
+	int blksiz;
 	uint opts, ropts;
 
 	c_std_setprogname(argv[0]);
@@ -63,8 +64,7 @@ main(int argc, char **argv)
 		c_err_die(1, "c_dir_open");
 
 	blksiz /= 512;
-	rv = 0;
-
+	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
 		case C_FSD:
@@ -81,7 +81,7 @@ main(int argc, char **argv)
 		case C_FSDNR:
 		case C_FSNS:
 		case C_FSERR:
-			rv = c_err_warnx("%s: %s", p->path, serr(p->err));
+			r = c_err_warnx("%s: %s", p->path, serr(p->err));
 			break;
 		default:
 			if ((opts & AFLAG) || !p->depth)
@@ -90,8 +90,6 @@ main(int argc, char **argv)
 			p->parent->num += p->stp->blocks;
 		}
 	}
-
 	c_ioq_flush(ioq1);
-
-	return rv;
+	return r;
 }

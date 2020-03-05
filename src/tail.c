@@ -131,15 +131,15 @@ tail(ctype_fd fd, char *fname, usize cnt)
 		c_err_die(1, "c_ioq_putfd %s", fname);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_fd fd;
-	int fflag;
 	usize cnt;
-	void (*tailfn)(ctype_fd, char *, usize);
+	int fflag;
 	char *s;
 	char tmp[18];
+	void (*tailfn)(ctype_fd, char *, usize);
 
 	c_std_setprogname(argv[0]);
 
@@ -180,7 +180,6 @@ main(int argc, char **argv)
 		c_ioq_flush(ioq1);
 		WATCH(fd);
 	}
-
 	c_ioq_flush(ioq1);
 	return 0;
 }

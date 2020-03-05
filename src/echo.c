@@ -1,7 +1,7 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	int nflag;
@@ -25,6 +25,5 @@ main(int argc, char **argv)
 		c_ioq_put(ioq1, "\n");
 
 	c_ioq_flush(ioq1);
-
 	return 0;
 }

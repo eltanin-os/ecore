@@ -10,7 +10,7 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_arr arr;

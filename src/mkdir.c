@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-static int
+static ctype_status
 makedir(char *s, uint mode)
 {
 	ctype_stat st;
@@ -18,11 +18,10 @@ makedir(char *s, uint mode)
 			return -1;
 		}
 	}
-
 	return 0;
 }
 
-static int
+static ctype_status
 mkpath(char *dir, uint mode, uint dmode)
 {
 	char *s;
@@ -39,7 +38,6 @@ mkpath(char *dir, uint mode, uint dmode)
 			return c_err_warn("makedir %s", dir);
 		*s++ = '/';
 	}
-
 	if (makedir(dir, mode) < 0)
 		return c_err_warn("makedir %s", dir);
 
@@ -54,11 +52,11 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
+	ctype_status r;
 	int pflag;
-	int rv;
 	uint dmode, mode;
 	uint mask;
 
@@ -83,15 +81,13 @@ main(int argc, char **argv)
 	if (!argc)
 		usage();
 
-	rv = 0;
-
+	r = 0;
 	for (; *argv; --argc, ++argv) {
 		trim_trailing_slash(*argv);
 		if (pflag)
-			rv |= mkpath(*argv, mode, dmode);
+			r |= mkpath(*argv, mode, dmode);
 		else if (c_sys_mkdir(*argv, mode) < 0)
-			rv = c_err_warn("c_sys_mkdir %s", *argv);
+			r = c_err_warn("c_sys_mkdir %s", *argv);
 	}
-
-	return rv;
+	return r;
 }

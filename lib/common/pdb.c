@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#include "common.h"
+
 #define PWDFILE "/etc/passwd"
 #define GRPFILE "/etc/group"
 
@@ -43,7 +45,7 @@ readfile(struct pdb *p, char *file, char *search)
 }
 
 static char *
-readid(char *file, uint id)
+readid(char *file, ctype_id id)
 {
 	struct pdb db;
 	ctype_arr arr;
@@ -55,22 +57,22 @@ readid(char *file, uint id)
 }
 
 char *
-namefromuid(uint uid)
+namefromuid(ctype_id uid)
 {
 	return readid(PWDFILE, uid);
 }
 
 char *
-namefromgid(uint gid)
+namefromgid(ctype_id gid)
 {
 	return readid(GRPFILE, gid);
 }
 
-static uint
+static ctype_id
 readname(char *file, char *name)
 {
 	struct pdb db;
-	uint x;
+	ctype_id x;
 
 	if (readfile(&db, file, name) < 0)
 		return -1;
@@ -79,13 +81,13 @@ readname(char *file, char *name)
 	return x;
 }
 
-uint
+ctype_id
 uidfromname(char *name)
 {
 	return readname(PWDFILE, name);
 }
 
-uint
+ctype_id
 gidfromname(char *name)
 {
 	return readname(GRPFILE, name);

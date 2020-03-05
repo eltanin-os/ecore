@@ -10,12 +10,13 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_dir dir;
 	ctype_dent *p;
-	int Rflag, rv;
+	ctype_status r;
+	int Rflag;
 	uint mask;
 	char *m;
 
@@ -49,8 +50,7 @@ done:
 	if (c_dir_open(&dir, argv, 0, nil) < 0)
 		c_err_die(1, "c_dir_open");
 
-	rv = 0;
-
+	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
 		case C_FSD:
@@ -58,13 +58,13 @@ done:
 				c_dir_set(&dir, p, C_FSSKP);
 			break;
 		case C_FSDNR:
-			rv = c_err_warnx("%s: %s", p->name, serr(p->err));
+			r = c_err_warnx("%s: %s", p->name, serr(p->err));
 			continue;
 		case C_FSDP:
 			continue;
 		case C_FSERR:
 		case C_FSNS:
-			rv = c_err_warnx("%s: %s", p->name, serr(p->err));
+			r = c_err_warnx("%s: %s", p->name, serr(p->err));
 			continue;
 		case C_FSSL:
 		case C_FSSLN:
@@ -72,10 +72,8 @@ done:
 		}
 
 		if (c_sys_chmod(p->path, strtomode(m, p->stp->mode, mask)) < 0)
-			rv = c_err_warn("c_sys_chmod %s", p->path);
+			r = c_err_warn("c_sys_chmod %s", p->path);
 	}
-
 	c_dir_close(&dir);
-
-	return rv;
+	return r;
 }

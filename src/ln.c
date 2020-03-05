@@ -9,7 +9,7 @@ enum {
 	LFLAG = 1 << 2,
 };
 
-static int
+static ctype_status
 links(char *src, char *dest, uint opts)
 {
 	if (opts & FFLAG)
@@ -25,7 +25,6 @@ links(char *src, char *dest, uint opts)
 		if (c_sys_link(src, dest) < 0)
 			return c_err_warn("c_sys_llink %s %s", src, dest);
 	}
-
 	return 0;
 }
 
@@ -39,11 +38,11 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_stat st;
-	int rv;
+	ctype_status r;
 	uint opts;
 	char *dest;
 
@@ -53,8 +52,7 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'L':
-		opts &= ~SFLAG;
-		opts |= LFLAG;
+		opts = (opts & ~SFLAG) | LFLAG;
 		break;
 	case 'P':
 		opts &= ~(LFLAG | SFLAG);
@@ -63,8 +61,7 @@ main(int argc, char **argv)
 		opts |= FFLAG;
 		break;
 	case 's':
-		opts &= ~LFLAG;
-		opts |= SFLAG;
+		opts = (opts & ~LFLAG) | SFLAG;
 		break;
 	default:
 		usage();
@@ -88,10 +85,9 @@ main(int argc, char **argv)
 	if (!C_ISDIR(st.mode))
 		usage();
 
-	rv = 0;
-
+	r = 0;
 	for (; *argv; --argc, ++argv)
-		rv |= links(*argv, pathcat(*argv, dest, 1), opts);
+		r |= links(*argv, pathcat(*argv, dest, 1), opts);
 
-	return rv;
+	return r;
 }

@@ -26,7 +26,7 @@ display(char *fname, usize nc, usize nl, usize nw, uint opts)
 	c_ioq_fmt(ioq1, "%s\n", fname);
 }
 
-static int
+static void
 wc(struct total *t, ctype_fd fd, char *fname, uint opts)
 {
 	ctype_rune rune;
@@ -58,18 +58,15 @@ wc(struct total *t, ctype_fd fd, char *fname, uint opts)
 		}
 	}
 
+	if (fd != C_FD0)
+		c_sys_close(fd);
+
+	display(fname, nc, nl, nw, opts);
 	if (t) {
 		t->nc += nc;
 		t->nl += nl;
 		t->nw += nw;
 	}
-
-	display(fname, nc, nl, nw, opts);
-
-	if (fd != C_FD0)
-		c_sys_close(fd);
-
-	return 0;
 }
 
 static void
@@ -80,13 +77,13 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	struct total total;
 	struct total *p;
 	ctype_fd fd;
-	int rv;
+	ctype_status r;
 	uint opts;
 
 	c_std_setprogname(argv[0]);
@@ -115,27 +112,28 @@ main(int argc, char **argv)
 	if (!opts)
 		opts = CFLAG|LFLAG|WFLAG;
 
-	if (!argc)
-		c_std_exit(wc(nil, C_FD0, "", opts));
+	if (!argc) {
+		wc(nil, C_FD0, "", opts);
+		c_std_exit(0);
+	}
 
-	rv = 0;
 	c_mem_set(&total, sizeof(total), 0);
-
 	p = argc > 1 ? &total : nil;
-	for (; *argv; --argc, ++argv) {
+	r = 0;
+	for (; *argv; ++argv) {
 		if (C_ISDASH(*argv)) {
 			fd = C_FD0;
 			*argv = "<stdin>";
 		} else if ((fd = c_sys_open(*argv, C_OREAD, 0)) < 0) {
-			rv = c_err_warn("c_sys_open %s", *argv);
+			r = c_err_warn("c_sys_open %s", *argv);
 			continue;
 		}
-		rv |= wc(p, fd, *argv, opts);
+		wc(p, fd, *argv, opts);
 	}
 
 	if (p)
 		display("total", p->nc, p->nl, p->nw, opts);
 
 	c_ioq_flush(ioq1);
-	return rv;
+	return r;
 }

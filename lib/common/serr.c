@@ -3,8 +3,10 @@
 
 #include "common.h"
 
+static char buf[C_ERRSIZ];
+
 char *
-serr(int e)
+serr(ctype_error e)
 {
-	return c_std_strerror(e, gbuf, C_ERRSIZ);
+	return c_std_strerror(e, buf, sizeof(buf));
 }

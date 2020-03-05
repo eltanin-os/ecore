@@ -10,11 +10,11 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_hst hs;
-	int r;
+	ctype_status r;
 	char buf[C_H32GEN_DIGEST];
 
 	c_std_setprogname(argv[0]);

@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-static int
+static ctype_status
 rmpath(char *dir)
 {
 	char *s;
@@ -15,7 +15,6 @@ rmpath(char *dir)
 			break;
 		*s = 0;
 	}
-
 	return 0;
 }
 
@@ -26,13 +25,14 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
+	ctype_status r;
 	int pflag;
-	int rv;
 
 	c_std_setprogname(argv[0]);
+
 	pflag = 0;
 
 	C_ARGBEGIN {
@@ -49,10 +49,9 @@ main(int argc, char **argv)
 	for (; *argv; --argc, ++argv) {
 		trim_trailing_slash(*argv);
 		if (pflag)
-			rv |= rmpath(*argv);
+			r |= rmpath(*argv);
 		else if (c_sys_rmdir(*argv) < 0)
-			rv = c_err_warn("c_sys_rmdir %s", *argv);
+			r = c_err_warn("c_sys_rmdir %s", *argv);
 	}
-
-	return 0;
+	return r;
 }

@@ -23,7 +23,7 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_arr arr;
@@ -73,7 +73,6 @@ main(int argc, char **argv)
 	}
 
 	c_arr_init(&arr, buf, sizeof(buf));
-
 	if (!argc || (opts & TFLAG)) {
 		if (c_str_chr(template, C_USIZEMAX, '/'))
 			DIEX("Template must not contain directory "
@@ -88,7 +87,6 @@ main(int argc, char **argv)
 		if (c_arr_fmt(&arr, "%s/", tmp) < 0)
 			DIE("c_arr_fmt");
 	}
-
 	if (c_arr_fmt(&arr, "%s", template) < 0)
 		DIE("c_arr_fmt");
 
@@ -97,7 +95,6 @@ main(int argc, char **argv)
 		DIE("c_std_mktemp %s", tmp);
 
 	c_sys_close(fd);
-
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));
 	c_ioq_flush(ioq1);
 	return 0;

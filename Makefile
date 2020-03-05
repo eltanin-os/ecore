@@ -83,7 +83,6 @@ LIBCOMMONSRC=\
 	lib/common/pdb.c\
 	lib/common/rm.c\
 	lib/common/serr.c\
-	lib/common/shared.c\
 	lib/common/strtomode.c\
 	lib/common/tmpargv.c
 

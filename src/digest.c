@@ -39,7 +39,7 @@ sethash(struct hash *p, char *s)
 	}
 }
 
-static int
+static ctype_status
 cmpsum(struct hash *hp, ctype_hst *p, char *s)
 {
 	char buf[64];
@@ -51,19 +51,18 @@ cmpsum(struct hash *hp, ctype_hst *p, char *s)
 			return -1;
 		s += 2;
 	}
-
 	return 0;
 }
 
-static int
+static ctype_status
 checkfile(struct hash *hp, char *file)
 {
 	ctype_arr arr;
 	ctype_fd fd;
 	ctype_hst hs;
 	ctype_ioq ioq;
+	ctype_status r;
 	usize n;
-	int r;
 	char *p, *s;
 	char buf[C_BIOSIZ];
 
@@ -72,7 +71,6 @@ checkfile(struct hash *hp, char *file)
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
 	c_mem_set(&arr, sizeof(arr), 0);
-
 	r = 0;
 	while (c_ioq_getln(&ioq, &arr) > 0 ) {
 		s = c_arr_data(&arr);
@@ -112,13 +110,14 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	struct hash hst;
 	ctype_hst hs;
+	ctype_status r;
 	int cflag;
-	int i, r;
+	int i;
 	char buf[64];
 
 	c_std_setprogname(argv[0]);

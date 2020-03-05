@@ -37,7 +37,7 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	int mode;
@@ -71,7 +71,6 @@ main(int argc, char **argv)
 		if (!(s = c_sys_getcwd(buf, sizeof(buf))))
 			c_err_die(1, "c_sys_getcwd");
 	}
-
 	c_ioq_fmt(ioq1, "%s\n", s);
 	c_ioq_flush(ioq1);
 	return 0;

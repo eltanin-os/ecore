@@ -72,7 +72,6 @@ sort(void *va, void *vb)
 
 	a = va;
 	b = vb;
-
 	if (opts & SSFLAG) {
 		cmp = a->stp->size - b->stp->size;
 	} else if (opts & TFLAG) {
@@ -81,7 +80,6 @@ sort(void *va, void *vb)
 	} else {
 		cmp = c_str_cmp(a->name, C_USIZEMAX, b->name);
 	}
-
 	return (opts & RFLAG) ? -cmp : cmp;
 }
 
@@ -100,13 +98,11 @@ mkcol(struct column *col, struct max *max)
 
 	++col->width;
 	twidth = termwidth + 1;
-
 	if (twidth < (col->width << 1))
 		return 1;
 
 	col->num = (twidth / col->width);
 	col->width = (twidth / col->num);
-
 	return 0;
 }
 
@@ -499,14 +495,14 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	struct max max;
 	ctype_dir dir;
 	ctype_dent *p;
 	ctype_tai t;
-	int rv;
+	ctype_status r;
 	uint ropts;
 	char *tmp;
 	void (*plist)(ctype_dir *, struct max *);
@@ -626,12 +622,10 @@ main(int argc, char **argv)
 	c_mem_set(&max, sizeof(max), 0);
 	mkmax(&max, &dir);
 	plist(&dir, &max);
-
 	if (max.total)
 		first = 1;
 
-	rv = 0;
-
+	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
 		case C_FSD:
@@ -646,7 +640,7 @@ main(int argc, char **argv)
 		case C_FSDNR:
 		case C_FSNS:
 		case C_FSERR:
-			rv = c_err_warnx("%s: %s", p->path, serr(p->err));
+			r = c_err_warnx("%s: %s", p->path, serr(p->err));
 			break;
 		}
 
@@ -663,5 +657,5 @@ main(int argc, char **argv)
 	}
 	c_dir_close(&dir);
 	c_ioq_flush(ioq1);
-	return rv;
+	return r;
 }

@@ -8,7 +8,7 @@
 
 static int tdir;
 
-static int
+static ctype_status
 move(char *src, char *dest)
 {
 	char *argv[2];
@@ -21,7 +21,6 @@ move(char *src, char *dest)
 
 	argv[0] = src;
 	argv[1] = nil;
-
 	return (copy(argv, dest, 0, CPOPTS | tdir) || remove (argv, RMOPTS));
 }
 
@@ -33,11 +32,11 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_stat st;
-	int rv;
+	ctype_status r;
 	char *dest;
 
 	c_std_setprogname(argv[0]);
@@ -59,7 +58,6 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-
 	if (c_sys_stat(dest, &st) < 0) {
 		if (errno != C_ENOENT)
 			c_err_die(1, "c_sys_stat %s", dest);
@@ -70,10 +68,9 @@ main(int argc, char **argv)
 	else if (argc > 1)
 		usage();
 
-	rv = 0;
-
+	r = 0;
 	for (; *argv; --argc, ++argv)
-		rv |= move(*argv, dest);
+		r |= move(*argv, dest);
 
 	return 0;
 }

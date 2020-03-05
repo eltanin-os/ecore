@@ -137,9 +137,9 @@ printfmt(char *s, int argc, char **argv)
 			c_err_die(1, nil);
 		}
 	}
-
 	return ac - argc;
 }
+
 static void
 usage(void)
 {
@@ -147,7 +147,7 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	char *fmt;

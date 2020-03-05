@@ -8,7 +8,7 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	char *s;
@@ -26,16 +26,13 @@ main(int argc, char **argv)
 		usage();
 
 	s = c_gen_basename(*argv);
-
 	if (argc) {
 		argv++;
 		n = c_str_len(s, C_USIZEMAX) - c_str_len(*argv, C_USIZEMAX);
 		if (!c_str_cmp(s + n, C_USIZEMAX, *argv))
 			s[n] = 0;
 	}
-
 	c_ioq_fmt(ioq1, "%s\n", s);
 	c_ioq_flush(ioq1);
-
 	return 0;
 }

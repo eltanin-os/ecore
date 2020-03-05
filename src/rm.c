@@ -10,7 +10,7 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	uint opts;
@@ -39,6 +39,5 @@ main(int argc, char **argv)
 			usage();
 		c_std_exit(0);
 	}
-
 	return remove(argv, opts);
 }

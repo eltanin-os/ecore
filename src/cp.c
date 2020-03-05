@@ -11,7 +11,7 @@ usage(void)
 	c_std_exit(1);
 }
 
-int
+ctype_status
 main(int argc, char **argv)
 {
 	ctype_stat st;
@@ -57,7 +57,6 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-
 	if (c_sys_stat(dest, &st) < 0) {
 		if (errno != C_ENOENT)
 			c_err_die(1, "c_sys_stat %s", dest);
