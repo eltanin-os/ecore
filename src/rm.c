@@ -28,7 +28,7 @@ main(int argc, char **argv)
 		opts |= RM_FFLAG;
 		break;
 	case 'i':
-		/* ignore */
+		opts |= RM_IFLAG;
 		break;
 	default:
 		usage();

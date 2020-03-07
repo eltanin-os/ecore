@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#define CWTMODE (C_OCREATE | C_OWRITE | C_OTRUNC)
+
 static ctype_status
 regcopy(char *src, ctype_stat *stp, char *dest)
 {
@@ -13,8 +15,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 
 	ifd = -1;
 	r = 0;
-	if ((ofd = c_sys_open(dest, C_OCREATE | C_OWRITE | C_OTRUNC,
-	    stp->mode)) < 0) {
+	if ((ofd = c_sys_open(dest, CWTMODE, stp->mode)) < 0) {
 		r = c_err_warn("c_sys_open %s", dest);
 		goto done;
 	}
@@ -76,6 +77,22 @@ ndcopy(char *s, ctype_stat *stp)
 	return 0;
 }
 
+static int
+prompt(char *s)
+{
+	ctype_stat st;
+
+	if (c_sys_stat(s, &st) < 0) {
+		if (errno == C_ENOENT)
+			return 0;
+		return c_err_warn("c_sys_stat %s", s);
+	}
+
+	c_ioq_fmt(ioq2, "%s: overwrite '%s'? ", c_std_getprogname(), s);
+	c_ioq_flush(ioq2);
+	return yesno(s);
+}
+
 ctype_status
 copy(char **argv, char *dest, uint ropts, uint opts)
 {
@@ -127,8 +144,11 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 			n = c_arr_fmt(&d, "/%s", p->name);
 		}
 
+		if ((opts & CP_IFLAG) && prompt(c_arr_data(&d)))
+			continue;
+
 		if (opts & CP_FFLAG)
-			(void)c_sys_unlink(c_arr_data(&d));
+			c_sys_unlink(c_arr_data(&d));
 
 		switch (p->info) {
 		case C_FSF:

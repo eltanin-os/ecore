@@ -15,6 +15,13 @@ remove(char **argv, uint opts)
 
 	r = 0;
 	while ((p = c_dir_read(&dir))) {
+		if (opts & RM_IFLAG) {
+			c_ioq_fmt(ioq2, "%s: remove '%s'? ",
+			    c_std_getprogname(), p->path);
+			c_ioq_flush(ioq2);
+			if (yesno(p->path))
+				continue;
+		}
 		switch (p->info) {
 		case C_FSD:
 			if (!(opts & RM_RFLAG)) {

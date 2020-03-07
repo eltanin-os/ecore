@@ -28,12 +28,10 @@ main(int argc, char **argv)
 		ropts |= C_FSCOM;
 		break;
 	case 'L':
-		ropts &= ~C_FSPHY;
-		ropts |= C_FSLOG;
+		ropts = (ropts & ~C_FSPHY) | C_FSLOG;
 		break;
 	case 'P':
-		ropts &= ~C_FSLOG;
-		ropts |= C_FSPHY;
+		ropts = (ropts & ~C_FSLOG) | C_FSPHY;
 		break;
 	case 'R':
 		opts |= CP_RFLAG;
@@ -42,7 +40,7 @@ main(int argc, char **argv)
 		opts |= CP_FFLAG;
 		break;
 	case 'i':
-		/* ignore */
+		opts |= CP_IFLAG;
 		break;
 	case 'p':
 		opts |= CP_PFLAG;

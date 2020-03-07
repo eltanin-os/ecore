@@ -3,11 +3,13 @@ enum {
 	CP_FFLAG = 1 << 0,
 	CP_PFLAG = 1 << 1,
 	CP_RFLAG = 1 << 2,
-	CP_TDIR  = 1 << 3,
+	CP_IFLAG = 1 << 3,
+	CP_TDIR  = 1 << 4,
 
 	/* rm flags */
 	RM_FFLAG = 1 << 0,
 	RM_RFLAG = 1 << 1,
+	RM_IFLAG = 1 << 2,
 };
 
 #define edyncat(a, b, c, d) \
@@ -31,3 +33,4 @@ char **tmpargv(char *);
 void trim_trailing_slash(char *);
 ctype_id uidfromname(char *);
 ctype_id gidfromname(char *);
+int yesno(char *);

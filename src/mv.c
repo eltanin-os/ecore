@@ -3,17 +3,17 @@
 
 #include "common.h"
 
-#define CPOPTS (CP_FFLAG | CP_PFLAG | CP_RFLAG)
+#define CPOPTS (CP_PFLAG | CP_RFLAG)
 #define RMOPTS (RM_FFLAG | RM_RFLAG)
 
-static int tdir;
+static uint opts;
 
 static ctype_status
 move(char *src, char *dest)
 {
 	char *argv[2];
 
-	if (!c_sys_rename(src, pathcat(src, dest, tdir)))
+	if (!c_sys_rename(src, pathcat(src, dest, opts & CP_TDIR)))
 		return 0;
 
 	if (errno != C_EXDEV)
@@ -21,7 +21,7 @@ move(char *src, char *dest)
 
 	argv[0] = src;
 	argv[1] = nil;
-	return (copy(argv, dest, 0, CPOPTS | tdir) || remove (argv, RMOPTS));
+	return (copy(argv, dest, 0, CPOPTS | opts) || remove(argv, RMOPTS));
 }
 
 static void
@@ -43,10 +43,10 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'i':
-		/* ignore */
+		opts |= CP_IFLAG;
 		break;
 	case 'f':
-		/* ignore */
+		opts |= CP_FFLAG;
 		break;
 	default:
 		usage();
@@ -64,7 +64,7 @@ main(int argc, char **argv)
 		st.mode = 0;
 	}
 	if (C_ISDIR(st.mode))
-		tdir = CP_TDIR;
+		tdir |= CP_TDIR;
 	else if (argc > 1)
 		usage();
 

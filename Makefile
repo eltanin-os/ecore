@@ -84,7 +84,8 @@ LIBCOMMONSRC=\
 	lib/common/rm.c\
 	lib/common/serr.c\
 	lib/common/strtomode.c\
-	lib/common/tmpargv.c
+	lib/common/tmpargv.c\
+	lib/common/yesno.c
 
 # LIB PATH
 LIBCOMMON= lib/libcommon.a
