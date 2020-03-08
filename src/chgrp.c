@@ -38,12 +38,10 @@ main(int argc, char **argv)
 		opts |= HFLAG;
 		break;
 	case 'L':
-		opts &= ~C_FSPHY;
-		opts |= C_FSLOG;
+		opts = (opts & ~C_FSPHY) | C_FSLOG;
 		break;
 	case 'P':
-		opts &= ~C_FSLOG;
-		opts |= C_FSPHY;
+		opts = (opts & ~C_FSLOG) | C_FSPHY;
 		break;
 	case 'R':
 		ropts |= RFLAG;

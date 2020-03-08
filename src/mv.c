@@ -6,16 +6,18 @@
 #define CPOPTS (CP_PFLAG | CP_RFLAG)
 #define RMOPTS (RM_FFLAG | RM_RFLAG)
 
-static uint opts;
-
 static ctype_status
-move(char *src, char *dest)
+move(char *src, char *dest, uint opts)
 {
 	char *argv[2];
+	char *s;
 
-	if (!c_sys_rename(src, pathcat(src, dest, opts & CP_TDIR)))
+	s = pathcat(src, dest, opts & CP_TDIR);
+	if ((opts & CP_IFLAG) && prompt(s))
 		return 0;
 
+	if (!c_sys_rename(src, s))
+		return 0;
 	if (errno != C_EXDEV)
 		return c_err_warn("c_sys_rename %s %s", src, dest);
 
@@ -37,16 +39,19 @@ main(int argc, char **argv)
 {
 	ctype_stat st;
 	ctype_status r;
+	uint opts;
 	char *dest;
 
 	c_std_setprogname(argv[0]);
 
+	opts = 0;
+
 	C_ARGBEGIN {
 	case 'i':
-		opts |= CP_IFLAG;
+		opts |= (opts & ~CP_FFLAG) | CP_IFLAG;
 		break;
 	case 'f':
-		opts |= CP_FFLAG;
+		opts |= (opts & ~CP_IFLAG) | CP_FFLAG;
 		break;
 	default:
 		usage();
@@ -64,13 +69,13 @@ main(int argc, char **argv)
 		st.mode = 0;
 	}
 	if (C_ISDIR(st.mode))
-		tdir |= CP_TDIR;
+		opts |= CP_TDIR;
 	else if (argc > 1)
 		usage();
 
 	r = 0;
 	for (; *argv; --argc, ++argv)
-		r |= move(*argv, dest);
+		r |= move(*argv, dest, opts);
 
 	return 0;
 }

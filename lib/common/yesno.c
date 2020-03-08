@@ -4,6 +4,22 @@
 #include "common.h"
 
 int
+prompt(char *s)
+{
+	ctype_stat st;
+
+	if (c_sys_stat(s, &st) < 0) {
+		if (errno == C_ENOENT)
+			return 0;
+		return c_err_warn("c_sys_stat %s", s);
+	}
+
+	c_ioq_fmt(ioq2, "%s: overwrite %s? ", c_std_getprogname(), s);
+	c_ioq_flush(ioq2);
+	return yesno(s);
+}
+
+int
 yesno(char *s)
 {
 	int x;

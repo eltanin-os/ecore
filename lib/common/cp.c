@@ -48,7 +48,7 @@ done:
 	return r;
 }
 
-static int
+static ctype_status
 lncopy(char *src, ctype_stat *stp, char *dest)
 {
 	size r;
@@ -58,7 +58,6 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 		return c_err_warn("readlink %s", src);
 
 	buf[r] = 0;
-
 	if ((size)stp->size < r)
 		return c_err_warnx("%s: not same file\n", src);
 
@@ -68,7 +67,7 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 	return 0;
 }
 
-static int
+static ctype_status
 ndcopy(char *s, ctype_stat *stp)
 {
 	if (c_sys_mknod(s, stp->mode, stp->dev) < 0)
@@ -77,92 +76,116 @@ ndcopy(char *s, ctype_stat *stp)
 	return 0;
 }
 
-static int
-prompt(char *s)
-{
-	ctype_stat st;
-
-	if (c_sys_stat(s, &st) < 0) {
-		if (errno == C_ENOENT)
-			return 0;
-		return c_err_warn("c_sys_stat %s", s);
-	}
-
-	c_ioq_fmt(ioq2, "%s: overwrite '%s'? ", c_std_getprogname(), s);
-	c_ioq_flush(ioq2);
-	return yesno(s);
-}
-
 ctype_status
-copy(char **argv, char *dest, uint ropts, uint opts)
+install(struct install *p, char **argv, char *dest)
 {
 	ctype_arr d;
 	ctype_dir dir;
-	ctype_dent *p;
+	ctype_dent *ep;
+	ctype_stat st;
 	ctype_status r;
 	usize n;
 	char buf[C_PATHMAX];
+	char tmp[11];
 
-	if (c_dir_open(&dir, argv, ropts, nil) < 0)
+	if (c_dir_open(&dir, argv, p->ropts, nil) < 0)
 		c_err_die(1, "c_dir_open");
 
 	c_arr_init(&d, buf, sizeof(buf));
 	c_arr_fmt(&d, "%s", dest);
-	r = 0;
-	while ((p = c_dir_read(&dir))) {
-		switch(p->info) {
+	n = r = 0;
+	while ((ep = c_dir_read(&dir))) {
+		c_arr_trunc(&d, c_arr_bytes(&d) - n, sizeof(uchar));
+		n = 0;
+		switch(ep->info) {
 		case C_FSD:
-			if (!(opts & CP_RFLAG)) {
-				c_dir_set(&dir, p, C_FSSKP);
+			if (!(p->opts & CP_RFLAG)) {
+				c_dir_set(&dir, ep, C_FSSKP);
 				r = c_err_warnx("%s: %s",
-				    p->path, serr(C_EISDIR));
+				    ep->path, serr(C_EISDIR));
 				continue;
 			}
-			if (p->depth || (opts & CP_TDIR))
-				c_arr_fmt(&d, "/%s", p->name);
-			if (c_sys_mkdir(c_arr_data(&d), p->stp->mode) < 0 &&
+			if (ep->depth || (p->opts & CP_TDIR))
+				c_arr_fmt(&d, "/%s", ep->name);
+			if (c_sys_mkdir(c_arr_data(&d), ep->stp->mode) < 0 &&
 			    errno != C_EEXIST)
 				r = c_err_warn("c_sys_mkdir %s",
 				    c_arr_data(&d));
 			continue;
 		case C_FSDP:
-			c_arr_trunc(&d, c_arr_bytes(&d) - (p->nlen + 1),
+			c_arr_trunc(&d, c_arr_bytes(&d) - (ep->nlen + 1),
 			    sizeof(uchar));
 			continue;
 		case C_FSDNR:
 		case C_FSERR:
 		case C_FSNS:
-			r = c_err_warnx("%s: %s", p->path, serr(p->err));
+			r = c_err_warnx("%s: %s", ep->path, serr(ep->err));
 			continue;
 		}
 
-		n = 0;
-		if ((opts & CP_TDIR)) {
+		if (p->opts & CP_TDIR) {
 			n = c_arr_fmt(&d, "/%s",
-			    p->depth ? p->name : c_gen_basename(p->name));
-		} else if (p->depth) {
-			n = c_arr_fmt(&d, "/%s", p->name);
+			    ep->depth ? ep->name : c_gen_basename(ep->name));
+		} else if (ep->depth) {
+			n = c_arr_fmt(&d, "/%s", ep->name);
 		}
 
-		if ((opts & CP_IFLAG) && prompt(c_arr_data(&d)))
+		if ((p->opts & CP_IFLAG) && prompt(c_arr_data(&d)))
 			continue;
 
-		if (opts & CP_FFLAG)
+		if (p->opts & CP_FFLAG)
 			c_sys_unlink(c_arr_data(&d));
 
-		switch (p->info) {
-		case C_FSF:
-			r = regcopy(p->path, p->stp, c_arr_data(&d));
-			break;
-		case C_FSSL:
-			r = lncopy(p->path, p->stp, c_arr_data(&d));
-			break;
-		default:
-			r = ndcopy(c_arr_data(&d), p->stp);
+		dest = c_arr_data(&d);
+		if (p->opts & CP_ATOMIC) {
+			tmp[0] = '.';
+			tmp[sizeof(tmp) - 1] = '\0';
+			for (;;) {
+				c_rand_name(tmp + 1, sizeof(tmp) - 2);
+				if (c_sys_stat(tmp, &st) && errno == C_ENOENT)
+					break;
+			}
+			dest = tmp;
 		}
 
-		c_arr_trunc(&d, c_arr_bytes(&d) - n, sizeof(uchar));
+		switch (ep->info) {
+		case C_FSF:
+			r = regcopy(ep->path, ep->stp, dest);
+			break;
+		case C_FSSL:
+			r = lncopy(ep->path, ep->stp, dest);
+			break;
+		default:
+			r = ndcopy(dest, ep->stp);
+		}
+
+		if ((p->gid != -1 || p->uid != -1) &&
+		    c_sys_chown(dest,
+		    ID(p->uid, ep->stp->uid),
+		    ID(p->gid, ep->stp->gid)) < 0) {
+			r = c_err_warn("c_sys_chown %s", dest);
+			continue;
+		}
+		if ((p->mode != -1) && c_sys_chmod(dest, p->mode) < 0) {
+			r = c_err_warn("c_sys_chmod %s", dest);
+			continue;
+		}
+		if ((p->opts & CP_ATOMIC) &&
+		    c_sys_rename(dest, c_arr_data(&d)) < 0)
+			r = c_err_warn("c_sys_rename %s %s",
+			    dest, c_arr_data(&d));
 	}
 	c_dir_close(&dir);
 	return r;
+}
+
+ctype_status
+copy(char **argv, char *dest, uint ropts, uint opts)
+{
+	struct install in;
+
+	in.gid = in.mode = in.uid = -1;
+	in.opts = opts;
+	in.ropts = ropts;
+	return install(&in, argv, dest);
 }

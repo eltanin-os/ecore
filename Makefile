@@ -24,6 +24,7 @@ BIN=\
 	src/env\
 	src/false\
 	src/head\
+	src/install\
 	src/link\
 	src/ln\
 	src/ls\
@@ -78,6 +79,7 @@ MAN1=\
 LIBCOMMONSRC=\
 	lib/common/cp.c\
 	lib/common/estrtovl.c\
+	lib/common/mkpath.c\
 	lib/common/path.c\
 	lib/common/pathcat.c\
 	lib/common/pdb.c\

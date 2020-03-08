@@ -37,10 +37,10 @@ main(int argc, char **argv)
 		opts |= CP_RFLAG;
 		break;
 	case 'f':
-		opts |= CP_FFLAG;
+		opts |= (opts & ~CP_IFLAG) | CP_FFLAG;
 		break;
 	case 'i':
-		opts |= CP_IFLAG;
+		opts |= (opts & ~CP_FFLAG) | CP_IFLAG;
 		break;
 	case 'p':
 		opts |= CP_PFLAG;

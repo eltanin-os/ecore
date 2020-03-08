@@ -49,12 +49,10 @@ main(int argc, char **argv)
 
 	C_ARGBEGIN {
 	case 'l':
-		opts &= ~SFLAG;
-		opts |= LFLAG;
+		opts = LFLAG;
 		break;
 	case 's':
-		opts &= ~LFLAG;
-		opts |= SFLAG;
+		opts = SFLAG;
 		break;
 	default:
 		usage();

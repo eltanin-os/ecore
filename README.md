@@ -19,6 +19,7 @@ secure, small and fast.
 * env
 * false
 * head
+* install
 * link
 * ln
 * ls
