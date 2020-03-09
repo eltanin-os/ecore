@@ -25,6 +25,7 @@ secure, small and fast.
 * ls
 * mkdir
 * mv
+* pathchk
 * printenv
 * printf
 * pwd

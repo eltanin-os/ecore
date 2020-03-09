@@ -31,6 +31,7 @@ BIN=\
 	src/mkdir\
 	src/mktemp\
 	src/mv\
+	src/pathchk\
 	src/printenv\
 	src/printf\
 	src/pwd\
