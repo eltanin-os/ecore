@@ -38,6 +38,7 @@ BIN=\
 	src/rm\
 	src/rmdir\
 	src/tail\
+	src/tee\
 	src/true\
 	src/uname\
 	src/unlink\

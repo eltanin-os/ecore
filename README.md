@@ -32,6 +32,7 @@ secure, small and fast.
 * rm
 * rmdir
 * tail
+* tee
 * true
 * uname
 * unlink
