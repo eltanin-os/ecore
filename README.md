@@ -27,6 +27,7 @@ secure, small and fast.
 * ls
 * mkdir
 * mkfifo
+* mknod
 * mv
 * pathchk
 * printenv
