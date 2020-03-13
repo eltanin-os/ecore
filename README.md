@@ -41,6 +41,7 @@ secure, small and fast.
 * uname
 * unlink
 * wc
+* whoami
 * yes
 
 #### Build

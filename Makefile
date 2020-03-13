@@ -47,6 +47,7 @@ BIN=\
 	src/uname\
 	src/unlink\
 	src/wc\
+	src/whoami\
 	src/yes
 
 # MAN
