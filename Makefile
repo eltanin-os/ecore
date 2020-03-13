@@ -31,6 +31,7 @@ BIN=\
 	src/ln\
 	src/ls\
 	src/mkdir\
+	src/mkfifo\
 	src/mktemp\
 	src/mv\
 	src/pathchk\
