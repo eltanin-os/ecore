@@ -24,6 +24,7 @@ BIN=\
 	src/env\
 	src/false\
 	src/head\
+	src/hostname\
 	src/id\
 	src/install\
 	src/link\

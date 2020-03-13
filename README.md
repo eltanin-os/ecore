@@ -19,6 +19,7 @@ secure, small and fast.
 * env
 * false
 * head
+* hostname
 * id
 * install
 * link
