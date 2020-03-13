@@ -22,7 +22,7 @@ main(int argc, char **argv)
 	ctype_dir dir;
 	ctype_dent *p;
 	ctype_status r;
-	uint gid;
+	ctype_id gid;
 	uint opts, ropts;
 
 	c_std_setprogname(argv[0]);
@@ -56,7 +56,7 @@ main(int argc, char **argv)
 	if (!(ropts & RFLAG))
 		opts = (ropts & HFLAG) ? C_FSCOM : 0;
 
-	if ((gid = gidfromname(argv[0])) == (uint)-1)
+	if ((gid = gidfromname(argv[0])) < 0)
 		gid = estrtovl(argv[0], 0, 0, C_UINTMAX);
 
 	++argv;

@@ -30,7 +30,7 @@ pathchk(char *path, uint opts)
 	for (len = n = 0; *s; ++len, ++n, ++s) {
 		if (*s == '/') {
 			if ((opts & PFLAG) && (uchar)*(s + 1) == '-')
-				r = c_err_warnx("leading" <hyphen-minus>"
+				r = c_err_warnx("leading <hyphen-minus>"
 				    " found in component of pathname", path);
 			if (n > namemax) {
 				errno = C_ENAMETOOLONG;

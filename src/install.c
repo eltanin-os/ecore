@@ -11,7 +11,7 @@ enum {
 static void
 usage(void)
 {
-	c_ioq_fmt(ioq1,
+	c_ioq_fmt(ioq2,
 	    "usage: %s [-cDds] [-g group] [-m mode] [-o owner] "
 	    "source ... target\n",
 	    c_std_getprogname());

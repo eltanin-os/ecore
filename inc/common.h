@@ -13,6 +13,9 @@ enum {
 	RM_IFLAG = 1 << 2,
 };
 
+#define PWDFILE "/etc/passwd"
+#define GRPFILE "/etc/group"
+
 #define edyncat(a, b, c, d) \
 if (c_dyn_cat((a), (b), (c), (d)) < 0) c_err_die(1, "c_dyn_cat");
 
@@ -30,9 +33,17 @@ struct install {
 	uint ropts;
 };
 
+/* pwd: name:pass:uid:gid:dir:shell
+ * grp: name:pass:gid:mem */
+struct pdb {
+	char *p[6];
+};
+
 ctype_status copy(char **, char *, uint, uint);
+ctype_status dbgetln(struct pdb *, ctype_ioq *, ctype_arr *);
 vlong estrtovl(char *, int, vlong, vlong);
 ctype_id gidfromname(char *);
+ctype_id gidfromuid(ctype_id);
 ctype_status install(struct install *, char **, char *);
 ctype_status mkpath(char *, uint, uint);
 char *namefromgid(ctype_id);

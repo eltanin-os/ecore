@@ -23,7 +23,7 @@ main(int argc, char **argv)
 	ctype_dir dir;
 	ctype_dent *p;
 	ctype_status r;
-	uint gid, uid;
+	ctype_id gid, uid;
 	uint opts, ropts;
 	char *grp;
 
@@ -61,11 +61,11 @@ main(int argc, char **argv)
 	gid = -1;
 	if ((grp = c_str_chr(argv[0], C_USIZEMAX, ':'))) {
 		*grp++ = 0;
-		if ((gid = gidfromname(grp)) == (uint)-1)
+		if ((gid = gidfromname(grp)) < 0)
 			gid = estrtovl(grp, 0, 0, C_UINTMAX);
 	}
 
-	if ((uid = uidfromname(argv[0])) == (uint)-1)
+	if ((uid = uidfromname(argv[0])) < 0)
 		uid = estrtovl(argv[0], 0, 0, C_UINTMAX);
 
 	++argv;
