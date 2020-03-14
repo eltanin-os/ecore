@@ -69,6 +69,7 @@ MAN1=\
 	man/head.1\
 	man/hostname.1\
 	man/id.1\
+	man/install.1\
 	man/link.1\
 	man/ln.1\
 	man/ls.1\

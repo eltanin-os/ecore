@@ -12,7 +12,7 @@ static void
 usage(void)
 {
 	c_ioq_fmt(ioq2,
-	    "usage: %s [-cDds] [-g group] [-m mode] [-o owner] "
+	    "usage: %s [-Dd] [-g group] [-m mode] [-o owner] "
 	    "source ... target\n",
 	    c_std_getprogname());
 	c_std_exit(1);

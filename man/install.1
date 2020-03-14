@@ -1,0 +1,42 @@
+.Dd $Mdocdate: March 14 2020 $
+.Dt install 1
+.Os
+.Sh NAME
+.Nm install
+.Nd install binaries
+.Sh SYNOPSIS
+.Nm
+.Op Fl Dd
+.Op Fl g Ar group
+.Op Fl m Ar mode
+.Op Fl o Ar owner
+.Ar source ... target
+.Sh DESCRIPTION
+The
+.Nm
+utility copies the
+.Ar source
+file(s) to the
+.Ar target
+file or directory.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl D
+Create all leading components of the target
+before installing into it.
+.It Fl d
+Create directories instead of copying files.
+.It Fl g
+Specify a group.
+.It Fl m
+Specify a mode.
+.It Fl o
+Specify a owner.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr chmod 1 ,
+.Xr chown 1 ,
+.Xr cp 1 ,
+.Xr mkdir 1
