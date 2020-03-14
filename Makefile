@@ -67,6 +67,7 @@ MAN1=\
 	man/env.1\
 	man/false.1\
 	man/head.1\
+	man/hostname.1\
 	man/link.1\
 	man/ln.1\
 	man/ls.1\
