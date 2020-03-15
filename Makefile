@@ -84,6 +84,8 @@ MAN1=\
 	man/pwd.1\
 	man/rm.1\
 	man/rmdir.1\
+	man/tail.1\
+	man/tee.1\
 	man/true.1\
 	man/uname.1\
 	man/unlink.1\

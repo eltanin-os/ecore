@@ -1,0 +1,32 @@
+.Dd $Mdocdate: March 15 2020 $
+.Dt TEE 1
+.Os
+.Sh NAME
+.Nm tee
+.Nd duplicate standard input
+.Sh SYNOPSIS
+.Nm
+.Op Fl ai
+.Op Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility copies standard input to standard output, and also to each
+.Ar file .
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl a
+Append to the files rather than overwriting them.
+.It Fl i
+Ignore the SIGINT signal.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr cat 1
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2017
+specification.
