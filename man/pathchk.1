@@ -1,0 +1,33 @@
+.Dd $Mdocdate: March 15 2020 $
+.Dt PATHCHK 1
+.Os
+.Sh NAME
+.Nm pathchk
+.Nd check pathnames
+.Sh SYNOPSIS
+.Nm
+.Op Fl \&Pp
+.Ar pathname ...
+.Sh DESCRIPTION
+The
+.Nm
+utility checks each
+.Ar pathname
+and report too long path, too long components
+or non-searchable directories.
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl P
+Check for empty pathnames and leading hyphens
+.Pq Sq - .
+.It Fl p
+Check for most POSIX systems.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh STANDARDS
+The
+.Nm
+utility is compliant with the
+.St -p1003.1-2017
+specification.
