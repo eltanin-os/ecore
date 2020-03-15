@@ -1,0 +1,24 @@
+.Dd $Mdocdate: March 15 2020 $
+.Dt PRINTENV 1
+.Os
+.Sh NAME
+.Nm printenv
+.Nd write out the environment
+.Sh SYNOPSIS
+.Nm
+.Op Ar name
+.Sh DESCRIPTION
+The
+.Nm
+utility writes the value of the environment variable
+.Ar name ,
+to the standard output.
+If no argument is specified,
+.Nm
+writes the current environment, with one
+.Ar name=value
+pair per line, to the standard output.
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr env 1

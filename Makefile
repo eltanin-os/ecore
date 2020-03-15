@@ -79,6 +79,7 @@ MAN1=\
 	man/mktemp.1\
 	man/mv.1\
 	man/pathchk.1\
+	man/printenv.1\
 	man/printf.1\
 	man/pwd.1\
 	man/rm.1\
