@@ -90,6 +90,7 @@ MAN1=\
 	man/uname.1\
 	man/unlink.1\
 	man/wc.1\
+	man/whoami.1\
 	man/yes.1
 
 # LIB SRC
