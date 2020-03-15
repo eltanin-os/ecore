@@ -75,6 +75,7 @@ MAN1=\
 	man/ls.1\
 	man/mkdir.1\
 	man/mkfifo.1\
+	man/mknod.1\
 	man/mktemp.1\
 	man/mv.1\
 	man/printf.1\

@@ -1,0 +1,44 @@
+.Dd $Mdocdate: March 15 2020 $
+.Dt MKNOD 1
+.Os
+.Sh NAME
+.Nm mknod
+.Nd make special files
+.Sh SYNOPSIS
+.Nm
+.Op Fl m Ar mode
+.Ar file
+.Cm b | c
+.Ar major minor
+.Nm
+.Op Fl m Ar mode
+.Ar file
+.Cm p
+.Sh DESCRIPTION
+In the first synopsis form,
+.Nm
+creates a device special file named
+.Ar file ,
+with the indicated
+.Ar major
+and
+.Ar minor
+device numbers.
+In the second synopsis form,
+.Nm
+creates a device special file named
+.Ar file .
+.Pp
+The device special file type are the following:
+.Bl -tag -width X -offset indent -compact
+.It Cm b
+A block device.
+.It Cm c
+A character device.
+.It Cm p
+A named pipe.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr mkfifo 1
