@@ -63,7 +63,7 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-	if (c_sys_stat(dest, &st) < 0) {
+	if (c_sys_stat(&st, dest) < 0) {
 		if (errno != C_ENOENT)
 			c_err_die(1, "c_sys_stat %s", dest);
 		st.mode = 0;

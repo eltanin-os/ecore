@@ -20,7 +20,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 		goto done;
 	}
 
-	if (c_sys_fstat(ofd, &st) < 0) {
+	if (c_sys_fstat(&st, ofd) < 0) {
 		r = c_err_warn("c_sys_fstat %s", src);
 		goto done;
 	}
@@ -54,10 +54,9 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 	size r;
 	char buf[C_PATHMAX];
 
-	if ((r = c_sys_readlink(src, buf, sizeof(buf) - 1)) < 0)
+	if ((r = c_sys_readlink(src, buf, sizeof(buf))) < 0)
 		return c_err_warn("readlink %s", src);
 
-	buf[r] = 0;
 	if ((size)stp->size < r)
 		return c_err_warnx("%s: not same file\n", src);
 
@@ -142,7 +141,7 @@ install(struct install *p, char **argv, char *dest)
 			tmp[sizeof(tmp) - 1] = '\0';
 			for (;;) {
 				c_rand_name(tmp + 1, sizeof(tmp) - 2);
-				if (c_sys_stat(tmp, &st) && errno == C_ENOENT)
+				if (c_sys_stat(&st, tmp) && errno == C_ENOENT)
 					break;
 			}
 			dest = tmp;

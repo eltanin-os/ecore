@@ -79,7 +79,7 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-	if (c_sys_stat(dest, &st) < 0)
+	if (c_sys_stat(&st, dest) < 0)
 		c_err_die(1, "c_sys_stat %s", dest);
 
 	if (!C_ISDIR(st.mode))

@@ -8,7 +8,7 @@ prompt(char *s)
 {
 	ctype_stat st;
 
-	if (c_sys_stat(s, &st) < 0) {
+	if (c_sys_stat(&st, s) < 0) {
 		if (errno == C_ENOENT)
 			return 0;
 		return c_err_warn("c_sys_stat %s", s);

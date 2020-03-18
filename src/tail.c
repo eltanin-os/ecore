@@ -18,7 +18,7 @@ headb(ctype_fd fd, char *fname, usize cnt)
 {
 	ctype_stat st;
 
-	if (c_sys_fstat(fd, &st) < 0)
+	if (c_sys_fstat(&st, fd) < 0)
 		c_err_die(1, "c_sys_fstat %s", fname);
 
 	if (cnt > st.size)
@@ -74,7 +74,7 @@ tailb(ctype_fd fd, char *fname, usize cnt)
 	ctype_stat st;
 	ctype_fssize siz;
 
-	if (c_sys_fstat(fd, &st) < 0)
+	if (c_sys_fstat(&st, fd) < 0)
 		c_err_die(1, "c_sys_fstat %s", fname);
 
 	siz = st.size > cnt ? st.size - cnt : 0;

@@ -21,7 +21,7 @@ getpwd(void)
 	    c_mem_mem(s, n, "/../", sizeof("/../") - 1))
 		return nil;
 
-	if (c_sys_stat(s, &pwd) < 0 || c_sys_stat(".", &dot) < 0)
+	if (c_sys_stat(&pwd, s) < 0 || c_sys_stat(&dot, ".") < 0)
 		return nil;
 
 	if (pwd.dev != dot.dev || pwd.ino != dot.ino)

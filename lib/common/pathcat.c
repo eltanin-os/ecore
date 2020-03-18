@@ -15,7 +15,7 @@ pathcat(char *f1, char *f2, int cat)
 	trim_trailing_slash(f2);
 	c_arr_fmt(&arr, "%s", f2);
 	if (!cat) {
-		if (c_sys_stat(f2, &st) < 0 || !C_ISDIR(st.mode))
+		if (c_sys_stat(&st, f2) < 0 || !C_ISDIR(st.mode))
 			return c_arr_data(&arr);
 	}
 	c_arr_fmt(&arr, "/%s", c_gen_basename(f1));

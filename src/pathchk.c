@@ -49,7 +49,7 @@ pathchk(char *path, uint opts)
 		r = c_err_warn("%s", path);
 	}
 
-	if ((c_sys_lstat(s, &st) < 0) && errno != C_ENOENT)
+	if ((c_sys_lstat(&st, s) < 0) && errno != C_ENOENT)
 		r = c_err_warn("c_sys_lstat %s", path);
 
 	return r;
