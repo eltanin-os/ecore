@@ -83,15 +83,13 @@ install(struct install *p, char **argv, char *dest)
 	ctype_dent *ep;
 	ctype_stat st;
 	ctype_status r;
-	usize n;
-	char buf[C_PATHMAX];
-	char tmp[11];
+	usize len, n;
 
 	if (c_dir_open(&dir, argv, p->ropts, nil) < 0)
 		c_err_die(1, "c_dir_open");
 
-	c_arr_init(&d, buf, sizeof(buf));
-	c_arr_fmt(&d, "%s", dest);
+	c_mem_set(&d, sizeof(d), 0);
+	edynfmt(&d, "%s", dest);
 	n = r = 0;
 	while ((ep = c_dir_read(&dir))) {
 		c_arr_trunc(&d, c_arr_bytes(&d) - n, sizeof(uchar));
@@ -105,7 +103,7 @@ install(struct install *p, char **argv, char *dest)
 				continue;
 			}
 			if (ep->depth || (p->opts & CP_TDIR))
-				c_arr_fmt(&d, "/%s", ep->name);
+				edynfmt(&d, "/%s", ep->name);
 			if (c_sys_mkdir(c_arr_data(&d), ep->stp->mode) < 0 &&
 			    errno != C_EEXIST)
 				r = c_err_warn("c_sys_mkdir %s",
@@ -123,10 +121,10 @@ install(struct install *p, char **argv, char *dest)
 		}
 
 		if (p->opts & CP_TDIR) {
-			n = c_arr_fmt(&d, "/%s",
+			n = edynfmt(&d, "/%s",
 			    ep->depth ? ep->name : c_gen_basename(ep->name));
 		} else if (ep->depth) {
-			n = c_arr_fmt(&d, "/%s", ep->name);
+			n = edynfmt(&d, "/%s", ep->name);
 		}
 
 		if ((p->opts & CP_IFLAG) && prompt(c_arr_data(&d)))
@@ -137,14 +135,24 @@ install(struct install *p, char **argv, char *dest)
 
 		dest = c_arr_data(&d);
 		if (p->opts & CP_ATOMIC) {
-			tmp[0] = '.';
-			tmp[sizeof(tmp) - 1] = '\0';
+			len = c_arr_bytes(&d);
+			if (c_dyn_ready(&d, len + 2, sizeof(uchar)) < 0)
+				c_err_die(1, "c_dyn_ready");
+			dest = (char *)c_arr_data(&d) + len + 1;
+			if (c_mem_chr(c_arr_data(&d), len, '/')) {
+				c_mem_cpy(dest, len, c_arr_data(&d));
+				c_gen_dirname(dest);
+				len = c_str_len(dest, len);
+				dest[len++] = '/';
+			} else {
+				len = 0;
+			}
+			c_mem_cpy(dest + len, 15, "INST@XXXXXXXXX");
 			for (;;) {
-				c_rand_name(tmp + 1, sizeof(tmp) - 2);
-				if (c_sys_stat(&st, tmp) && errno == C_ENOENT)
+				c_rand_name(dest + len + 5, 9);
+				if (c_sys_stat(&st, dest) && errno == C_ENOENT)
 					break;
 			}
-			dest = tmp;
 		}
 
 		switch (ep->info) {
@@ -165,7 +173,7 @@ install(struct install *p, char **argv, char *dest)
 			r = c_err_warn("c_sys_chown %s", dest);
 			continue;
 		}
-		if ((p->mode != -1) && c_sys_chmod(dest, p->mode) < 0) {
+		if ((p->mode != (uint)-1) && c_sys_chmod(dest, p->mode) < 0) {
 			r = c_err_warn("c_sys_chmod %s", dest);
 			continue;
 		}
@@ -174,6 +182,7 @@ install(struct install *p, char **argv, char *dest)
 			r = c_err_warn("c_sys_rename %s %s",
 			    dest, c_arr_data(&d));
 	}
+	c_dyn_free(&d);
 	c_dir_close(&dir);
 	return r;
 }

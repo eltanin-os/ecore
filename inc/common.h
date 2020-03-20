@@ -16,14 +16,8 @@ enum {
 #define PWDFILE "/etc/passwd"
 #define GRPFILE "/etc/group"
 
-#define edyncat(a, b, c, d) \
-if (c_dyn_cat((a), (b), (c), (d)) < 0) c_err_die(1, "c_dyn_cat");
-
-#define edynfmt(a, b, ...) \
-if (c_dyn_fmt((a), (b), __VA_ARGS__) < 0) c_err_die(1, "c_dyn_fmt");
-
 #define CSTRCMP(a, b) c_mem_cmp((a), sizeof((a)), (b))
-#define ID(a, b) (((a) == (uint)-1) ? (b) : (a))
+#define ID(a, b) (((ctype_id)(a) == -1) ? (ctype_id)(b) : (ctype_id)(a))
 
 struct install {
 	ctype_id gid;
@@ -56,4 +50,28 @@ uint strtomode(char *, uint, uint);
 char **tmpargv(char *);
 void trim_trailing_slash(char *);
 ctype_id uidfromname(char *);
-int yesno(char *);
+int yesno(void);
+
+/* fail inline routines */
+static inline size
+edyncat(ctype_arr *p, void *v, usize m, usize n)
+{
+	size r;
+
+	if ((r = c_dyn_cat(p, v, m, n)) < 0)
+		c_err_die(1, "c_dyn_cat");
+	return r;
+}
+
+static inline size
+edynfmt(ctype_arr *p, char *fmt, ...)
+{
+	size r;
+	va_list ap;
+
+	va_start(ap, fmt);
+	if ((r = c_dyn_vfmt(p, fmt, ap)) < 0)
+		c_err_die(1, "c_dyn_cat");
+	va_end(ap);
+	return r;
+}

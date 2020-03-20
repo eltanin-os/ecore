@@ -16,11 +16,11 @@ prompt(char *s)
 
 	c_ioq_fmt(ioq2, "%s: overwrite %s? ", c_std_getprogname(), s);
 	c_ioq_flush(ioq2);
-	return yesno(s);
+	return yesno();
 }
 
 int
-yesno(char *s)
+yesno(void)
 {
 	int x;
 	char ch;

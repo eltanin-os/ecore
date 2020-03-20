@@ -30,6 +30,7 @@ main(int argc, char **argv)
 
 	c_std_setprogname(argv[0]);
 
+	opts = 0;
 	mask = c_sys_umask(0);
 	c_sys_umask(mask);
 	mode = C_ACCESSPERMS & ~mask;
@@ -50,7 +51,7 @@ main(int argc, char **argv)
 		break;
 	case 'g':
 		s = C_EARGF(usage());
-		if ((in.gid = gidfromname(s)) == (uint)-1)
+		if ((in.gid = gidfromname(s)) < 0)
 			in.gid = estrtovl(s, 0, 0, C_UINTMAX);
 		break;
 	case 'm':
@@ -59,7 +60,7 @@ main(int argc, char **argv)
 		break;
 	case 'o':
 		s = C_EARGF(usage());
-		if ((in.uid = uidfromname(s)) == (uint)-1)
+		if ((in.uid = uidfromname(s)) < 0)
 			in.uid = estrtovl(s, 0, 0, C_UINTMAX);
 		break;
 	case 's':
@@ -72,7 +73,7 @@ main(int argc, char **argv)
 	if (argc < 2)
 		usage();
 
-	if (in.opts & DFLAG) {
+	if (opts & DFLAG) {
 		r = 0;
 		for (; *argv; ++argv)
 			if (mkpath(*argv, mode, dmode) < 0)
@@ -83,26 +84,27 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-	if (c_sys_stat(&st, dest) < 0) {
-		if (errno != C_ENOENT)
-			c_err_die(1, "c_sys_stat %s", dest);
-		if (in.opts & DDFLAG) {
-			if (mkpath(dest, mode, dmode) < 0)
-				c_err_die(1, "mkpath %s", dest);
+	if (opts & DDFLAG) {
+		if (!(s = c_str_dup(dest, C_USIZEMAX)))
+			c_err_die(1, "c_str_dup");
+		if (c_gen_dirname(s) == s) {
+			if (mkpath(s, mode, dmode) < 0)
+				c_err_die(1, "mkpath %s", s);
 			st.mode = C_IFDIR;
 		} else {
 			st.mode = 0;
 		}
+		c_std_free(s);
 	}
-	if (C_ISDIR(st.mode)) {
+	if (c_sys_stat(&st, dest) < 0) {
+		if (errno != C_ENOENT)
+			c_err_die(1, "c_sys_stat %s", dest);
+		st.mode = 0;
+	}
+	if (C_ISDIR(st.mode))
 		in.opts |= CP_TDIR;
-	} else if (argc > 1) {
+	else if (argc > 1)
 		usage();
-	} else if (in.opts & DDFLAG) {
-		s = c_gen_basename(dest);
-		if (mkpath(s, mode, dmode) < 0)
-			c_err_die(1, "mkpath %s", s);
-	}
 
 	return install(&in, argv, dest);
 }

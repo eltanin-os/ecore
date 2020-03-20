@@ -19,7 +19,7 @@ remove(char **argv, uint opts)
 			c_ioq_fmt(ioq2, "%s: remove '%s'? ",
 			    c_std_getprogname(), p->path);
 			c_ioq_flush(ioq2);
-			if (yesno(p->path))
+			if (yesno())
 				continue;
 		}
 		switch (p->info) {
