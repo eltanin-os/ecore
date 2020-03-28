@@ -38,6 +38,7 @@ ctype_status
 main(int argc, char **argv)
 {
 	ctype_stat st;
+	ctype_error sverr;
 	ctype_status r;
 	uint opts;
 	char *dest;
@@ -64,9 +65,13 @@ main(int argc, char **argv)
 	dest = argv[argc];
 	argv[argc] = nil;
 	if (c_sys_stat(&st, dest) < 0) {
-		if (errno != C_ENOENT)
-			c_err_die(1, "c_sys_stat %s", dest);
-		st.mode = 0;
+		sverr = errno;
+		if (c_sys_lstat(&st, dest) < 0) {
+			errno = sverr;
+			if (errno != C_ENOENT)
+				c_err_die(1, "c_sys_stat %s", dest);
+			st.mode = 0;
+		}
 	}
 	if (C_ISDIR(st.mode))
 		opts |= CP_TDIR;

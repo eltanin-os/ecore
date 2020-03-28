@@ -23,6 +23,7 @@ main(int argc, char **argv)
 {
 	struct install in;
 	ctype_stat st;
+	ctype_error sverr;
 	ctype_status r;
 	uint dmode, mode;
 	uint mask, opts;
@@ -70,9 +71,6 @@ main(int argc, char **argv)
 		usage();
 	} C_ARGEND
 
-	if (argc < 2)
-		usage();
-
 	if (opts & DFLAG) {
 		r = 0;
 		for (; *argv; ++argv)
@@ -80,6 +78,9 @@ main(int argc, char **argv)
 				r = c_err_warn("mkpath %s", *argv);
 		c_sys_exit(r);
 	}
+
+	if (argc < 2)
+		usage();
 
 	--argc;
 	dest = argv[argc];
@@ -97,9 +98,13 @@ main(int argc, char **argv)
 		c_std_free(s);
 	}
 	if (c_sys_stat(&st, dest) < 0) {
-		if (errno != C_ENOENT)
-			c_err_die(1, "c_sys_stat %s", dest);
-		st.mode = 0;
+		sverr = errno;
+		if (c_sys_lstat(&st, dest) < 0) {
+			errno = sverr;
+			if (errno != C_ENOENT)
+				c_err_die(1, "c_sys_stat %s", dest);
+			st.mode = 0;
+		}
 	}
 	if (C_ISDIR(st.mode))
 		in.opts |= CP_TDIR;
