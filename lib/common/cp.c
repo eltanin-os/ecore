@@ -141,6 +141,7 @@ install(struct install *p, char **argv, char *dest)
 			dest = (char *)c_arr_data(&d) + len + 1;
 			if (c_mem_chr(c_arr_data(&d), len, '/')) {
 				c_mem_cpy(dest, len, c_arr_data(&d));
+				dest[len] = 0;
 				c_gen_dirname(dest);
 				len = c_str_len(dest, len);
 				dest[len++] = '/';
