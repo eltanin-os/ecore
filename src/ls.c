@@ -26,6 +26,8 @@ enum {
 	UFLAG  = 1 << 19,
 };
 
+#define STPFLAG (FFFLAG | GFLAG | IFLAG | OFLAG | PFLAG | SFLAG | TFLAG)
+
 #define SECSPERDAY (24 * 60 * 60)
 #define SIXMONTHS  (180 * SECSPERDAY)
 
@@ -73,10 +75,10 @@ sort(void *va, void *vb)
 	a = va;
 	b = vb;
 	if (opts & SSFLAG) {
-		cmp = a->stp->size - b->stp->size;
+		cmp = b->stp->size - a->stp->size;
 	} else if (opts & TFLAG) {
-		if (!(cmp = TMSEC(a) - TMSEC(b)))
-			cmp = TMNSEC(a) - TMNSEC(b);
+		if (!(cmp = TMSEC(b) - TMSEC(a)))
+			cmp = TMNSEC(b) - TMNSEC(a);
 	} else {
 		cmp = c_str_cmp(a->name, C_USIZEMAX, b->name);
 	}
@@ -231,7 +233,7 @@ printname(ctype_dent *p, int ino, int blk)
 	if ((opts & SFLAG) && blk)
 		n += c_ioq_fmt(ioq1, "%*llud ", blk, (uvlong)p->stp->blocks);
 
-	for (s = p->name; *s; s += len) {
+	for (s = p->depth ? p->name : p->path; *s; s += len) {
 		len = c_utf8_chartorune(&rune, s);
 		if (!(opts & QFLAG) || c_utf8_isprint(rune)) {
 			c_ioq_nput(ioq1, s, len);
@@ -608,7 +610,7 @@ main(int argc, char **argv)
 	if (opts & LFLAG) {
 		c_tai_now(&t);
 		now = c_tai_approx(&t);
-	} else if (!(opts & (FFFLAG | GFLAG | IFLAG | OFLAG | PFLAG | SFLAG))) {
+	} else if (!(opts & STPFLAG)) {
 		ropts |= C_FSNOI;
 	}
 
