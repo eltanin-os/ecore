@@ -329,13 +329,10 @@ printlink(char *s)
 		return;
 	}
 
-	if (c_sys_stat(&st, s) < 0) {
-		c_err_warn("c_sys_stat %s", s);
-		return;
-	}
-
 	c_ioq_fmt(ioq1, " -> %.*s", r, buf);
-	printtype(&st);
+
+	if (!c_sys_stat(&st, s))
+		printtype(&st);
 }
 
 static void
