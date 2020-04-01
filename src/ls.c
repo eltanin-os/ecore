@@ -113,11 +113,10 @@ printid(int type, ctype_fsid id, usize max)
 {
 	char *s;
 
-	s = nil;
 	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id)))
 		c_ioq_fmt(ioq1, "%-*llud ", max, (uvlong)id);
 	else
-		c_ioq_fmt(ioq1, "%-*s ", max, (uvlong)s);
+		c_ioq_fmt(ioq1, "%-*s ", max, s);
 
 	c_std_free(s);
 }
@@ -324,12 +323,12 @@ printlink(char *s)
 	size r;
 	char buf[C_PATHMAX];
 
-	if ((r = c_sys_readlink(s, buf, sizeof(buf) - 1)) < 0) {
+	if ((r = c_sys_readlink(s, buf, sizeof(buf))) < 0) {
 		c_err_warn("readlink %s", s);
 		return;
 	}
 
-	c_ioq_fmt(ioq1, " -> %.*s", r, buf);
+	c_ioq_fmt(ioq1, " -> %s", buf);
 
 	if (!c_sys_stat(&st, s))
 		printtype(&st);
