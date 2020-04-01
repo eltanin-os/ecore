@@ -30,7 +30,7 @@ struct install {
 /* pwd: name:pass:uid:gid:dir:shell
  * grp: name:pass:gid:mem */
 struct pdb {
-	char *p[6];
+	char *p[7];
 };
 
 ctype_status copy(char **, char *, uint, uint);
