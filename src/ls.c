@@ -113,12 +113,13 @@ printid(int type, ctype_fsid id, usize max)
 {
 	char *s;
 
-	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id)))
+	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id))) {
 		c_ioq_fmt(ioq1, "%-*llud ", max, (uvlong)id);
-	else
+	} else {
 		c_ioq_fmt(ioq1, "%-*s ", max, s);
+		c_std_free(s);
+	}
 
-	c_std_free(s);
 }
 
 static int
@@ -627,11 +628,14 @@ main(int argc, char **argv)
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
 		case C_FSD:
-			if (!(opts & RRFLAG) && ((opts & DFLAG) || p->depth)) {
+			if ((!(opts & RRFLAG) &&
+			    ((opts & DFLAG) || p->depth)) ||
+			    (p->name[0] == '.' && p->name[1] &&
+			    !(opts & AFLAG))) {
 				c_dir_set(&dir, p, C_FSSKP);
 				continue;
 			}
-			if (p->depth || argc > 1)
+			if (opts & RRFLAG || p->depth || argc > 1)
 				c_ioq_fmt(ioq1, "%s%s:\n",
 				    first ? "\n" : (first++, ""), p->path);
 			break;
