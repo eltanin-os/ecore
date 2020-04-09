@@ -642,7 +642,7 @@ main(int argc, char **argv)
 		case C_FSDNR:
 		case C_FSNS:
 		case C_FSERR:
-			r = c_err_warnx("%s: %s", p->path, serr(p->err));
+			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		}
 

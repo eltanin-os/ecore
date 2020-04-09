@@ -102,7 +102,6 @@ LIBCOMMONSRC=\
 	lib/common/pathcat.c\
 	lib/common/pdb.c\
 	lib/common/rm.c\
-	lib/common/serr.c\
 	lib/common/strtomode.c\
 	lib/common/tmpargv.c\
 	lib/common/yesno.c

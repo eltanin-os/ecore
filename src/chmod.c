@@ -58,13 +58,13 @@ done:
 				c_dir_set(&dir, p, C_FSSKP);
 			break;
 		case C_FSDNR:
-			r = c_err_warnx("%s: %s", p->name, serr(p->err));
+			r = c_err_warnx("%s: %r", p->name, p->err);
 			continue;
 		case C_FSDP:
 			continue;
 		case C_FSERR:
 		case C_FSNS:
-			r = c_err_warnx("%s: %s", p->name, serr(p->err));
+			r = c_err_warnx("%s: %r", p->name, p->err);
 			continue;
 		case C_FSSL:
 		case C_FSSLN:

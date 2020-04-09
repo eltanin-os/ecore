@@ -48,7 +48,7 @@ next:
 		op = *s++;
 		break;
 	default:
-		c_err_diex(1, "strtomode %c: %s", *s, serr(C_EINVAL));
+		c_err_diex(1, "strtomode %c: %r", *s, C_EINVAL);
 	}
 
 	perm = 0;

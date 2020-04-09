@@ -45,7 +45,6 @@ char *namefromuid(ctype_id);
 char *pathcat(char *, char *, int);
 int prompt(char *);
 ctype_status remove(char **, uint);
-char *serr(int);
 uint strtomode(char *, uint, uint);
 char **tmpargv(char *);
 void trim_trailing_slash(char *);

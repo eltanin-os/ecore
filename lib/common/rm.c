@@ -26,8 +26,7 @@ remove(char **argv, uint opts)
 		case C_FSD:
 			if (!(opts & RM_RFLAG)) {
 				c_dir_set(&dir, p, C_FSSKP);
-				r = c_err_warnx("%s: %s",
-				    p->path, serr(C_EISDIR));
+				r = c_err_warnx("%s: %r", p->path, C_EISDIR);
 				continue;
 			}
 			break;
@@ -38,7 +37,7 @@ remove(char **argv, uint opts)
 				r = c_err_warn("c_sys_rmdir %s", p->path);
 			break;
 		case C_FSERR:
-			r = c_err_warnx("%s: %s", p->path, serr(p->err));
+			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		default:
 			if (c_sys_unlink(p->path) < 0 &&

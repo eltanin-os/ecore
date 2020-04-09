@@ -98,8 +98,7 @@ install(struct install *p, char **argv, char *dest)
 		case C_FSD:
 			if (!(p->opts & CP_RFLAG)) {
 				c_dir_set(&dir, ep, C_FSSKP);
-				r = c_err_warnx("%s: %s",
-				    ep->path, serr(C_EISDIR));
+				r = c_err_warnx("%s: %r", ep->path, C_EISDIR);
 				continue;
 			}
 			if (ep->depth || (p->opts & CP_TDIR))
@@ -116,7 +115,7 @@ install(struct install *p, char **argv, char *dest)
 		case C_FSDNR:
 		case C_FSERR:
 		case C_FSNS:
-			r = c_err_warnx("%s: %s", ep->path, serr(ep->err));
+			r = c_err_warnx("%s: %r", ep->path, ep->err);
 			continue;
 		}
 
