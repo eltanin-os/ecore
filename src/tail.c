@@ -168,7 +168,7 @@ main(int argc, char **argv)
 	if (!argc || C_ISDASH(*argv)) {
 		*argv = "<stdin>";
 		c_mem_cpy(tmp, sizeof(tmp), "/tmp/.tmp.XXXXXXXX");
-		if ((fd = c_std_mktemp(tmp, sizeof(tmp), 1, 0)) < 0)
+		if ((fd = c_std_mktemp(tmp, sizeof(tmp), C_OTMPANON)) < 0)
 			c_err_die(1, "c_std_mktemp");
 		c_std_fdcat(fd, C_FD0);
 		c_sys_seek(fd, 0, C_SEEKSET);

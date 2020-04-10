@@ -9,10 +9,8 @@
 { if (!(opts & QFLAG)) c_err_warnx(__VA_ARGS__); c_std_exit(1); }
 
 enum {
-	DFLAG = 1 << 0,
-	TFLAG = 1 << 1,
-	QFLAG = 1 << 2,
-	UFLAG = 1 << 3,
+	TFLAG = 1 << 0,
+	QFLAG = 1 << 1,
 };
 
 static void
@@ -28,19 +26,19 @@ main(int argc, char **argv)
 {
 	ctype_arr arr;
 	ctype_fd fd;
-	uint dflag, opts;
+	uint mko, opts;
 	char *dir, *template, *tmp;
 	char buf[C_PATHMAX];
 
 	c_std_setprogname(argv[0]);
 
 	dir = nil;
-	dflag = 0;
+	mko = 0;
 	opts = 0;
 
 	C_ARGBEGIN {
 	case 'd':
-		dflag |= C_ODIRECTORY;
+		mko |= C_OTMPDIR;
 		break;
 	case 'p':
 		opts |= TFLAG;
@@ -53,7 +51,7 @@ main(int argc, char **argv)
 		opts |= TFLAG;
 		break;
 	case 'u':
-		opts |= UFLAG;
+		mko |= C_OTMPANON;
 		break;
 	default:
 		usage();
@@ -89,12 +87,10 @@ main(int argc, char **argv)
 	}
 	if (c_arr_fmt(&arr, "%s", template) < 0)
 		DIE("c_arr_fmt");
-
-	if ((fd = c_std_mktemp(c_arr_data(&arr), c_arr_bytes(&arr),
-	    (opts & UFLAG), dflag)) < 0)
+	if ((fd = c_std_mktemp(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
 		DIE("c_std_mktemp %s", tmp);
-
 	c_sys_close(fd);
+
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));
 	c_ioq_flush(ioq1);
 	return 0;
