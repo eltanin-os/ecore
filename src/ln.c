@@ -47,25 +47,30 @@ main(int argc, char **argv)
 	char *dest;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 
-	C_ARGBEGIN {
-	case 'L':
-		opts = (opts & ~SFLAG) | LFLAG;
-		break;
-	case 'P':
-		opts &= ~(LFLAG | SFLAG);
-		break;
-	case 'f':
-		opts |= FFLAG;
-		break;
-	case 's':
-		opts = (opts & ~LFLAG) | SFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "LPfs")) {
+		switch (argmain->opt){
+		case 'L':
+			opts = (opts & ~SFLAG) | LFLAG;
+			break;
+		case 'P':
+			opts &= ~(LFLAG | SFLAG);
+			break;
+		case 'f':
+			opts |= FFLAG;
+			break;
+		case 's':
+			opts = (opts & ~LFLAG) | SFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	switch (argc) {
 	case 0:

@@ -309,7 +309,7 @@ printtime(ctype_dent *p)
 	c_tai_fromtime(&t, &tm);
 	c_cal_timeutc(&ct, &t);
 	if (now > (c_tai_approx(&t) + SIXMONTHS)) {
-		c_ioq_fmt(ioq1, "%s %02d %04ld ",
+		c_ioq_fmt(ioq1, "%s %02d  %04ld ",
 		    mtab[ct.date.month - 1], ct.date.day, ct.date.year);
 	} else {
 		c_ioq_fmt(ioq1, "%s %02d %02d:%02d ",
@@ -507,99 +507,105 @@ main(int argc, char **argv)
 	void (*plist)(ctype_dir *, struct max *);
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	plist = c_std_isatty(C_FD1) ? printc : print1;
 	ropts = 0;
 
-	C_ARGBEGIN {
-	case '1':
-		plist = &print1;
-		break;
-	case 'A':
-		opts |= AFLAG;
-		ropts &= ~C_FSVDT;
-		break;
-	case 'C':
-		plist = &printc;
-		break;
-	case 'F':
-		opts = (opts & ~PFLAG) | FFFLAG;
-		break;
-	case 'H':
-		ropts |= C_FSCOM;
-		break;
-	case 'L':
-		ropts = (ropts & ~C_FSPHY) | C_FSLOG;
-		break;
-	case 'R':
-		opts = (opts & ~DFLAG) | RRFLAG;
-		break;
-	case 'S':
-		opts = (opts & ~(FFLAG | TFLAG)) | SSFLAG;
-		break;
-	case 'a':
-		opts |= AFLAG;
-		ropts |= C_FSVDT;
-		break;
-	case 'c':
-		opts = (opts & ~UFLAG) | CFLAG;
-		break;
-	case 'd':
-		opts = (opts & ~RRFLAG) | DFLAG;
-		break;
-	case 'f':
-		opts = (opts & ~(TFLAG | SSFLAG)) | AFLAG | FFLAG;
-		ropts |= C_FSVDT;
-		break;
-	case 'g':
-		plist = &print1;
-		opts |= GFLAG | LFLAG;
-		break;
-	case 'i':
-		opts |= IFLAG;
-		break;
-	case 'k':
-		blksize = 1024;
-		break;
-	case 'l':
-		plist = &print1;
-		opts |= LFLAG;
-		break;
-	case 'm':
-		plist = &printm;
-		break;
-	case 'n':
-		plist = &print1;
-		opts |= LFLAG | NFLAG;
-		break;
-	case 'o':
-		plist = &print1;
-		opts |= LFLAG | OFLAG;
-		break;
-	case 'p':
-		opts |= PFLAG;
-		break;
-	case 'q':
-		opts |= QFLAG;
-		break;
-	case 'r':
-		opts |= RFLAG;
-		break;
-	case 's':
-		opts |= SFLAG;
-		break;
-	case 't':
-		opts = (opts & ~(FFLAG | SSFLAG)) | TFLAG;
-		break;
-	case 'u':
-		opts = (opts & ~CFLAG) | UFLAG;
-		break;
-	case 'x':
-		plist = printx;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv,
+	    "1ACFHLRSacdfgiklmnopqrstux")) {
+		switch (argmain->opt) {
+		case '1':
+			plist = &print1;
+			break;
+		case 'A':
+			opts |= AFLAG;
+			ropts &= ~C_FSVDT;
+			break;
+		case 'C':
+			plist = &printc;
+			break;
+		case 'F':
+			opts = (opts & ~PFLAG) | FFFLAG;
+			break;
+		case 'H':
+			ropts |= C_FSCOM;
+			break;
+		case 'L':
+			ropts = (ropts & ~C_FSPHY) | C_FSLOG;
+			break;
+		case 'R':
+			opts = (opts & ~DFLAG) | RRFLAG;
+			break;
+		case 'S':
+			opts = (opts & ~(FFLAG | TFLAG)) | SSFLAG;
+			break;
+		case 'a':
+			opts |= AFLAG;
+			ropts |= C_FSVDT;
+			break;
+		case 'c':
+			opts = (opts & ~UFLAG) | CFLAG;
+			break;
+		case 'd':
+			opts = (opts & ~RRFLAG) | DFLAG;
+			break;
+		case 'f':
+			opts = (opts & ~(TFLAG | SSFLAG)) | AFLAG | FFLAG;
+			ropts |= C_FSVDT;
+			break;
+		case 'g':
+			plist = &print1;
+			opts |= GFLAG | LFLAG;
+			break;
+		case 'i':
+			opts |= IFLAG;
+			break;
+		case 'k':
+			blksize = 1024;
+			break;
+		case 'l':
+			plist = &print1;
+			opts |= LFLAG;
+			break;
+		case 'm':
+			plist = &printm;
+			break;
+		case 'n':
+			plist = &print1;
+			opts |= LFLAG | NFLAG;
+			break;
+		case 'o':
+			plist = &print1;
+			opts |= LFLAG | OFLAG;
+			break;
+		case 'p':
+			opts |= PFLAG;
+			break;
+		case 'q':
+			opts |= QFLAG;
+			break;
+		case 'r':
+			opts |= RFLAG;
+			break;
+		case 's':
+			opts |= SFLAG;
+			break;
+		case 't':
+			opts = (opts & ~(FFLAG | SSFLAG)) | TFLAG;
+			break;
+		case 'u':
+			opts = (opts & ~CFLAG) | UFLAG;
+			break;
+		case 'x':
+			plist = printx;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc)
 		argv = tmpargv(".");

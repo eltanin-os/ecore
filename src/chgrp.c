@@ -26,29 +26,34 @@ main(int argc, char **argv)
 	uint opts, ropts;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 	ropts = 0;
 
-	C_ARGBEGIN {
-	case 'H':
-		opts |= C_FSCOM;
-		break;
-	case 'h':
-		opts |= HFLAG;
-		break;
-	case 'L':
-		opts = (opts & ~C_FSPHY) | C_FSLOG;
-		break;
-	case 'P':
-		opts = (opts & ~C_FSLOG) | C_FSPHY;
-		break;
-	case 'R':
-		ropts |= RFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "HLPRh")) {
+		switch (argmain->opt) {
+		case 'H':
+			opts |= C_FSCOM;
+			break;
+		case 'L':
+			opts = (opts & ~C_FSPHY) | C_FSLOG;
+			break;
+		case 'P':
+			opts = (opts & ~C_FSLOG) | C_FSPHY;
+			break;
+		case 'R':
+			ropts |= RFLAG;
+			break;
+		case 'h':
+			opts |= HFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (argc < 2)
 		usage();

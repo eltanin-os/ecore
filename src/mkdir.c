@@ -20,22 +20,27 @@ main(int argc, char **argv)
 	uint mask;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	mask = c_sys_umask(0);
 	mode = C_ACCESSPERMS & ~mask;
 	dmode = mode | C_IWUSR | C_IXUSR;
 	pflag = 0;
 
-	C_ARGBEGIN {
-	case 'p':
-		pflag = 1;
-		break;
-	case 'm':
-		mode = strtomode(C_EARGF(usage()), C_ACCESSPERMS, mask);
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "pm:")) {
+		switch (argmain->opt) {
+		case 'p':
+			pflag = 1;
+			break;
+		case 'm':
+			mode = strtomode(argmain->arg, C_ACCESSPERMS, mask);
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc)
 		usage();

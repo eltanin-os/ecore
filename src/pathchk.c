@@ -69,22 +69,27 @@ main(int argc, char **argv)
 	uint opts;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 	r = 0;
 
-	C_ARGBEGIN {
-	case 'P':
-		opts |= PFLAG;
-		break;
-	case 'p':
-		opts |= PPFLAG;
-		namemax = 14;
-		pathmax = 256;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "Pp")) {
+		switch (argmain->opt) {
+		case 'P':
+			opts |= PFLAG;
+			break;
+		case 'p':
+			opts |= PPFLAG;
+			namemax = 14;
+			pathmax = 256;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc)
 		usage();

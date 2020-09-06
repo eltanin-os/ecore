@@ -21,24 +21,29 @@ main(int argc, char **argv)
 	char *m;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	Rflag = 0;
 
-	C_ARGBEGIN {
-	case 'R':
-		Rflag = 1;
-		break;
-	case 'X':
-	case 'r':
-	case 's':
-	case 't':
-	case 'x':
-	case 'w':
-		--argv[0];
-		goto done;
-	default:
-		usage();
-	} C_ARGEND
+	switch (c_std_getopt(argmain, argc, argv, "RXrstxw")) {
+		switch (argmain->opt) {
+		case 'R':
+			Rflag = 1;
+			break;
+		case 'X':
+		case 'r':
+		case 's':
+		case 't':
+		case 'x':
+		case 'w':
+			--argv[0];
+			goto done;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 done:
 	if (argc < 2)
 		usage();

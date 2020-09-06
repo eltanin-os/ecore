@@ -31,31 +31,36 @@ main(int argc, char **argv)
 	char buf[C_PATHMAX];
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	dir = nil;
 	mko = 0;
 	opts = 0;
 
-	C_ARGBEGIN {
-	case 'd':
-		mko |= C_OTMPDIR;
-		break;
-	case 'p':
-		opts |= TFLAG;
-		dir = C_EARGF(usage());
-		break;
-	case 'q':
-		opts |= QFLAG;
-		break;
-	case 't':
-		opts |= TFLAG;
-		break;
-	case 'u':
-		mko |= C_OTMPANON;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "dp:qtu")) {
+		switch (argmain->opt) {
+		case 'd':
+			mko |= C_OTMPDIR;
+			break;
+		case 'p':
+			opts |= TFLAG;
+			dir = argmain->arg;
+			break;
+		case 'q':
+			opts |= QFLAG;
+			break;
+		case 't':
+			opts |= TFLAG;
+			break;
+		case 'u':
+			mko |= C_OTMPANON;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	switch (argc) {
 	case 0:

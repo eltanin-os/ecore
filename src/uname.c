@@ -28,31 +28,36 @@ main(int argc, char **argv)
 	uint opts;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 
-	C_ARGBEGIN {
-	case 'a':
-		opts |= AFLAG;
-		break;
-	case 'm':
-		opts |= MFLAG;
-		break;
-	case 'n':
-		opts |= NFLAG;
-		break;
-	case 'r':
-		opts |= RFLAG;
-		break;
-	case 's':
-		opts |= SFLAG;
-		break;
-	case 'v':
-		opts |= VFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "amnrsv")) {
+		switch (argmain->opt) {
+		case 'a':
+			opts |= AFLAG;
+			break;
+		case 'm':
+			opts |= MFLAG;
+			break;
+		case 'n':
+			opts |= NFLAG;
+			break;
+		case 'r':
+			opts |= RFLAG;
+			break;
+		case 's':
+			opts |= SFLAG;
+			break;
+		case 'v':
+			opts |= VFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (argc)
 		usage();

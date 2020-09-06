@@ -26,36 +26,41 @@ main(int argc, char **argv)
 	uint opts, ropts;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	blksiz = 512;
 	opts = 0;
 	ropts = 0;
 
-	C_ARGBEGIN {
-	case 'H':
-		ropts |= C_FSCOM;
-		break;
-	case 'L':
-		ropts &= ~C_FSPHY;
-		ropts |= C_FSLOG;
-		break;
-	case 'a':
-		opts &= ~SFLAG;
-		opts |= AFLAG;
-		break;
-	case 'k':
-		blksiz = 1024;
-		break;
-	case 's':
-		opts &= ~AFLAG;
-		opts |= SFLAG;
-		break;
-	case 'x':
-		ropts |= C_FSXDV;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "HLaksx")) {
+		switch (argmain->opt) {
+		case 'H':
+			ropts |= C_FSCOM;
+			break;
+		case 'L':
+			ropts &= ~C_FSPHY;
+			ropts |= C_FSLOG;
+			break;
+		case 'a':
+			opts &= ~SFLAG;
+			opts |= AFLAG;
+			break;
+		case 'k':
+			blksiz = 1024;
+			break;
+		case 's':
+			opts &= ~AFLAG;
+			opts |= SFLAG;
+			break;
+		case 'x':
+			ropts |= C_FSXDV;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc)
 		argv = tmpargv(".");

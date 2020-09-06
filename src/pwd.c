@@ -45,19 +45,24 @@ main(int argc, char **argv)
 	char buf[C_PATHMAX];
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	mode = 1;
 
-	C_ARGBEGIN {
-	case 'L':
-		mode = 1;
-		break;
-	case 'P':
-		mode = 0;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "LP")) {
+		switch (argmain->opt) {
+		case 'L':
+			mode = 1;
+			break;
+		case 'P':
+			mode = 0;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (argc)
 		usage();

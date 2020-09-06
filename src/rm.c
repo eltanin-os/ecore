@@ -16,23 +16,28 @@ main(int argc, char **argv)
 	uint opts;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 
-	C_ARGBEGIN {
-	case 'R':
-	case 'r':
-		opts |= RM_RFLAG;
-		break;
-	case 'f':
-		opts |= RM_FFLAG;
-		break;
-	case 'i':
-		opts |= RM_IFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "Rrfi")) {
+		switch (argmain->opt) {
+		case 'R':
+		case 'r':
+			opts |= RM_RFLAG;
+			break;
+		case 'f':
+			opts |= RM_FFLAG;
+			break;
+		case 'i':
+			opts |= RM_IFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -=  argmain->idx;
+	argv +=  argmain->idx;
 
 	if (!argc) {
 		if (!(opts & RM_FFLAG))

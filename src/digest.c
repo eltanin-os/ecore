@@ -121,19 +121,24 @@ main(int argc, char **argv)
 	char buf[64];
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	cflag = 0;
 
-	C_ARGBEGIN {
-	case 'a':
-		sethash(&hst, C_EARGF(usage()));
-		break;
-	case 'c':
-		cflag = 1;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "a:c")) {
+		switch (argmain->opt) {
+		case 'a':
+			sethash(&hst, argmain->arg);
+			break;
+		case 'c':
+			cflag = 1;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!hst.siz)
 		sethash(&hst, "WHIRLPOOL");

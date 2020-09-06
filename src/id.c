@@ -82,28 +82,33 @@ main(int argc, char **argv)
 	char *p, *s, *t;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 
-	C_ARGBEGIN {
-	case 'G':
-		opts = (opts & ~(GFLAG | UFLAG)) | GGFLAG;
-		break;
-	case 'g':
-		opts = (opts & ~(GGFLAG | UFLAG)) | GFLAG;
-		break;
-	case 'n':
-		opts |= NFLAG;
-		break;
-	case 'r':
-		opts |= RFLAG;
-		break;
-	case 'u':
-		opts = (opts & ~(GGFLAG | GFLAG)) | UFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "Ggnru")) {
+		switch (argmain->opt) {
+		case 'G':
+			opts = (opts & ~(GFLAG | UFLAG)) | GGFLAG;
+			break;
+		case 'g':
+			opts = (opts & ~(GGFLAG | UFLAG)) | GFLAG;
+			break;
+		case 'n':
+			opts |= NFLAG;
+			break;
+		case 'r':
+			opts |= RFLAG;
+			break;
+		case 'u':
+			opts = (opts & ~(GGFLAG | GFLAG)) | UFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (argc > 1 || ((opts & UF1) && !(opts & UF0)))
 		usage();

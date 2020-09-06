@@ -20,16 +20,21 @@ main(int argc, char **argv)
 	uint mode, type;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	mode = C_DEFFILEMODE;
 
-	C_ARGBEGIN {
-	case 'm':
-		mode = strtomode(C_EARGF(usage()), C_ACCESSPERMS, 0);
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "m:")) {
+		switch (argmain->opt) {
+		case 'm':
+			mode = strtomode(argmain->arg, C_ACCESSPERMS, 0);
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (argc < 2 || argv[1][0])
 		usage();

@@ -18,11 +18,16 @@ main(int argc, char **argv)
 	char buf[C_BIOSIZ];
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
-	C_ARGBEGIN {
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "")) {
+		switch (argmain->opt) {
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	s = argc ? *argv : "y";
 	c_arr_init(&arr, buf, sizeof(buf));

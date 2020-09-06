@@ -87,27 +87,32 @@ main(int argc, char **argv)
 	uint opts;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 
-	C_ARGBEGIN {
-	case 'c':
-		opts &= ~MFLAG;
-		opts |= CFLAG;
-		break;
-	case 'm':
-		opts &= ~CFLAG;
-		opts |= MFLAG;
-		break;
-	case 'l':
-		opts |= LFLAG;
-		break;
-	case 'w':
-		opts |= WFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "cmlw")) {
+		switch (argmain->opt) {
+		case 'c':
+			opts &= ~MFLAG;
+			opts |= CFLAG;
+			break;
+		case 'm':
+			opts &= ~CFLAG;
+			opts |= MFLAG;
+			break;
+		case 'l':
+			opts |= LFLAG;
+			break;
+		case 'w':
+			opts |= WFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!opts)
 		opts = CFLAG|LFLAG|WFLAG;

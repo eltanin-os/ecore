@@ -18,18 +18,23 @@ main(int argc, char **argv)
 	char buf[C_BIOSIZ];
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = C_OWRITE | C_OTRUNC | C_OCREATE;
 
-	C_ARGBEGIN {
-	case 'a':
-		opts = (opts & ~C_OTRUNC) | C_OAPPEND;
-		break;
-	case 'i':
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "ai")) {
+		switch (argmain->opt) {
+		case 'a':
+			opts = (opts & ~C_OTRUNC) | C_OAPPEND;
+			break;
+		case 'i':
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!(fds = c_std_alloc(argc + 1, sizeof(*fds))))
 		c_err_die(1, "c_std_alloc");

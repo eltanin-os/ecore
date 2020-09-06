@@ -3,6 +3,7 @@
 
 #include "common.h"
 
+#define HORT(a, b, c) (*(a) == '+') ? (++a, b) : (a += (*(a) == '-'), c)
 #define WATCH(a) { if (fflag) for (;;) c_std_fdcat(C_FD1, (a)); }
 
 static void
@@ -142,28 +143,32 @@ main(int argc, char **argv)
 	void (*tailfn)(ctype_fd, char *, usize);
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	cnt = 10;
 	fflag = 0;
 	tailfn = tail;
 
-	C_ARGBEGIN {
-	case 'c':
-		s = C_EARGF(usage());
-		tailfn = (*s == '+') ? (++s, headb) : (s += (*s == '-'), tailb);
-		cnt = estrtovl(s, 0, 1, C_USIZEMAX);
-		break;
-	case 'f':
-		fflag = 1;
-		break;
-	case 'n':
-		s = C_EARGF(usage());
-		tailfn = (*s == '+') ? (++s, head) : (s += (*s == '-'), tail);
-		cnt = estrtovl(s, 0, 1, C_USIZEMAX);
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "c:fn:")) {
+		switch (argmain->opt) {
+		case 'c':
+			s = argmain->arg;
+			tailfn = HORT(s, headb, tailb);
+			cnt = estrtovl(s, 0, 1, C_USIZEMAX);
+		case 'f':
+			fflag = 1;
+			break;
+		case 'n':
+			s = argmain->arg;
+			tailfn = HORT(s, head, tail);
+			cnt = estrtovl(s, 0, 1, C_USIZEMAX);
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc || C_ISDASH(*argv)) {
 		*argv = "<stdin>";

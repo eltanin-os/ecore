@@ -16,14 +16,19 @@ main(int argc, char **argv)
 	ctype_status r;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
-	C_ARGBEGIN {
-	case 'u':
-		c_ioq_init(ioq1, C_FD1, nil, 0, &c_sys_write);
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "u")) {
+		switch (argmain->opt) {
+		case 'u':
+			c_ioq_init(ioq1, C_FD1, nil, 0, &c_sys_write);
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc)
 		argv = tmpargv("-");

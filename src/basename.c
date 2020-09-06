@@ -15,11 +15,16 @@ main(int argc, char **argv)
 	usize n;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
-	C_ARGBEGIN {
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "")) {
+		switch (argmain->opt) {
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	--argc;
 	if ((uint)argc > 1)

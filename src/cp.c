@@ -20,35 +20,40 @@ main(int argc, char **argv)
 	char *dest;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 	ropts = 0;
 
-	C_ARGBEGIN {
-	case 'H':
-		ropts |= C_FSCOM;
-		break;
-	case 'L':
-		ropts = (ropts & ~C_FSPHY) | C_FSLOG;
-		break;
-	case 'P':
-		ropts = (ropts & ~C_FSLOG) | C_FSPHY;
-		break;
-	case 'R':
-		opts |= CP_RFLAG;
-		break;
-	case 'f':
-		opts |= (opts & ~CP_IFLAG) | CP_FFLAG;
-		break;
-	case 'i':
-		opts |= (opts & ~CP_FFLAG) | CP_IFLAG;
-		break;
-	case 'p':
-		opts |= CP_PFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "HLPRfip")) {
+		switch (argmain->opt) {
+		case 'H':
+			ropts |= C_FSCOM;
+			break;
+		case 'L':
+			ropts = (ropts & ~C_FSPHY) | C_FSLOG;
+			break;
+		case 'P':
+			ropts = (ropts & ~C_FSLOG) | C_FSPHY;
+			break;
+		case 'R':
+			opts |= CP_RFLAG;
+			break;
+		case 'f':
+			opts |= (opts & ~CP_IFLAG) | CP_FFLAG;
+			break;
+		case 'i':
+			opts |= (opts & ~CP_FFLAG) | CP_IFLAG;
+			break;
+		case 'p':
+			opts |= CP_PFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (argc < 2)
 		usage();

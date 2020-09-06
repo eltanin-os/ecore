@@ -15,14 +15,19 @@ main(int argc, char **argv)
 	char *s;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
-	C_ARGBEGIN {
-	case 'i':
-		*environ = nil;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "i")) {
+		switch (argmain->opt) {
+		case 'i':
+			*environ = nil;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc) {
 		for (; *environ; ++environ)

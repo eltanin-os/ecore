@@ -30,6 +30,7 @@ main(int argc, char **argv)
 	char *dest, *s;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 	mask = c_sys_umask(0);
@@ -40,36 +41,40 @@ main(int argc, char **argv)
 	in.opts = CP_ATOMIC | CP_PFLAG;
 	in.ropts = 0;
 
-	C_ARGBEGIN {
-	case 'D':
-		opts |= DDFLAG;
-		break;
-	case 'c':
-		/* ignore */
-		break;
-	case 'd':
-		opts |= DFLAG;
-		break;
-	case 'g':
-		s = C_EARGF(usage());
-		if ((in.gid = gidfromname(s)) < 0)
-			in.gid = estrtovl(s, 0, 0, C_UINTMAX);
-		break;
-	case 'm':
-		mode = strtomode(C_EARGF(usage()), C_ACCESSPERMS, mask);
-		in.mode = mode;
-		break;
-	case 'o':
-		s = C_EARGF(usage());
-		if ((in.uid = uidfromname(s)) < 0)
-			in.uid = estrtovl(s, 0, 0, C_UINTMAX);
-		break;
-	case 's':
-		/* ignore */
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "Dcdg:m:o:s")) {
+		switch (argmain->opt) {
+		case 'D':
+			opts |= DDFLAG;
+			break;
+		case 'c':
+			/* ignore */
+			break;
+		case 'd':
+			opts |= DFLAG;
+			break;
+		case 'g':
+			s = argmain->arg;
+			if ((in.gid = gidfromname(s)) < 0)
+				in.gid = estrtovl(s, 0, 0, C_UINTMAX);
+			break;
+		case 'm':
+			mode = strtomode(argmain->arg, C_ACCESSPERMS, mask);
+			in.mode = mode;
+			break;
+		case 'o':
+			s = argmain->arg;
+			if ((in.uid = uidfromname(s)) < 0)
+				in.uid = estrtovl(s, 0, 0, C_UINTMAX);
+			break;
+		case 's':
+			/* ignore */
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (opts & DFLAG) {
 		r = 0;

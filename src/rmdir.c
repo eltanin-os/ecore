@@ -32,16 +32,19 @@ main(int argc, char **argv)
 	int pflag;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	pflag = 0;
 
-	C_ARGBEGIN {
-	case 'p':
-		pflag = 1;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "p")) {
+		switch (argmain->opt) {
+		case 'p':
+			pflag = 1;
+			break;
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc)
 		usage();

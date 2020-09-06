@@ -44,19 +44,24 @@ main(int argc, char **argv)
 	char *dest;
 
 	c_std_setprogname(argv[0]);
+	--argc, ++argv;
 
 	opts = 0;
 
-	C_ARGBEGIN {
-	case 'i':
-		opts |= (opts & ~CP_FFLAG) | CP_IFLAG;
-		break;
-	case 'f':
-		opts |= (opts & ~CP_IFLAG) | CP_FFLAG;
-		break;
-	default:
-		usage();
-	} C_ARGEND
+	while (c_std_getopt(argmain, argc, argv, "if")) {
+		switch (argmain->opt) {
+		case 'i':
+			opts |= (opts & ~CP_FFLAG) | CP_IFLAG;
+			break;
+		case 'f':
+			opts |= (opts & ~CP_IFLAG) | CP_FFLAG;
+			break;
+		default:
+			usage();
+		}
+	}
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (argc < 2)
 		usage();
