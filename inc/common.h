@@ -34,6 +34,7 @@ struct pdb {
 };
 
 ctype_status copy(char **, char *, uint, uint);
+void deepsleep(u64int);
 ctype_status dbgetln(struct pdb *, ctype_ioq *, ctype_arr *);
 vlong estrtovl(char *, int, vlong, vlong);
 ctype_id gidfromname(char *);

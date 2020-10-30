@@ -96,6 +96,7 @@ MAN1=\
 # LIB SRC
 LIBCOMMONSRC=\
 	lib/common/cp.c\
+	lib/common/deepsleep.c\
 	lib/common/estrtovl.c\
 	lib/common/mkpath.c\
 	lib/common/path.c\

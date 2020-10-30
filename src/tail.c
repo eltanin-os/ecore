@@ -4,7 +4,8 @@
 #include "common.h"
 
 #define HORT(a, b, c) (*(a) == '+') ? (++a, b) : (a += (*(a) == '-'), c)
-#define WATCH(a) { if (fflag) for (;;) c_std_fdcat(C_FD1, (a)); }
+
+static ctype_arr arr;
 
 static void
 usage(void)
@@ -15,132 +16,98 @@ usage(void)
 }
 
 static void
-headb(ctype_fd fd, char *fname, usize cnt)
+headb(ctype_ioq *p, usize cnt)
 {
-	ctype_stat st;
+	size n;
 
-	if (c_sys_fstat(&st, fd) < 0)
-		c_err_die(1, "c_sys_fstat %s", fname);
-
-	if (cnt > st.size)
-		return;
-
-	if (c_sys_seek(fd, cnt, C_SEEKSET) < 0)
-		c_err_die(1, "c_sys_seek %s", fname);
-
-	if (c_ioq_putfd(ioq1, fd, 0) < 0)
-		c_err_die(1, "c_ioq_putfd %s", fname);
-}
-
-static void
-head(ctype_fd fd, char *fname, usize cnt)
-{
-	ctype_ioq ioq;
-	ctype_fssize siz, lsiz;
-	size r;
-	char buf[C_BIOSIZ];
-	char *s;
-
-	lsiz = siz = 0;
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
 	while (cnt) {
-		if ((r = c_ioq_feed(&ioq)) < 0)
-			c_err_die(1, "c_ioq_feed %s", fname);
-		if (!r)
+		if ((n = c_ioq_feed(p)) <= 0)
 			break;
-		s = c_ioq_peek(&ioq);
-		c_ioq_seek(&ioq, r);
-		while (r) {
-			++siz;
-			if (*s == '\n') {
-				if (!--cnt)
-					break;
-				lsiz = siz;
-			}
-			--r;
-			++s;
+		if (cnt > (usize)n) {
+			c_ioq_seek(p, n);
+			cnt -= n;
+		} else {
+			c_ioq_seek(p, cnt);
+			break;
 		}
 	}
-
-	if (c_sys_seek(fd, lsiz, C_SEEKSET) < 0)
-		c_err_die(1, "c_sys_seek %s", fname);
-
-	if (c_ioq_putfd(ioq1, fd, 0) < 0)
-		c_err_die(1, "c_ioq_putfd %s", fname);
+	n = c_ioq_feed(p);
+	c_std_allrw(&c_sys_write, C_FD1, c_ioq_peek(p), n);
+	c_std_fdcat(C_FD1, c_ioq_fileno(p));
 }
 
 static void
-tailb(ctype_fd fd, char *fname, usize cnt)
+head(ctype_ioq *p, usize cnt)
 {
-	ctype_stat st;
-	ctype_fssize siz;
-
-	if (c_sys_fstat(&st, fd) < 0)
-		c_err_die(1, "c_sys_fstat %s", fname);
-
-	siz = st.size > cnt ? st.size - cnt : 0;
-	if (c_sys_seek(fd, siz, C_SEEKSET) < 0)
-		c_err_die(1, "c_sys_seek %s", fname);
-
-	if (c_ioq_putfd(ioq1, fd, 0) < 0)
-		c_err_die(1, "c_ioq_putfd %s", fname);
+	for (; cnt && c_ioq_getln(p, &arr); --cnt)
+		c_arr_trunc(&arr, 0, sizeof(uchar));
+	c_ioq_feed(p);
+	c_std_allrw(&c_sys_write, C_FD1, c_ioq_peek(p), c_ioq_feed(p));
+	c_std_fdcat(C_FD1, c_ioq_fileno(p));
 }
 
 static void
-tail(ctype_fd fd, char *fname, usize cnt)
+tailb(ctype_ioq *p, usize cnt)
 {
-	ctype_ioq ioq;
-	ctype_arr arr;
-	ctype_fssize cur;
-	size r;
-	usize nl;
-	usize *p;
-	char buf[C_BIOSIZ];
-	char *s;
+	size len, n;
+	char *d, *s;
 
-	c_mem_set(&arr, sizeof(arr), 0);
-	if (c_dyn_ready(&arr, cnt + 1, sizeof(cur)) < 0)
+	++cnt;
+	if (c_dyn_ready(&arr, cnt, sizeof(uchar)) < 0)
 		c_err_die(1, "c_dyn_ready");
-
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
-	cur = nl = 0;
-	for (;;) {
-		if ((r = c_ioq_feed(&ioq)) < 0)
-			c_err_die(1, "c_ioq_feed %s", fname);
-		if (!r)
-			break;
-		s = c_ioq_peek(&ioq);
-		c_ioq_seek(&ioq, r);
-		while (r) {
-			++cur;
-			if (*s == '\n') {
-				p = c_arr_get(&arr, nl, sizeof(*p));
-				*p = cur;
-				if (++nl > cnt)
-					nl = 0;
+	while ((len = c_ioq_feed(p)) > 0) {
+		s = c_ioq_peek(p);
+		if (len >= (size)cnt) {
+			s += len - cnt;
+			c_arr_trunc(&arr, 0, sizeof(uchar));
+			c_arr_cat(&arr, s, cnt, sizeof(uchar));
+		} else {
+			if ((n = c_arr_bytes(&arr)) > len) {
+				d = c_arr_data(&arr);
+				c_mem_cpy(d, n - len, d + len);
+				c_mem_cpy(d + (n - len), len, s);
+			} else {
+				c_arr_trunc(&arr, 0, sizeof(uchar));
+				c_arr_cat(&arr, s, len, sizeof(uchar));
 			}
-			--r;
-			++s;
+		}
+		c_ioq_seek(p, len);
+	}
+	c_std_allrw(&c_sys_write, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
+}
+
+static void
+tail(ctype_ioq *p, usize cnt)
+{
+	usize cur, n;
+	char *left, *s;
+
+	cur = 0;
+	while (c_ioq_getln(p, &arr) > 0) {
+		if (cur > cnt) {
+			s = c_arr_data(&arr);
+			n = c_arr_bytes(&arr);
+			left = (char *)c_mem_chr(s, n, '\n') + 1;
+			n -= left - s;
+			c_mem_cpy(s, n, left);
+			c_arr_trunc(&arr, n, sizeof(uchar));
+		} else {
+			++cur;
 		}
 	}
-
-	p = c_arr_get(&arr, nl, sizeof(*p));
-	if (c_sys_seek(fd, *p, C_SEEKSET) < 0)
-		c_err_die(1, "c_sys_seek %s", fname);
-
-	if (c_ioq_putfd(ioq1, fd, 0) < 0)
-		c_err_die(1, "c_ioq_putfd %s", fname);
+	c_std_allrw(&c_sys_write, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
 }
 
 ctype_status
 main(int argc, char **argv)
 {
-	ctype_fd fd;
+	ctype_ioq ioq;
 	usize cnt;
+	ctype_fd fd;
 	int fflag;
 	char *s;
-	char tmp[18];
-	void (*tailfn)(ctype_fd, char *, usize);
+	char buf[C_BIOSIZ];
+	void (*tailfn)(ctype_ioq *, usize);
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
@@ -154,14 +121,15 @@ main(int argc, char **argv)
 		case 'c':
 			s = argmain->arg;
 			tailfn = HORT(s, headb, tailb);
-			cnt = estrtovl(s, 0, 1, C_USIZEMAX);
+			cnt = estrtovl(s, 0, 1, C_USIZEMAX) - 1;
+			break;
 		case 'f':
 			fflag = 1;
 			break;
 		case 'n':
 			s = argmain->arg;
 			tailfn = HORT(s, head, tail);
-			cnt = estrtovl(s, 0, 1, C_USIZEMAX);
+			cnt = estrtovl(s, 0, 1, C_USIZEMAX) - 1;
 			break;
 		default:
 			usage();
@@ -171,20 +139,20 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 
 	if (!argc || C_ISDASH(*argv)) {
-		*argv = "<stdin>";
-		c_mem_cpy(tmp, sizeof(tmp), "/tmp/.tmp.XXXXXXXX");
-		if ((fd = c_std_mktemp(tmp, sizeof(tmp), C_OTMPANON)) < 0)
-			c_err_die(1, "c_std_mktemp");
-		c_std_fdcat(fd, C_FD0);
-		c_sys_seek(fd, 0, C_SEEKSET);
-		tailfn(fd, *argv, cnt);
+		c_ioq_init(&ioq, C_FD0, buf, sizeof(buf), &c_sys_read);
+		tailfn(&ioq, cnt);
 	} else {
 		if ((fd = c_sys_open(*argv, C_OREAD, 0)) < 0)
 			c_err_die(1, "c_sys_open %s", *argv);
-		tailfn(fd, *argv, cnt);
-		c_ioq_flush(ioq1);
-		WATCH(fd);
+		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
+		tailfn(&ioq, cnt);
+		c_dyn_free(&arr);
+		if (fflag) {
+			for (;;) {
+				c_std_fdcat(C_FD1, fd);
+				deepsleep(1);
+			}
+		}
 	}
-	c_ioq_flush(ioq1);
 	return 0;
 }
