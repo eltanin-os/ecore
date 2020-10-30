@@ -173,7 +173,8 @@ install(struct install *p, char **argv, char *dest)
 			r = c_err_warn("c_sys_chown %s", dest);
 			continue;
 		}
-		if ((p->mode != (uint)-1) && c_sys_chmod(dest, p->mode) < 0) {
+		if ((ep->info != C_FSSL) && (p->mode != (uint)-1) &&
+		    c_sys_chmod(dest, p->mode) < 0) {
 			r = c_err_warn("c_sys_chmod %s", dest);
 			continue;
 		}
