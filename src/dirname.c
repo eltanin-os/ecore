@@ -14,12 +14,8 @@ main(int argc, char **argv)
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	while (c_std_getopt(argmain, argc, argv, "")) {
-		switch (argmain->opt) {
-		default:
-			usage();
-		}
-	}
+	if (c_std_noopt(argmain, *argv))
+		usage();
 	argc -= argmain->idx;
 	argv += argmain->idx;
 

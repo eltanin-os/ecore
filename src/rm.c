@@ -36,8 +36,8 @@ main(int argc, char **argv)
 			usage();
 		}
 	}
-	argc -=  argmain->idx;
-	argv +=  argmain->idx;
+	argc -= argmain->idx;
+	argv += argmain->idx;
 
 	if (!argc) {
 		if (!(opts & RM_FFLAG))
