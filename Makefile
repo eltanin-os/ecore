@@ -41,6 +41,7 @@ BIN=\
 	src/pwd\
 	src/rm\
 	src/rmdir\
+	src/sleep\
 	src/tail\
 	src/tee\
 	src/true\

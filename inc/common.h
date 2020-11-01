@@ -37,6 +37,7 @@ ctype_status copy(char **, char *, uint, uint);
 void deepsleep(u64int);
 ctype_status dbgetln(struct pdb *, ctype_ioq *, ctype_arr *);
 vlong estrtovl(char *, int, vlong, vlong);
+uvlong estrtouvl(char *, int, uvlong, uvlong);
 ctype_id gidfromname(char *);
 ctype_id gidfromuid(ctype_id);
 ctype_status install(struct install *, char **, char *);
