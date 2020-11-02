@@ -33,7 +33,7 @@ main(int argc, char **argv)
 	opts = 0;
 	ropts = 0;
 
-	switch (c_std_getopt(argmain, argc, argv, "HLPRh")) {
+	while (c_std_getopt(argmain, argc, argv, "HLPRh")) {
 		switch (argmain->opt) {
 		case 'H':
 			opts |= C_FSCOM;

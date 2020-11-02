@@ -25,7 +25,7 @@ main(int argc, char **argv)
 
 	Rflag = 0;
 
-	switch (c_std_getopt(argmain, argc, argv, "RXrstxw")) {
+	while (c_std_getopt(argmain, argc, argv, "RXrstxw")) {
 		switch (argmain->opt) {
 		case 'R':
 			Rflag = 1;
@@ -36,15 +36,16 @@ main(int argc, char **argv)
 		case 't':
 		case 'x':
 		case 'w':
-			--argv[0];
+			--argmain->idx;
 			goto done;
 		default:
 			usage();
 		}
 	}
+done:
 	argc -= argmain->idx;
 	argv += argmain->idx;
-done:
+
 	if (argc < 2)
 		usage();
 
