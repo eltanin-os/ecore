@@ -636,8 +636,8 @@ main(int argc, char **argv)
 		case C_FSD:
 			if ((!(opts & RRFLAG) &&
 			    ((opts & DFLAG) || p->depth)) ||
-			    (p->name[0] == '.' && p->name[1] &&
-			    !(opts & AFLAG))) {
+			    (p->depth && (p->name[0] == '.' && p->name[1] &&
+			    !(opts & AFLAG)))) {
 				c_dir_set(&dir, p, C_FSSKP);
 				continue;
 			}
