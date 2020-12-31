@@ -58,6 +58,9 @@ main(int argc, char **argv)
 	if (argc < 2)
 		usage();
 
+	if (!ropts)
+		ropts = (opts & CP_RFLAG) ? C_FSPHY : C_FSLOG;
+
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;

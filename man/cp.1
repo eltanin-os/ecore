@@ -46,9 +46,12 @@ Preserve mode, timestamp and permissions.
 Descend recursively through its directories arguments.
 .El
 .Pp
-The default is as if the
-.Fl P
-option had been specified.
+If
+.Fl R
+is given, the default is as if the
+.Fl L
+option had been specified. Otherwise, it defaults to
+.Fl P .
 .Sh EXIT STATUS
 .Ex -std
 .Sh SEE ALSO
