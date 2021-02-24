@@ -46,7 +46,7 @@ main(int argc, char **argv)
 			ropts |= RFLAG;
 			break;
 		case 'h':
-			opts |= HFLAG;
+			ropts |= HFLAG;
 			break;
 		default:
 			usage();

@@ -93,7 +93,7 @@ main(int argc, char **argv)
 	if (c_arr_fmt(&arr, "%s", template) < 0)
 		DIE("c_arr_fmt");
 	if ((fd = c_std_mktemp(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
-		DIE("c_std_mktemp %s", tmp);
+		DIE("c_std_mktemp %s", c_arr_data(&arr));
 	c_sys_close(fd);
 
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));
