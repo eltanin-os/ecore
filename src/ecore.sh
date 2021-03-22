@@ -28,7 +28,7 @@ EOF
 echo 'char *names = ""\' > $tmpdir/names.h
 for f in $@; do
 	p="$(basename $f .c)"
-	sed "s/\(^main(.*)\)/${p}_\1/" < $f > $tmpdir/$p.c
+	sed "s/^\(main(.*)\)/${p}_\1/" < $f > $tmpdir/$p.c
 	echo "int ${p}_main(int, char **);" >> $tmpdir/prototypes.h
 	cat <<EOF >>$tmpdir/ecore.c
 	else if (!CSTRCMP("$p", s)) {

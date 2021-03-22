@@ -138,8 +138,8 @@ $(LIBCOMMON): $(LIBCOMMONOBJ)
 	$(RANLIB) $@
 
 # RULES
-ecore: build/ecore.sh $(LIB) $(SRC)
-	build/ecore.sh $(SRC)
+ecore: src/ecore.sh $(LIB) $(SRC)
+	src/ecore.sh $(SRC)
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -I $(INC) -o $@ tmpbuild/*.c $(LIB) -ltertium
 	rm -Rf tmpbuild
 
