@@ -25,7 +25,7 @@ main(int argc, char **argv)
 	opts = 0;
 	ropts = 0;
 
-	while (c_std_getopt(argmain, argc, argv, "HLPRfip")) {
+	while (c_std_getopt(argmain, argc, argv, "HLPRfipr")) {
 		switch (argmain->opt) {
 		case 'H':
 			ropts |= C_FSCOM;
@@ -47,6 +47,9 @@ main(int argc, char **argv)
 			break;
 		case 'p':
 			opts |= CP_PFLAG;
+			break;
+		case 'r':
+			opts |= CP_RFLAG;
 			break;
 		default:
 			usage();
