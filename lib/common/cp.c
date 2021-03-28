@@ -160,6 +160,7 @@ install(struct install *p, char **argv, char *dest)
 			r = regcopy(ep->path, ep->stp, dest);
 			break;
 		case C_FSSL:
+		case C_FSSLN:
 			r = lncopy(ep->path, ep->stp, dest);
 			break;
 		default:
