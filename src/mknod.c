@@ -36,7 +36,7 @@ main(int argc, char **argv)
 	argc -= argmain->idx;
 	argv += argmain->idx;
 
-	if (argc < 2 || argv[1][0])
+	if (argc < 2 || argv[1][1])
 		usage();
 
 	type = C_IFCHR;
