@@ -11,10 +11,16 @@ struct hash {
 	char *name;
 };
 
+static ctype_arr arr;
+
 static void
 sethash(struct hash *p, char *s)
 {
-	if (!CSTRCMP("MD5", s)) {
+	if (!CSTRCMP("FLETCHER32", s)) {
+		p->name = "FLETCHER32";
+		p->md = c_hsh_fletcher32;
+		p->siz = C_H32GEN_DIGEST;
+	} else if (!CSTRCMP("MD5", s)) {
 		p->name = "MD5";
 		p->md = c_hsh_md5;
 		p->siz = C_HMD5_DIGEST;
@@ -40,39 +46,37 @@ sethash(struct hash *p, char *s)
 }
 
 static ctype_status
-cmpsum(struct hash *hp, ctype_hst *p, char *s)
+cmpsum(struct hash *h, char *p, char *s)
 {
-	char buf[64];
 	int i;
 
-	c_hsh_digest(p, hp->md, buf);
-	for (i = 0; i < hp->siz; ++i) {
-		if (((HDEC(s[0]) << 4) | HDEC(s[1])) != (uchar)buf[i])
+	for (i = 0; i < h->siz; ++i) {
+		if (((HDEC(p[0]) << 4) | HDEC(p[1])) != (uchar)s[i])
 			return -1;
-		s += 2;
+		p += 2;
 	}
 	return 0;
 }
 
 static ctype_status
-checkfile(struct hash *hp, char *file)
+checkfile(struct hash *h, char *file)
 {
-	ctype_arr arr;
 	ctype_fd fd;
 	ctype_hst hs;
 	ctype_ioq ioq;
 	ctype_status r;
 	usize n;
 	char *p, *s;
-	char buf[C_BIOSIZ];
+	char buf[C_SMALLBIOSIZ];
+	char out[64];
 
 	if ((fd = c_sys_open(file, C_OREAD, 0)) < 0)
 		c_err_die(1, "c_sys_open %s", file);
 
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
-	c_mem_set(&arr, sizeof(arr), 0);
 	r = 0;
-	while (c_ioq_getln(&ioq, &arr) > 0 ) {
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
+	c_arr_trunc(&arr, 0, sizeof(uchar));
+	while (c_ioq_getln(&ioq, &arr) > 0) {
 		s = c_arr_data(&arr);
 		n = c_arr_bytes(&arr);
 		s[n - 1] = 0;
@@ -81,7 +85,7 @@ checkfile(struct hash *hp, char *file)
 			c_err_diex(1, "%s: file in wrong format", file);
 
 		*p++ = 0;
-		sethash(hp, s);
+		sethash(h, s);
 
 		n -= p - s;
 		s = p;
@@ -89,17 +93,41 @@ checkfile(struct hash *hp, char *file)
 			c_err_diex(1, "%s: file in wrong format", file);
 
 		*p++ = 0;
-		hp->md->init(&hs);
-		if (c_hsh_putfile(&hs, hp->md, p) < 0)
+
+		h->md->init(&hs);
+		if (c_hsh_putfile(&hs, h->md, p) < 0) {
 			r = c_err_warn("c_hsh_putfile %s", s);
-		hp->md->end(&hs);
-		if (cmpsum(hp, &hs, s) < 0)
-			r = c_err_warnx("%s: checksum mismatch", s);
+			c_arr_trunc(&arr, 0, sizeof(uchar));
+			continue;
+		}
+		h->md->end(&hs, out);
+
+		if (cmpsum(h, s, out) < 0)
+			r = c_err_warnx("%s %s: checksum mismatch", h->name, s);
 
 		c_arr_trunc(&arr, 0, sizeof(uchar));
 	}
-	c_dyn_free(&arr);
+	c_sys_close(fd);
 	return r;
+}
+
+static ctype_status
+digest(struct hash *h, char *file)
+{
+	ctype_hst hs;
+	int i;
+	char buf[64];
+
+	h->md->init(&hs);
+	if (c_hsh_putfile(&hs, h->md, file) < 0)
+		return c_err_warn("c_hsh_putfile %s", file);
+	h->md->end(&hs, buf);
+
+	c_ioq_fmt(ioq1, "%s ", h->name);
+	for (i = 0; i < h->siz; ++i)
+		c_ioq_fmt(ioq1, "%02x", (uchar)buf[i]);
+	c_ioq_fmt(ioq1, " %s\n", file);
+	return 0;
 }
 
 static void
@@ -113,25 +141,23 @@ usage(void)
 ctype_status
 main(int argc, char **argv)
 {
-	struct hash hst;
-	ctype_hst hs;
+	struct hash h;
+	ctype_status (*func)(struct hash *, char *);
 	ctype_status r;
-	int cflag;
-	int i;
-	char buf[64];
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	cflag = 0;
+	func = digest;
+	sethash(&h, "WHIRLPOOL");
 
 	while (c_std_getopt(argmain, argc, argv, "a:c")) {
 		switch (argmain->opt) {
 		case 'a':
-			sethash(&hst, argmain->arg);
+			sethash(&h, argmain->arg);
 			break;
 		case 'c':
-			cflag = 1;
+			func = checkfile;
 			break;
 		default:
 			usage();
@@ -140,34 +166,16 @@ main(int argc, char **argv)
 	argc -= argmain->idx;
 	argv += argmain->idx;
 
-	if (!hst.siz)
-		sethash(&hst, "WHIRLPOOL");
-
 	if (!argc)
 		argv = tmpargv("-");
 
 	r = 0;
-	if (cflag) {
-		for (; *argv; ++argv) {
-			if (C_ISDASH(*argv))
-				*argv = "<stdin>";
-			r |= checkfile(&hst, *argv);
-		}
-	} else {
-		for (; *argv; ++argv) {
-			if (C_ISDASH(*argv))
-				*argv = "<stdin>";
-			if (c_hsh_putfile(&hs, hst.md, *argv) < 0) {
-				r = c_err_warn("c_hsh_putfile %s", *argv);
-				continue;
-			}
-			c_hsh_digest(&hs, hst.md, buf);
-			c_ioq_fmt(ioq1, "%s ", hst.name);
-			for (i = 0; i < hst.siz; ++i)
-				c_ioq_fmt(ioq1, "%02x", (uchar)buf[i]);
-			c_ioq_fmt(ioq1, " %s\n", *argv);
-		}
+	for (; *argv; ++argv) {
+		if (C_ISDASH(*argv))
+			*argv = "<stdin>";
+		r |= func(&h, *argv);
 	}
+	c_dyn_free(&arr);
 	c_ioq_flush(ioq1);
 	return r;
 }
