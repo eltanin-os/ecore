@@ -35,10 +35,9 @@ main(int argc, char **argv)
 		c_hsh_crc32p->init(&hs);
 		if (c_hsh_putfile(&hs, c_hsh_crc32p, *argv) < 0)
 			r = c_err_warn("c_hsh_putfile %s", *argv);
-		c_hsh_crc32p->end(&hs);
-		c_hsh_digest(&hs, c_hsh_crc32p, buf);
-		c_ioq_fmt(ioq1, "%ud %d %s\n",
-		    c_uint_32unpack(buf), c_hsh_len(&hs), *argv);
+		c_hsh_crc32p->end(&hs, buf);
+		c_ioq_fmt(ioq1, "%d %d %s\n",
+		    c_uint_32unpack(buf), c_hsh_octets(&hs), *argv);
 	}
 	c_ioq_flush(ioq1);
 	return r;
