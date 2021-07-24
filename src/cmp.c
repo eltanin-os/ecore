@@ -21,7 +21,7 @@ getbyte(ctype_ioq *p, char *s, uint opts)
 
 	if ((r = c_ioq_get(p, &ch, sizeof(ch))) < 0) {
 		if (!(opts & SFLAG))
-			c_err_warn("c_ioq_getall %s", s);
+			c_err_warn("c_ioq_get %s", s);
 		c_std_exit(2);
 	}
 	return r ? ch : -1;
