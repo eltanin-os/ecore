@@ -15,13 +15,15 @@ remove(char **argv, uint opts)
 
 	r = 0;
 	while ((p = c_dir_read(&dir))) {
-		if (opts & RM_IFLAG) {
-			c_ioq_fmt(ioq2, "%s: remove '%s'? ",
-			    c_std_getprogname(), p->path);
-			c_ioq_flush(ioq2);
-			if (yesno())
-				continue;
+		if (p->info == C_FSNS) {
+			if (!(opts & RM_FFLAG)) {
+				errno = C_ENOENT;
+				r = c_err_warn("remove %s", p->path);
+			}
+			continue;
 		}
+		if ((opts & RM_IFLAG) && yesno("remove", p->path))
+			continue;
 		switch (p->info) {
 		case C_FSD:
 			if (!(opts & RM_RFLAG)) {
@@ -40,8 +42,7 @@ remove(char **argv, uint opts)
 			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		default:
-			if (c_sys_unlink(p->path) < 0 &&
-			    (!(opts & RM_FFLAG) || errno != C_ENOENT))
+			if (c_sys_unlink(p->path) < 0)
 				r = c_err_warn("c_sys_unlink %s", p->path);
 		}
 	}

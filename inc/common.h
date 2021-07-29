@@ -45,13 +45,12 @@ ctype_status mkpath(char *, uint, uint);
 char *namefromgid(ctype_id);
 char *namefromuid(ctype_id);
 char *pathcat(char *, char *, int);
-int prompt(char *);
 ctype_status remove(char **, uint);
 uint strtomode(char *, uint, uint);
 char **tmpargv(char *);
 void trim_trailing_slash(char *);
 ctype_id uidfromname(char *);
-int yesno(void);
+int yesno(char *, char *);
 
 /* fail inline routines */
 static inline size

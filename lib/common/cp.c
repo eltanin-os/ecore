@@ -5,6 +5,22 @@
 
 #define CWTMODE (C_OCREATE | C_OWRITE | C_OTRUNC)
 
+/* helper routines */
+static int
+prompt(char *s)
+{
+	ctype_stat st;
+
+	if (c_sys_stat(&st, s) < 0) {
+		if (errno == C_ENOENT)
+			return 0;
+		return c_err_warn("c_sys_stat %s", s);
+	}
+
+	return yesno("overwrite", s);
+}
+
+/* copy routines */
 static ctype_status
 regcopy(char *src, ctype_stat *stp, char *dest)
 {
