@@ -70,13 +70,13 @@ main(int argc, char **argv)
 		if (C_ISDASH(argv[i])) {
 			sf[i].fd = C_FD0;
 			argv[i] = "<stdin>";
-		} else if ((sf[i].fd = c_sys_open(argv[i], C_OREAD, 0)) < 0) {
+		} else if ((sf[i].fd = c_nix_fdopen2(argv[i], C_OREAD)) < 0) {
 			if (!(opts & SFLAG))
-				c_err_warn("c_sys_open %s", argv[i]);
+				c_err_warn("c_nix_fdopen2 %s", argv[i]);
 			c_std_exit(2);
 		}
 		c_ioq_init(&sf[i].ioq, sf[i].fd,
-		    sf[i].buf, sizeof(sf[i].buf), &c_sys_read);
+		    sf[i].buf, sizeof(sf[i].buf), &c_nix_fdread);
 	}
 
 	r = 0;

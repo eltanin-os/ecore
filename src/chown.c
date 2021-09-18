@@ -94,16 +94,16 @@ main(int argc, char **argv)
 			r = c_err_warnx("%s: %r", p->name, p->err);
 			continue;
 		case C_FSSL:
-			if (c_sys_lchown(p->path,
+			if (c_nix_lchown(p->path,
 			    uid, ID(gid, p->stp->gid)) < 0)
-				r = c_err_warn("c_sys_chown %s", p->path);
+				r = c_err_warn("c_nix_chown %s", p->path);
 			continue;
 		case C_FSSLN:
 			continue;
 		}
 
-		if (c_sys_chown(p->path, uid, ID(gid, p->stp->gid)) < 0)
-			r = c_err_warn("c_sys_chown %s", p->path);
+		if (c_nix_chown(p->path, uid, ID(gid, p->stp->gid)) < 0)
+			r = c_err_warn("c_nix_chown %s", p->path);
 	}
 	c_dir_close(&dir);
 	return r;

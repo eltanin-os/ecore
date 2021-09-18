@@ -96,17 +96,14 @@ MAN1=\
 
 # LIB SRC
 LIBCOMMONSRC=\
-	lib/common/cp.c\
 	lib/common/deepsleep.c\
-	lib/common/estrtovl.c\
-	lib/common/mkpath.c\
+	lib/common/fail.c\
+	lib/common/fs.c\
 	lib/common/path.c\
-	lib/common/pathcat.c\
 	lib/common/pdb.c\
-	lib/common/rm.c\
-	lib/common/strtomode.c\
 	lib/common/tmpargv.c\
 	lib/common/yesno.c
+
 
 # LIB PATH
 LIBCOMMON= lib/libcommon.a

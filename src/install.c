@@ -33,8 +33,7 @@ main(int argc, char **argv)
 	--argc, ++argv;
 
 	opts = 0;
-	mask = c_sys_umask(0);
-	c_sys_umask(mask);
+	mask = c_nix_getumask();
 	mode = C_ACCESSPERMS & ~mask;
 	dmode = mode | C_IWUSR | C_IXUSR;
 	in.gid = in.mode = in.uid = -1;
@@ -58,7 +57,8 @@ main(int argc, char **argv)
 				in.gid = estrtovl(s, 0, 0, C_UINTMAX);
 			break;
 		case 'm':
-			mode = strtomode(argmain->arg, C_ACCESSPERMS, mask);
+			mode = c_nix_strtomode(argmain->arg,
+			    C_ACCESSPERMS, mask);
 			in.mode = mode;
 			break;
 		case 'o':
@@ -79,9 +79,9 @@ main(int argc, char **argv)
 	if (opts & DFLAG) {
 		r = 0;
 		for (; *argv; ++argv)
-			if (mkpath(*argv, mode, dmode) < 0)
-				r = c_err_warn("mkpath %s", *argv);
-		c_sys_exit(r);
+			if (c_nix_mkpath(*argv, mode, dmode) < 0)
+				r = c_err_warn("c_nix_mkpath %s", *argv);
+		c_std_exit(r);
 	}
 
 	if (argc < 2)
@@ -94,20 +94,20 @@ main(int argc, char **argv)
 		if (!(s = c_str_dup(dest, C_USIZEMAX)))
 			c_err_die(1, "c_str_dup");
 		if (c_gen_dirname(s) == s) {
-			if (mkpath(s, mode, dmode) < 0)
-				c_err_die(1, "mkpath %s", s);
+			if (c_nix_mkpath(s, mode, dmode) < 0)
+				c_err_die(1, "c_nix_mkpath %s", s);
 			st.mode = C_IFDIR;
 		} else {
 			st.mode = 0;
 		}
 		c_std_free(s);
 	}
-	if (c_sys_stat(&st, dest) < 0) {
+	if (c_nix_stat(&st, dest) < 0) {
 		sverr = errno;
-		if (c_sys_lstat(&st, dest) < 0) {
+		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
 			if (errno != C_ENOENT)
-				c_err_die(1, "c_sys_stat %s", dest);
+				c_err_die(1, "c_nix_stat %s", dest);
 			st.mode = 0;
 		}
 	}

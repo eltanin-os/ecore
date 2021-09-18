@@ -31,18 +31,18 @@ readfile(struct pdb *p, char *file, char *search, int pos)
 	ctype_fd fd;
 	char buf[C_BIOSIZ];
 
-	if ((fd = c_sys_open(file, C_OREAD, 0)) < 0)
-		c_err_die(1, "c_sys_open %s", file);
+	if ((fd = c_nix_fdopen2(file, C_OREAD)) < 0)
+		c_err_die(1, "c_nix_fdopen2 %s", file);
 
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	c_mem_set(&arr, sizeof(arr), 0);
 	while (dbgetln(p, &ioq, &arr) > 0) {
 		if (c_str_cmp(p->p[pos], c_arr_bytes(&arr), search))
 			continue;
-		c_sys_close(fd);
+		c_nix_fdclose(fd);
 		return 0;
 	}
-	c_sys_close(fd);
+	c_nix_fdclose(fd);
 	return -1;
 }
 

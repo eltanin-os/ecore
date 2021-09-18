@@ -324,14 +324,14 @@ printlink(char *s)
 	size r;
 	char buf[C_PATHMAX];
 
-	if ((r = c_sys_readlink(s, buf, sizeof(buf))) < 0) {
+	if ((r = c_nix_readlink(buf, sizeof(buf), s)) < 0) {
 		c_err_warn("readlink %s", s);
 		return;
 	}
 
 	c_ioq_fmt(ioq1, " -> %s", buf);
 
-	if (!c_sys_stat(&st, s))
+	if (!c_nix_stat(&st, s))
 		printtype(&st);
 }
 
@@ -486,6 +486,17 @@ printx(ctype_dir *dir, struct max *max)
 		c_ioq_put(ioq1, "\n");
 }
 
+static int
+isatty(ctype_fd fd)
+{
+	ctype_stat st;
+
+	if (c_nix_fdstat(&st, fd) < 0)
+		c_err_die(1, "c_nix_fdstat");
+
+	return C_ISCHR(st.mode);
+}
+
 static void
 usage(void)
 {
@@ -509,7 +520,7 @@ main(int argc, char **argv)
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	plist = c_std_isatty(C_FD1) ? printc : print1;
+	plist = isatty(C_FD1) ? printc : print1;
 	ropts = 0;
 
 	while (c_std_getopt(argmain, argc, argv,

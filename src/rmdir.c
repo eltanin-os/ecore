@@ -9,8 +9,8 @@ rmpath(char *dir)
 	char *s;
 
 	for (;;) {
-		if (c_sys_rmdir(dir) < 0)
-			return c_err_warn("c_sys_rmdir %s", dir);
+		if (c_nix_rmdir(dir) < 0)
+			return c_err_warn("c_nix_rmdir %s", dir);
 		if (!(s = c_str_rchr(dir, C_USIZEMAX, '/')))
 			break;
 		*s = 0;
@@ -51,11 +51,11 @@ main(int argc, char **argv)
 
 	r = 0;
 	for (; *argv; --argc, ++argv) {
-		trim_trailing_slash(*argv);
+		c_str_rtrim(*argv, -1, "/");
 		if (pflag)
 			r |= rmpath(*argv);
-		else if (c_sys_rmdir(*argv) < 0)
-			r = c_err_warn("c_sys_rmdir %s", *argv);
+		else if (c_nix_rmdir(*argv) < 0)
+			r = c_err_warn("c_nix_rmdir %s", *argv);
 	}
 	return r;
 }

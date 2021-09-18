@@ -5,21 +5,6 @@
 
 #define CWTMODE (C_OCREATE | C_OWRITE | C_OTRUNC)
 
-/* helper routines */
-static int
-prompt(char *s)
-{
-	ctype_stat st;
-
-	if (c_sys_stat(&st, s) < 0) {
-		if (errno == C_ENOENT)
-			return 0;
-		return c_err_warn("c_sys_stat %s", s);
-	}
-
-	return yesno("overwrite", s);
-}
-
 /* copy routines */
 static ctype_status
 regcopy(char *src, ctype_stat *stp, char *dest)
@@ -31,13 +16,13 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 
 	ifd = -1;
 	r = 0;
-	if ((ofd = c_sys_open(dest, CWTMODE, stp->mode)) < 0) {
-		r = c_err_warn("c_sys_open %s", dest);
+	if ((ofd = c_nix_fdopen3(dest, CWTMODE, stp->mode)) < 0) {
+		r = c_err_warn("c_nix_fdopen3 %s", dest);
 		goto done;
 	}
 
-	if (c_sys_fstat(&st, ofd) < 0) {
-		r = c_err_warn("c_sys_fstat %s", src);
+	if (c_nix_fdstat(&st, ofd) < 0) {
+		r = c_err_warn("c_nix_fdstat %s", src);
 		goto done;
 	}
 
@@ -46,21 +31,21 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 		goto done;
 	}
 
-	if ((ifd = c_sys_open(src, C_OREAD, 0)) < 0) {
-		r = c_err_warn("c_sys_open %s", src);
+	if ((ifd = c_nix_fdopen2(src, C_OREAD)) < 0) {
+		r = c_err_warn("c_nix_fdopen2 %s", src);
 		goto done;
 	}
 
-	c_ioq_init(&ioq, ofd, nil, 0, c_sys_write);
+	c_ioq_init(&ioq, ofd, nil, 0, c_nix_fdwrite);
 	if (c_ioq_putfd(&ioq, ifd, stp->size) < 0) {
 		r = c_err_warn("c_ioq_putfd %s %s", src, dest);
 		goto done;
 	}
 done:
 	if (ifd != -1)
-		c_sys_close(ifd);
+		c_nix_fdclose(ifd);
 	if (ofd != -1)
-		c_sys_close(ofd);
+		c_nix_fdclose(ofd);
 	return r;
 }
 
@@ -70,14 +55,14 @@ lncopy(char *src, ctype_stat *stp, char *dest)
 	size r;
 	char buf[C_PATHMAX];
 
-	if ((r = c_sys_readlink(src, buf, sizeof(buf))) < 0)
-		return c_err_warn("readlink %s", src);
+	if ((r = c_nix_readlink(buf, sizeof(buf), src)) < 0)
+		return c_err_warn("c_nix_readlink %s", src);
 
 	if ((size)stp->size < r)
 		return c_err_warnx("%s: not same file\n", src);
 
-	if (c_sys_symlink(buf, dest) < 0)
-		return c_err_warn("c_sys_symlink %s %s", src, dest);
+	if (c_nix_symlink(dest, buf) < 0)
+		return c_err_warn("c_nix_symlink %s <- %s", dest, buf);
 
 	return 0;
 }
@@ -87,7 +72,6 @@ ndcopy(char *s, ctype_stat *stp)
 {
 	if (c_sys_mknod(s, stp->mode, stp->dev) < 0)
 		return c_err_warn("c_sys_mknod %s", s);
-
 	return 0;
 }
 
@@ -119,9 +103,9 @@ install(struct install *p, char **argv, char *dest)
 			}
 			if (ep->depth || (p->opts & CP_TDIR))
 				edynfmt(&d, "/%s", ep->name);
-			if (c_sys_mkdir(c_arr_data(&d), ep->stp->mode) < 0 &&
+			if (c_nix_mkdir(c_arr_data(&d), ep->stp->mode) < 0 &&
 			    errno != C_EEXIST)
-				r = c_err_warn("c_sys_mkdir %s",
+				r = c_err_warn("c_nix_mkdir %s",
 				    c_arr_data(&d));
 			continue;
 		case C_FSDP:
@@ -146,7 +130,7 @@ install(struct install *p, char **argv, char *dest)
 			continue;
 
 		if (p->opts & CP_FFLAG)
-			c_sys_unlink(c_arr_data(&d));
+			c_nix_unlink(c_arr_data(&d));
 
 		dest = c_arr_data(&d);
 		if (p->opts & CP_ATOMIC) {
@@ -166,7 +150,7 @@ install(struct install *p, char **argv, char *dest)
 			c_mem_cpy(dest + len, 15, "INST@XXXXXXXXX");
 			for (;;) {
 				c_rand_name(dest + len + 5, 9);
-				if (c_sys_stat(&st, dest) && errno == C_ENOENT)
+				if (c_nix_stat(&st, dest) && errno == C_ENOENT)
 					break;
 			}
 		}
@@ -184,21 +168,21 @@ install(struct install *p, char **argv, char *dest)
 		}
 
 		if ((p->gid != -1 || p->uid != -1) &&
-		    c_sys_chown(dest,
+		    c_nix_chown(dest,
 		    ID(p->uid, ep->stp->uid),
 		    ID(p->gid, ep->stp->gid)) < 0) {
-			r = c_err_warn("c_sys_chown %s", dest);
+			r = c_err_warn("c_nix_chown %s", dest);
 			continue;
 		}
 		if ((ep->info != C_FSSL) && (p->mode != (uint)-1) &&
-		    c_sys_chmod(dest, p->mode) < 0) {
-			r = c_err_warn("c_sys_chmod %s", dest);
+		    c_nix_chmod(dest, p->mode) < 0) {
+			r = c_err_warn("c_nix_chmod %s", dest);
 			continue;
 		}
 		if ((p->opts & CP_ATOMIC) &&
-		    c_sys_rename(dest, c_arr_data(&d)) < 0)
-			r = c_err_warn("c_sys_rename %s %s",
-			    dest, c_arr_data(&d));
+		    c_nix_rename(c_arr_data(&d), dest) < 0)
+			r = c_err_warn("c_nix_rename %s <- %s",
+			    c_arr_data(&d), dest);
 	}
 	c_dyn_free(&d);
 	c_dir_close(&dir);
@@ -214,4 +198,52 @@ copy(char **argv, char *dest, uint ropts, uint opts)
 	in.opts = opts;
 	in.ropts = ropts;
 	return install(&in, argv, dest);
+}
+
+/* remove routines */
+ctype_status
+remove(char **argv, uint opts)
+{
+	ctype_dir dir;
+	ctype_dent *p;
+	ctype_status r;
+
+	if (c_dir_open(&dir, argv, 0, nil) < 0)
+		c_err_die(1, "c_dir_open");
+
+	r = 0;
+	while ((p = c_dir_read(&dir))) {
+		if (p->info == C_FSNS) {
+			if (!(opts & RM_FFLAG)) {
+				errno = C_ENOENT;
+				r = c_err_warn("remove %s", p->path);
+			}
+			continue;
+		}
+		if ((opts & RM_IFLAG) && yesno("remove", p->path))
+			continue;
+		switch (p->info) {
+		case C_FSD:
+			if (!(opts & RM_RFLAG)) {
+				c_dir_set(&dir, p, C_FSSKP);
+				r = c_err_warnx("%s: %r", p->path, C_EISDIR);
+				continue;
+			}
+			break;
+		case C_FSDP:
+			if (!(opts & RM_RFLAG))
+				continue;
+			if (c_nix_rmdir(p->path) < 0)
+				r = c_err_warn("c_nix_rmdir %s", p->path);
+			break;
+		case C_FSERR:
+			r = c_err_warnx("%s: %r", p->path, p->err);
+			break;
+		default:
+			if (c_nix_unlink(p->path) < 0)
+				r = c_err_warn("c_nix_unlink %s", p->path);
+		}
+	}
+	c_dir_close(&dir);
+	return r;
 }

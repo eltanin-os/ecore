@@ -22,8 +22,8 @@ main(int argc, char **argv)
 	if (argc - 1)
 		usage();
 
-	if (c_sys_unlink(*argv) < 0)
-		c_err_die(1, "c_sys_unlink %s", *argv);
+	if (c_nix_unlink(*argv) < 0)
+		c_err_die(1, "c_nix_unlink %s", *argv);
 
 	return 0;
 }

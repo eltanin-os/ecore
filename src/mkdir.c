@@ -16,13 +16,12 @@ main(int argc, char **argv)
 {
 	ctype_status r;
 	int pflag;
-	uint dmode, mode;
-	uint mask;
+	uint mask, dmode, mode;
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	mask = c_sys_umask(0);
+	mask = c_nix_umask(0);
 	mode = C_ACCESSPERMS & ~mask;
 	dmode = mode | C_IWUSR | C_IXUSR;
 	pflag = 0;
@@ -33,7 +32,8 @@ main(int argc, char **argv)
 			pflag = 1;
 			break;
 		case 'm':
-			mode = strtomode(argmain->arg, C_ACCESSPERMS, mask);
+			mode = c_nix_strtomode(argmain->arg,
+			    C_ACCESSPERMS, mask);
 			break;
 		default:
 			usage();
@@ -47,11 +47,11 @@ main(int argc, char **argv)
 
 	r = 0;
 	for (; *argv; --argc, ++argv) {
-		trim_trailing_slash(*argv);
+		c_str_rtrim(*argv, -1, "/");
 		if (pflag)
-			r |= mkpath(*argv, mode, dmode);
-		else if (c_sys_mkdir(*argv, mode) < 0)
-			r = c_err_warn("c_sys_mkdir %s", *argv);
+			r |= c_nix_mkpath(*argv, mode, dmode);
+		else if (c_nix_mkdir(*argv, mode) < 0)
+			r = c_err_warn("c_nix_mkdir %s", *argv);
 	}
 	return r;
 }

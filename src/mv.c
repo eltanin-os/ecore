@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define CPOPTS (CP_PFLAG | CP_RFLAG)
+#define CPOPTS (CP_ATOMIC | CP_PFLAG | CP_RFLAG)
 #define RMOPTS (RM_FFLAG | RM_RFLAG)
 
 static ctype_status
@@ -16,10 +16,10 @@ move(char *src, char *dest, uint opts)
 	if ((opts & CP_IFLAG) && prompt(s))
 		return 0;
 
-	if (!c_sys_rename(src, s))
+	if (!c_nix_rename(s, src))
 		return 0;
 	if (errno != C_EXDEV)
-		return c_err_warn("c_sys_rename %s %s", src, dest);
+		return c_err_warn("c_nix_rename %s <- %s", s, src);
 
 	argv[0] = src;
 	argv[1] = nil;
@@ -69,12 +69,12 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-	if (c_sys_stat(&st, dest) < 0) {
+	if (c_nix_stat(&st, dest) < 0) {
 		sverr = errno;
-		if (c_sys_lstat(&st, dest) < 0) {
+		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
 			if (errno != C_ENOENT)
-				c_err_die(1, "c_sys_stat %s", dest);
+				c_err_die(1, "c_nix_stat %s", dest);
 			st.mode = 0;
 		}
 	}

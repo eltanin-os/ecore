@@ -36,42 +36,18 @@ struct pdb {
 ctype_status copy(char **, char *, uint, uint);
 void deepsleep(u64int);
 ctype_status dbgetln(struct pdb *, ctype_ioq *, ctype_arr *);
+size edyncat(ctype_arr *, void *, usize, usize);
+size edynfmt(ctype_arr *, char *, ...);
 vlong estrtovl(char *, int, vlong, vlong);
 uvlong estrtouvl(char *, int, uvlong, uvlong);
 ctype_id gidfromname(char *);
 ctype_id gidfromuid(ctype_id);
 ctype_status install(struct install *, char **, char *);
-ctype_status mkpath(char *, uint, uint);
 char *namefromgid(ctype_id);
 char *namefromuid(ctype_id);
 char *pathcat(char *, char *, int);
+int prompt(char *);
 ctype_status remove(char **, uint);
-uint strtomode(char *, uint, uint);
 char **tmpargv(char *);
-void trim_trailing_slash(char *);
 ctype_id uidfromname(char *);
 int yesno(char *, char *);
-
-/* fail inline routines */
-static inline size
-edyncat(ctype_arr *p, void *v, usize m, usize n)
-{
-	size r;
-
-	if ((r = c_dyn_cat(p, v, m, n)) < 0)
-		c_err_die(1, "c_dyn_cat");
-	return r;
-}
-
-static inline size
-edynfmt(ctype_arr *p, char *fmt, ...)
-{
-	size r;
-	va_list ap;
-
-	va_start(ap, fmt);
-	if ((r = c_dyn_vfmt(p, fmt, ap)) < 0)
-		c_err_die(1, "c_dyn_cat");
-	va_end(ap);
-	return r;
-}

@@ -86,15 +86,15 @@ main(int argc, char **argv)
 			else
 				tmp = "/tmp";
 		}
-		trim_trailing_slash(tmp);
+		c_str_rtrim(tmp, -1, "/");
 		if (c_arr_fmt(&arr, "%s/", tmp) < 0)
 			DIE("c_arr_fmt");
 	}
 	if (c_arr_fmt(&arr, "%s", template) < 0)
 		DIE("c_arr_fmt");
-	if ((fd = c_std_mktemp(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
-		DIE("c_std_mktemp %s", c_arr_data(&arr));
-	c_sys_close(fd);
+	if ((fd = c_nix_mktemp(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
+		DIE("c_nix_mktemp %s", c_arr_data(&arr));
+	c_nix_fdclose(fd);
 
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));
 	c_ioq_flush(ioq1);

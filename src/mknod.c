@@ -17,17 +17,19 @@ ctype_status
 main(int argc, char **argv)
 {
 	ulong maj, min;
-	uint mode, type;
+	uint mask, mode, type;
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
+	mask = c_nix_getumask();
 	mode = C_DEFFILEMODE;
 
 	while (c_std_getopt(argmain, argc, argv, "m:")) {
 		switch (argmain->opt) {
 		case 'm':
-			mode = strtomode(argmain->arg, C_ACCESSPERMS, 0);
+			mode = c_nix_strtomode(argmain->arg,
+			    C_ACCESSPERMS, mask);
 			break;
 		default:
 			usage();

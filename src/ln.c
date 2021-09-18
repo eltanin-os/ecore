@@ -10,20 +10,21 @@ enum {
 };
 
 static ctype_status
-links(char *src, char *dest, uint opts)
+linkit(char *src, char *dest, uint opts)
 {
 	if (opts & FFLAG)
-		c_sys_unlink(dest);
+		c_nix_unlink(dest);
 
 	if (opts & SFLAG) {
-		if (c_sys_symlink(src, dest) < 0)
-			return c_err_warn("c_sys_symlink %s %s", src, dest);
+		if (c_nix_symlink(dest, src) < 0)
+			return c_err_warn("c_nix_symlink %s <- %s", dest, src);
 	} else if (opts & LFLAG) {
-		if (c_sys_llink(src, dest) < 0)
-			return c_err_warn("c_sys_link %s %s", src, dest);
+		if (c_sys_linkat(C_AT_FDCWD, src,
+		    C_AT_FDCWD, dest, C_AT_SYMLINK_NOFOLLOW) < 0)
+			return c_err_warn("c_sys_linkat %s %s", src, dest);
 	} else {
-		if (c_sys_link(src, dest) < 0)
-			return c_err_warn("c_sys_llink %s %s", src, dest);
+		if (c_nix_link(dest, src) < 0)
+			return c_err_warn("c_nix_link %s <- %s", dest, src);
 	}
 	return 0;
 }
@@ -76,23 +77,23 @@ main(int argc, char **argv)
 	case 0:
 		usage();
 	case 1:
-		c_std_exit(links(argv[0], pathcat(argv[0], ".", 0), opts));
+		c_std_exit(linkit(argv[0], pathcat(argv[0], ".", 0), opts));
 	case 2:
-		c_std_exit(links(argv[0], pathcat(argv[0], argv[1], 0), opts));
+		c_std_exit(linkit(argv[0], pathcat(argv[0], argv[1], 0), opts));
 	}
 
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-	if (c_sys_stat(&st, dest) < 0)
-		c_err_die(1, "c_sys_stat %s", dest);
+	if (c_nix_stat(&st, dest) < 0)
+		c_err_die(1, "c_nix_stat %s", dest);
 
 	if (!C_ISDIR(st.mode))
 		usage();
 
 	r = 0;
 	for (; *argv; --argc, ++argv)
-		r |= links(*argv, pathcat(*argv, dest, 1), opts);
+		r |= linkit(*argv, pathcat(*argv, dest, 1), opts);
 
 	return r;
 }

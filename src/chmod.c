@@ -49,7 +49,7 @@ done:
 	if (argc < 2)
 		usage();
 
-	c_sys_umask(mask = c_sys_umask(0));
+	mask = c_nix_getumask();
 	m = *argv;
 	--argc, ++argv;
 
@@ -77,8 +77,9 @@ done:
 			continue;
 		}
 
-		if (c_sys_chmod(p->path, strtomode(m, p->stp->mode, mask)) < 0)
-			r = c_err_warn("c_sys_chmod %s", p->path);
+		if (c_nix_chmod(p->path,
+		    c_nix_strtomode(m, p->stp->mode, mask)) < 0)
+			r = c_err_warn("c_nix_chmod %s", p->path);
 	}
 	c_dir_close(&dir);
 	return r;

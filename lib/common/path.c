@@ -3,17 +3,19 @@
 
 #include "common.h"
 
-void
-trim_trailing_slash(char *s)
+char *
+pathcat(char *s, char *d, int cat)
 {
-	usize n;
+	static char buf[C_PATHMAX];
+	ctype_arr arr;
+	ctype_stat st;
 
-	n = c_str_len(s, C_USIZEMAX);
-	for (;;) {
-		if (!(--n))
-			break;
-		if (s[n] != '/')
-			break;
-		s[n] = 0;
+	c_arr_init(&arr, buf, sizeof(buf));
+	c_str_rtrim(d, -1, "/");
+	if (!cat) {
+		if (c_nix_stat(&st, d) < 0 || !C_ISDIR(st.mode))
+			return c_arr_data(&arr);
 	}
+	c_arr_fmt(&arr, "/%s", c_gen_basename(s));
+	return c_arr_data(&arr);
 }

@@ -11,5 +11,5 @@ deepsleep(u64int time)
 	c_taia_u64(&deadline, time);
 	c_taia_now(&stamp);
 	c_taia_add(&deadline, &stamp, &deadline);
-	c_std_deepsleep(&deadline, &stamp);
+	c_nix_deepsleep(&deadline, &stamp);
 }

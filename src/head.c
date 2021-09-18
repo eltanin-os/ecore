@@ -13,12 +13,12 @@ head(ctype_arr *p, char *s, usize n)
 
 	if (C_ISDASH(s)) {
 		fd = C_FD0;
-	} else if ((fd = c_sys_open(s, C_OREAD, 0)) < 0) {
-		c_err_warn("c_sys_open %s", s);
+	} else if ((fd = c_nix_fdopen2(s, C_OREAD)) < 0) {
+		c_err_warn("c_nix_fdopen2 %s", s);
 		return 1;
 	}
 
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
 	while (n--) {
 		c_arr_trunc(p, 0, sizeof(uchar));
 		if ((r = c_ioq_getln(&ioq, p)) < 0)

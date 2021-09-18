@@ -46,10 +46,10 @@ printgroups(char *name, uint opts)
 	char buf[C_BIOSIZ];
 	char *s;
 
-	if ((fd = c_sys_open(GRPFILE, C_OREAD, 0)) < 0)
-		c_err_die(1, "c_sys_open " GRPFILE);
+	if ((fd = c_nix_fdopen2(GRPFILE, C_OREAD)) < 0)
+		c_err_die(1, "c_nix_fdopen2 " GRPFILE);
 
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	c_mem_set(&arr, sizeof(arr), 0);
 	n = c_str_len(name, C_USIZEMAX);
 	while (dbgetln(&db, &ioq, &arr) > 0) {

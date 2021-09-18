@@ -30,7 +30,7 @@ main(int argc, char **argv)
 	while (c_arr_fmt(&arr, "%s\n", s) > 0) ;
 
 	for (;;)
-		c_std_allrw(c_sys_write, C_FD1,
+		c_nix_allrw(c_nix_fdwrite, C_FD1,
 		    c_arr_data(&arr), c_arr_bytes(&arr));
 
 	/* NOT REACHED */

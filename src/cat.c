@@ -21,7 +21,7 @@ main(int argc, char **argv)
 	while (c_std_getopt(argmain, argc, argv, "u")) {
 		switch (argmain->opt) {
 		case 'u':
-			c_ioq_init(ioq1, C_FD1, nil, 0, &c_sys_write);
+			c_ioq_init(ioq1, C_FD1, nil, 0, &c_nix_fdwrite);
 			break;
 		default:
 			usage();

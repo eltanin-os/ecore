@@ -70,11 +70,11 @@ checkfile(struct hash *h, char *file)
 	char buf[C_SMALLBIOSIZ];
 	char out[64];
 
-	if ((fd = c_sys_open(file, C_OREAD, 0)) < 0)
-		c_err_die(1, "c_sys_open %s", file);
+	if ((fd = c_nix_fdopen2(file, C_OREAD)) < 0)
+		c_err_die(1, "c_nix_fdopen2 %s", file);
 
 	r = 0;
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_sys_read);
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
 	c_arr_trunc(&arr, 0, sizeof(uchar));
 	while (c_ioq_getln(&ioq, &arr) > 0) {
 		s = c_arr_data(&arr);
@@ -107,7 +107,7 @@ checkfile(struct hash *h, char *file)
 
 		c_arr_trunc(&arr, 0, sizeof(uchar));
 	}
-	c_sys_close(fd);
+	c_nix_fdclose(fd);
 	return r;
 }
 

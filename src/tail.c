@@ -32,8 +32,8 @@ headb(ctype_ioq *p, usize cnt)
 		}
 	}
 	n = c_ioq_feed(p);
-	c_std_allrw(&c_sys_write, C_FD1, c_ioq_peek(p), n);
-	c_std_fdcat(C_FD1, c_ioq_fileno(p));
+	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_ioq_peek(p), n);
+	c_nix_fdcat(C_FD1, c_ioq_fileno(p));
 }
 
 static void
@@ -42,8 +42,8 @@ head(ctype_ioq *p, usize cnt)
 	for (; cnt && c_ioq_getln(p, &arr); --cnt)
 		c_arr_trunc(&arr, 0, sizeof(uchar));
 	c_ioq_feed(p);
-	c_std_allrw(&c_sys_write, C_FD1, c_ioq_peek(p), c_ioq_feed(p));
-	c_std_fdcat(C_FD1, c_ioq_fileno(p));
+	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_ioq_peek(p), c_ioq_feed(p));
+	c_nix_fdcat(C_FD1, c_ioq_fileno(p));
 }
 
 static void
@@ -73,7 +73,7 @@ tailb(ctype_ioq *p, usize cnt)
 		}
 		c_ioq_seek(p, len);
 	}
-	c_std_allrw(&c_sys_write, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
+	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
 }
 
 static void
@@ -95,7 +95,7 @@ tail(ctype_ioq *p, usize cnt)
 			++cur;
 		}
 	}
-	c_std_allrw(&c_sys_write, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
+	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
 }
 
 ctype_status
@@ -139,17 +139,17 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 
 	if (!argc || C_ISDASH(*argv)) {
-		c_ioq_init(&ioq, C_FD0, buf, sizeof(buf), &c_sys_read);
+		c_ioq_init(&ioq, C_FD0, buf, sizeof(buf), &c_nix_fdread);
 		tailfn(&ioq, cnt);
 	} else {
-		if ((fd = c_sys_open(*argv, C_OREAD, 0)) < 0)
-			c_err_die(1, "c_sys_open %s", *argv);
-		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
+		if ((fd = c_nix_fdopen2(*argv, C_OREAD)) < 0)
+			c_err_die(1, "c_nix_fdopen2 %s", *argv);
+		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 		tailfn(&ioq, cnt);
 		c_dyn_free(&arr);
 		if (fflag) {
 			for (;;) {
-				c_std_fdcat(C_FD1, fd);
+				c_nix_fdcat(C_FD1, fd);
 				deepsleep(1);
 			}
 		}

@@ -37,7 +37,7 @@ wc(struct total *t, ctype_fd fd, char *fname, uint opts)
 	char buf[C_BIOSIZ];
 	char *p;
 
-	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_sys_read);
+	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	nc = nl = nw = 0;
 	for (;;) {
 		if ((r = c_ioq_feed(&ioq)) < 0)
@@ -59,7 +59,7 @@ wc(struct total *t, ctype_fd fd, char *fname, uint opts)
 	}
 
 	if (fd != C_FD0)
-		c_sys_close(fd);
+		c_nix_fdclose(fd);
 
 	display(fname, nc, nl, nw, opts);
 	if (t) {
@@ -129,8 +129,8 @@ main(int argc, char **argv)
 		if (C_ISDASH(*argv)) {
 			fd = C_FD0;
 			*argv = "<stdin>";
-		} else if ((fd = c_sys_open(*argv, C_OREAD, 0)) < 0) {
-			r = c_err_warn("c_sys_open %s", *argv);
+		} else if ((fd = c_nix_fdopen2(*argv, C_OREAD)) < 0) {
+			r = c_err_warn("c_nix_fdopen2 %s", *argv);
 			continue;
 		}
 		wc(p, fd, *argv, opts);

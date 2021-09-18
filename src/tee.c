@@ -40,17 +40,17 @@ main(int argc, char **argv)
 		c_err_die(1, "c_std_alloc");
 
 	for (i = 0; i < argc; ++i)
-		if ((fds[i] = c_sys_open(argv[i], opts, C_DEFFILEMODE)) < 0)
-			c_err_die(1, "c_sys_open %s", argv[i]);
+		if ((fds[i] = c_nix_fdopen3(argv[i], opts, C_DEFFILEMODE)) < 0)
+			c_err_die(1, "c_nix_fdopen3 %s", argv[i]);
 	fds[i] = C_FD1;
 	++argc;
-	while ((r = c_sys_read(C_FD0, buf, sizeof(buf))) > 0)
+	while ((r = c_nix_fdread(C_FD0, buf, sizeof(buf))) > 0)
 		for (i = 0; i < argc; ++i)
-			if (c_std_allrw(&c_sys_write, fds[i], buf, r) < 0)
-				c_err_die(1, "c_sys_write %s",
+			if (c_nix_allrw(&c_nix_fdwrite, fds[i], buf, r) < 0)
+				c_err_die(1, "c_nix_fdwrite %s",
 				    argv[i] ? argv[i] : "<stdout>");
 	if (r < 0)
-		c_err_die(1, "c_sys_read");
+		c_err_die(1, "c_nix_fdread");
 
 	return 0;
 }

@@ -62,8 +62,8 @@ main(int argc, char **argv)
 	if (argc)
 		usage();
 
-	if (c_sys_uname(&uts) < 0)
-		c_err_die(1, "c_sys_uname");
+	if (c_nix_uname(&uts) < 0)
+		c_err_die(1, "c_nix_uname");
 
 	if (!opts || (opts & SFLAG))
 		DISPLAY(uts.sysname);

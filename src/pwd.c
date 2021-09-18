@@ -21,7 +21,7 @@ getpwd(void)
 	    c_mem_mem(s, n, "/../", sizeof("/../") - 1))
 		return nil;
 
-	if (c_sys_stat(&pwd, s) < 0 || c_sys_stat(&dot, ".") < 0)
+	if (c_nix_stat(&pwd, s) < 0 || c_nix_stat(&dot, ".") < 0)
 		return nil;
 
 	if (pwd.dev != dot.dev || pwd.ino != dot.ino)
@@ -73,8 +73,8 @@ main(int argc, char **argv)
 			break;
 		/* FALLTHROUGH */
 	case 0:
-		if (!(s = c_sys_getcwd(buf, sizeof(buf))))
-			c_err_die(1, "c_sys_getcwd");
+		if (!(s = c_nix_getcwd(buf, sizeof(buf))))
+			c_err_die(1, "c_nix_getcwd");
 	}
 	c_ioq_fmt(ioq1, "%s\n", s);
 	c_ioq_flush(ioq1);
