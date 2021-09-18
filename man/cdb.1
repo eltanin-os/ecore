@@ -1,0 +1,59 @@
+.Dd $Mdocdate: July 28 2021 $
+.Dt CDB 1
+.Os
+.Sh NAME
+.Nm cdb
+.Nd constant database
+.Sh SYNOPSIS
+.Nm
+.Fl cds Ar file
+.Nm
+.Op Fl n Ar num
+.Fl q Ar key file
+.Sh DESCRIPTION
+The
+.Nm
+utility queries, dumps, analyzes and creates cdb
+.Pq constant databases
+files.
+.Ss Create Mode
+The create mode reads a series of encoded records from the standard input
+and creates a database
+.Pq in Xr cdb 5 format
+on a temporary file and atomically rename it to
+.Ar file .
+.Ss Dump Mode
+The dump mode reads the given database and writes to the standard output
+each key and data.
+.Ss Query Mode
+The query mode reads the given database and writes to the standard output
+each found
+.Ar key .
+.Ss Stats Mode
+The stats mode reads the given database and writes to the standard output
+a summary with the number of records and the number of records at n distance
+from their hash.
+.Ss Input/Output Format
+When dealing with input
+.Pq create mode
+or output
+.Pq dump mode
+the records are encoded in the following way:
+.Dl klen,dlen:key->data
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl c
+Set create mode.
+.It Fl d
+Set dump mode.
+.It Fl s
+Set stats mode.
+.It Fl n Ar num
+Limit the number of queries to
+.Ar n .
+.It Fl q Ar key
+Set query mode, searching for the given
+.Ar key .
+.El
+.Sh EXIT STATUS
+.Ex -std

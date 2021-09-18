@@ -11,6 +11,7 @@ HDR=\
 BIN=\
 	src/basename\
 	src/cat\
+	src/cdb\
 	src/chgrp\
 	src/chmod\
 	src/chown\
@@ -55,6 +56,7 @@ BIN=\
 MAN1=\
 	man/basename.1\
 	man/cat.1\
+	man/cdb.1\
 	man/chgrp.1\
 	man/chmod.1\
 	man/chown.1\
