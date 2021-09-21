@@ -159,6 +159,9 @@ main(int argc, char **argv)
 	if (!argc)
 		usage();
 
+	if (argc > 1 && !CSTRCMP("--", *argv))
+		--argc, ++argv;
+
 	fmt = *argv;
 	--argc, ++argv;
 
