@@ -5,8 +5,6 @@
 
 #define HORT(a, b, c) (*(a) == '+') ? (++a, b) : (a += (*(a) == '-'), c)
 
-static ctype_arr arr;
-
 static void
 usage(void)
 {
@@ -18,30 +16,34 @@ usage(void)
 static void
 headb(ctype_ioq *p, usize cnt)
 {
-	size n;
+	size r;
 
 	while (cnt) {
-		if ((n = c_ioq_feed(p)) <= 0)
+		if ((r = c_ioq_feed(p)) <= 0)
 			break;
-		if (cnt > (usize)n) {
-			c_ioq_seek(p, n);
-			cnt -= n;
-		} else {
-			c_ioq_seek(p, cnt);
-			break;
-		}
+		cnt -= r = C_MIN(cnt, (usize)r);
+		c_ioq_seek(p, r);
 	}
-	n = c_ioq_feed(p);
-	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_ioq_peek(p), n);
+	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_ioq_peek(p), c_ioq_feed(p));
 	c_nix_fdcat(C_FD1, c_ioq_fileno(p));
 }
 
 static void
 head(ctype_ioq *p, usize cnt)
 {
-	for (; cnt && c_ioq_getln(p, &arr); --cnt)
-		c_arr_trunc(&arr, 0, sizeof(uchar));
-	c_ioq_feed(p);
+	size r;
+	char *s, *nl;
+
+	while (cnt) {
+		if ((r = c_ioq_feed(p)) <= 0)
+			break;
+		s = c_ioq_peek(p);
+		if ((nl = c_mem_chr(s, r, '\n'))) {
+			r = (nl - s) + 1;
+			--cnt;
+		}
+		c_ioq_seek(p, r);
+	}
 	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_ioq_peek(p), c_ioq_feed(p));
 	c_nix_fdcat(C_FD1, c_ioq_fileno(p));
 }
@@ -49,11 +51,12 @@ head(ctype_ioq *p, usize cnt)
 static void
 tailb(ctype_ioq *p, usize cnt)
 {
+	ctype_arr arr;
 	size len, n;
 	char *d, *s;
 
-	++cnt;
-	if (c_dyn_ready(&arr, cnt, sizeof(uchar)) < 0)
+	c_mem_set(&arr, sizeof(arr), 0);
+	if (c_dyn_ready(&arr, ++cnt, sizeof(uchar)) < 0)
 		c_err_die(1, "c_dyn_ready");
 	while ((len = c_ioq_feed(p)) > 0) {
 		s = c_ioq_peek(p);
@@ -74,14 +77,17 @@ tailb(ctype_ioq *p, usize cnt)
 		c_ioq_seek(p, len);
 	}
 	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
+	c_dyn_free(&arr);
 }
 
 static void
 tail(ctype_ioq *p, usize cnt)
 {
+	ctype_arr arr;
 	usize cur, n;
 	char *left, *s;
 
+	c_mem_set(&arr, sizeof(arr), 0);
 	cur = 0;
 	while (c_ioq_getln(p, &arr) > 0) {
 		if (cur > cnt) {
@@ -96,6 +102,7 @@ tail(ctype_ioq *p, usize cnt)
 		}
 	}
 	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
+	c_dyn_free(&arr);
 }
 
 ctype_status
@@ -146,7 +153,6 @@ main(int argc, char **argv)
 			c_err_die(1, "c_nix_fdopen2 %s", *argv);
 		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 		tailfn(&ioq, cnt);
-		c_dyn_free(&arr);
 		if (fflag) {
 			for (;;) {
 				c_nix_fdcat(C_FD1, fd);
