@@ -235,13 +235,11 @@ printname(ctype_dent *p, int ino, int blk)
 
 	for (s = p->depth ? p->name : p->path; *s; s += len) {
 		len = c_utf8_chartorune(&rune, s);
-		if (!(opts & QFLAG) || c_utf8_isprint(rune)) {
+		if (!(opts & QFLAG) || c_utf8_isprint(rune))
 			c_ioq_nput(ioq1, s, len);
-			n += len;
-		} else {
+		else
 			c_ioq_put(ioq1, "?");
-			n += sizeof(uchar);
-		}
+		++n;
 	}
 	n += printtype(p->stp);
 	return n;
