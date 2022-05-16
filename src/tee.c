@@ -15,17 +15,17 @@ main(int argc, char **argv)
 	size r;
 	uint opts;
 	int i;
-	char buf[C_BIOSIZ];
+	char buf[C_IOQ_BSIZ];
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	opts = C_OWRITE | C_OTRUNC | C_OCREATE;
+	opts = C_NIX_OWRITE | C_NIX_OTRUNC | C_NIX_OCREATE;
 
 	while (c_std_getopt(argmain, argc, argv, "ai")) {
 		switch (argmain->opt) {
 		case 'a':
-			opts = (opts & ~C_OTRUNC) | C_OAPPEND;
+			opts = (opts & ~C_NIX_OTRUNC) | C_NIX_OAPPEND;
 			break;
 		case 'i':
 			break;
@@ -40,17 +40,17 @@ main(int argc, char **argv)
 		c_err_die(1, "c_std_alloc");
 
 	for (i = 0; i < argc; ++i)
-		if ((fds[i] = c_nix_fdopen3(argv[i], opts, C_DEFFILEMODE)) < 0)
+		if ((fds[i] = c_nix_fdopen3(argv[i],
+		    opts, C_NIX_DEFFILEMODE)) < 0)
 			c_err_die(1, "c_nix_fdopen3 %s", argv[i]);
-	fds[i] = C_FD1;
+
+	fds[i] = C_IOQ_FD1;
 	++argc;
-	while ((r = c_nix_fdread(C_FD0, buf, sizeof(buf))) > 0)
+	while ((r = c_nix_fdread(C_IOQ_FD0, buf, sizeof(buf))) > 0)
 		for (i = 0; i < argc; ++i)
 			if (c_nix_allrw(&c_nix_fdwrite, fds[i], buf, r) < 0)
 				c_err_die(1, "c_nix_fdwrite %s",
 				    argv[i] ? argv[i] : "<stdout>");
-	if (r < 0)
-		c_err_die(1, "c_nix_fdread");
-
+	if (r < 0) c_err_die(1, "c_nix_fdread");
 	return 0;
 }

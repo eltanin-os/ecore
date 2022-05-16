@@ -18,13 +18,13 @@ main(int argc, char **argv)
 	--argc, ++argv;
 
 	mask = c_nix_getumask();
-	mode = C_DEFFILEMODE;
+	mode = C_NIX_DEFFILEMODE;
 
 	while (c_std_getopt(argmain, argc, argv, "m:")) {
 		switch (argmain->opt) {
 		case 'm':
 			mode = c_nix_strtomode(argmain->arg,
-			    C_ACCESSPERMS, mask);
+			    C_NIX_ACCESSPERMS, mask);
 			break;
 		default:
 			usage();
@@ -32,14 +32,11 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc)
-		usage();
+	if (!argc) usage();
 
 	r = 0;
 	for (; *argv; ++argv)
-		if (c_sys_mknod(*argv, C_IFIFO | mode, 0) < 0)
+		if (c_sys_mknod(*argv, C_NIX_IFIFO | mode, 0) < 0)
 			r = c_err_warn("c_sys_mknod %s", *argv);
-
 	return r;
 }

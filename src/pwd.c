@@ -8,25 +8,14 @@ getpwd(void)
 	usize n;
 	char *s;
 
-	if (!(s = c_std_getenv("PWD")))
+	if (!(s = c_std_getenv("PWD")) ||
+	    *s != '/' ||
+	    (n = c_str_len(s, C_LIM_PATHMAX)) == C_LIM_PATHMAX ||
+	    (c_mem_mem(s, n, "/./", sizeof("/./") - 1) ||
+	    c_mem_mem(s, n, "/../", sizeof("/../") - 1)) ||
+	    (c_nix_stat(&pwd, s) < 0 || c_nix_stat(&dot, ".")) ||
+	    (pwd.dev != dot.dev || pwd.ino != dot.ino))
 		return nil;
-
-	if (*s != '/')
-		return nil;
-
-	if ((n = c_str_len(s, C_PATHMAX)) == C_PATHMAX)
-		return nil;
-
-	if (c_mem_mem(s, n, "/./", sizeof("/./") - 1) ||
-	    c_mem_mem(s, n, "/../", sizeof("/../") - 1))
-		return nil;
-
-	if (c_nix_stat(&pwd, s) < 0 || c_nix_stat(&dot, ".") < 0)
-		return nil;
-
-	if (pwd.dev != dot.dev || pwd.ino != dot.ino)
-		return nil;
-
 	return s;
 }
 
@@ -42,7 +31,7 @@ main(int argc, char **argv)
 {
 	int mode;
 	char *s;
-	char buf[C_PATHMAX];
+	char buf[C_LIM_PATHMAX];
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
@@ -63,9 +52,7 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (argc)
-		usage();
+	if (argc) usage();
 
 	switch (mode) {
 	case 1:

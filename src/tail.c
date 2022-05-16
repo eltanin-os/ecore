@@ -19,13 +19,12 @@ headb(ctype_ioq *p, usize cnt)
 	size r;
 
 	while (cnt) {
-		if ((r = c_ioq_feed(p)) <= 0)
-			break;
-		cnt -= r = C_MIN(cnt, (usize)r);
+		if ((r = c_ioq_feed(p)) <= 0) break;
+		cnt -= r = C_STD_MIN(cnt, (usize)r);
 		c_ioq_seek(p, r);
 	}
-	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_ioq_peek(p), c_ioq_feed(p));
-	c_nix_fdcat(C_FD1, c_ioq_fileno(p));
+	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1, c_ioq_peek(p), c_ioq_feed(p));
+	c_nix_fdcat(C_IOQ_FD1, c_ioq_fileno(p));
 }
 
 static void
@@ -35,8 +34,7 @@ head(ctype_ioq *p, usize cnt)
 	char *s, *nl;
 
 	while (cnt) {
-		if ((r = c_ioq_feed(p)) <= 0)
-			break;
+		if ((r = c_ioq_feed(p)) <= 0) break;
 		s = c_ioq_peek(p);
 		if ((nl = c_mem_chr(s, r, '\n'))) {
 			r = (nl - s) + 1;
@@ -44,8 +42,8 @@ head(ctype_ioq *p, usize cnt)
 		}
 		c_ioq_seek(p, r);
 	}
-	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_ioq_peek(p), c_ioq_feed(p));
-	c_nix_fdcat(C_FD1, c_ioq_fileno(p));
+	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1, c_ioq_peek(p), c_ioq_feed(p));
+	c_nix_fdcat(C_IOQ_FD1, c_ioq_fileno(p));
 }
 
 static void
@@ -76,7 +74,8 @@ tailb(ctype_ioq *p, usize cnt)
 		}
 		c_ioq_seek(p, len);
 	}
-	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
+	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1,
+	    c_arr_data(&arr), c_arr_bytes(&arr));
 	c_dyn_free(&arr);
 }
 
@@ -101,7 +100,8 @@ tail(ctype_ioq *p, usize cnt)
 			++cur;
 		}
 	}
-	c_nix_allrw(&c_nix_fdwrite, C_FD1, c_arr_data(&arr), c_arr_bytes(&arr));
+	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1,
+	    c_arr_data(&arr), c_arr_bytes(&arr));
 	c_dyn_free(&arr);
 }
 
@@ -113,7 +113,7 @@ main(int argc, char **argv)
 	ctype_fd fd;
 	int fflag;
 	char *s;
-	char buf[C_BIOSIZ];
+	char buf[C_IOQ_BSIZ];
 	void (*tailfn)(ctype_ioq *, usize);
 
 	c_std_setprogname(argv[0]);
@@ -128,7 +128,7 @@ main(int argc, char **argv)
 		case 'c':
 			s = argmain->arg;
 			tailfn = HORT(s, headb, tailb);
-			cnt = estrtovl(s, 0, 1, C_USIZEMAX) - 1;
+			cnt = estrtovl(s, 0, 1, -1) - 1;
 			break;
 		case 'f':
 			fflag = 1;
@@ -136,7 +136,7 @@ main(int argc, char **argv)
 		case 'n':
 			s = argmain->arg;
 			tailfn = HORT(s, head, tail);
-			cnt = estrtovl(s, 0, 1, C_USIZEMAX) - 1;
+			cnt = estrtovl(s, 0, 1, -1) - 1;
 			break;
 		default:
 			usage();
@@ -145,17 +145,17 @@ main(int argc, char **argv)
 	argc -= argmain->idx;
 	argv += argmain->idx;
 
-	if (!argc || C_ISDASH(*argv)) {
-		c_ioq_init(&ioq, C_FD0, buf, sizeof(buf), &c_nix_fdread);
+	if (!argc || C_STD_ISDASH(*argv)) {
+		c_ioq_init(&ioq, C_IOQ_FD0, buf, sizeof(buf), &c_nix_fdread);
 		tailfn(&ioq, cnt);
 	} else {
-		if ((fd = c_nix_fdopen2(*argv, C_OREAD)) < 0)
+		if ((fd = c_nix_fdopen2(*argv, C_NIX_OREAD)) < 0)
 			c_err_die(1, "c_nix_fdopen2 %s", *argv);
 		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 		tailfn(&ioq, cnt);
 		if (fflag) {
 			for (;;) {
-				c_nix_fdcat(C_FD1, fd);
+				c_nix_fdcat(C_IOQ_FD1, fd);
 				deepsleep(1);
 			}
 		}

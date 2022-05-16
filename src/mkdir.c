@@ -22,8 +22,8 @@ main(int argc, char **argv)
 	--argc, ++argv;
 
 	mask = c_nix_umask(0);
-	mode = C_ACCESSPERMS & ~mask;
-	dmode = mode | C_IWUSR | C_IXUSR;
+	mode = C_NIX_ACCESSPERMS & ~mask;
+	dmode = mode | C_NIX_IWUSR | C_NIX_IXUSR;
 	pflag = 0;
 
 	while (c_std_getopt(argmain, argc, argv, "pm:")) {
@@ -33,7 +33,7 @@ main(int argc, char **argv)
 			break;
 		case 'm':
 			mode = c_nix_strtomode(argmain->arg,
-			    C_ACCESSPERMS, mask);
+			    C_NIX_ACCESSPERMS, mask);
 			break;
 		default:
 			usage();
@@ -41,12 +41,10 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc)
-		usage();
+	if (!argc) usage();
 
 	r = 0;
-	for (; *argv; --argc, ++argv) {
+	for (; *argv; ++argv) {
 		c_str_rtrim(*argv, -1, "/");
 		if (pflag)
 			r |= c_nix_mkpath(*argv, mode, dmode);

@@ -20,7 +20,7 @@ cmode(char *path)
 	c_dyn_shrink(&arr);
 	tmp = c_arr_data(&arr);
 
-	if ((tmpfd = c_nix_mktemp(tmp, c_arr_bytes(&arr), 0)) < 0)
+	if ((tmpfd = c_nix_mktemp(tmp, c_arr_bytes(&arr))) < 0)
 		c_err_die(1, "c_nix_mktemp");
 
 	if (c_cdb_mkstart(&cdbmk, tmpfd) < 0)
@@ -28,38 +28,32 @@ cmode(char *path)
 
 	c_mem_set(&arr, sizeof(arr), 0);
 	while ((r = c_ioq_getln(ioq0, &arr)) > 0) {
-		if (*(s = c_arr_data(&arr)) == '\n')
-			break;
-		if (*s != '+')
-			goto invalid;
+		if (*(s = c_arr_data(&arr)) == '\n') break;
+		if (*s != '+') goto invalid;
 		++s;
-		if (!(p = c_str_chr(s, c_arr_bytes(&arr), ',')))
-			goto invalid;
+		if (!(p = c_str_chr(s, c_arr_bytes(&arr), ','))) goto invalid;
 		*p++ = '\0';
-		klen = estrtouvl(s, 10, 0, C_USIZEMAX);
+		klen = estrtouvl(s, 10, 0, -1);
 		s = p;
-		if (!(p = c_str_chr(s, c_arr_bytes(&arr), ':')))
-			goto invalid;
+		if (!(p = c_str_chr(s, c_arr_bytes(&arr), ':'))) goto invalid;
 		*p++ = '\0';
-		vlen = estrtouvl(s, 10, 0, C_USIZEMAX);
+		vlen = estrtouvl(s, 10, 0, -1);
 
 		s = p;
 		p = s + klen;
-		if (p[0] != '-' || p[1] != '>')
-			goto invalid;
+		if (p[0] != '-' || p[1] != '>') goto invalid;
 		p += 2;
 		c_cdb_mkadd(&cdbmk, s, klen, p, vlen);
 		c_arr_trunc(&arr, 0, sizeof(uchar));
-
 		continue;
 invalid:
 		c_nix_unlink(tmp);
-		c_err_diex(1, "<%s> %s: %s", tmp, s, p);
+		errno = C_ERR_EINVAL;
+		c_err_die(1, nil);
 	}
 	c_dyn_free(&arr);
 
-	if (c_cdb_mkfinish(&cdbmk) < 0)
-		c_err_die(1, "c_cdb_mkfinish");
+	if (c_cdb_mkfinish(&cdbmk) < 0) c_err_die(1, "c_cdb_mkfinish");
 	c_nix_fdclose(tmpfd);
 
 	if (c_nix_rename(path, tmp) < 0)
@@ -76,9 +70,7 @@ qmode(ctype_fd fd, char *key, usize n)
 	ctype_status r;
 	int found;
 
-	if (c_cdb_init(&cdb, fd) < 0)
-		c_err_die(1, "c_cdb_init");
-
+	if (c_cdb_init(&cdb, fd) < 0) c_err_die(1, "c_cdb_init");
 	c_mem_set(&arr, sizeof(arr), 0);
 	found  = 0;
 	len = c_str_len(key, -1);
@@ -93,10 +85,7 @@ qmode(ctype_fd fd, char *key, usize n)
 		c_ioq_nput(ioq1, c_arr_data(&arr), c_cdb_datalen(&cdb));
 	}
 	c_dyn_free(&arr);
-
-	if (r < 0)
-		c_err_die(1, "c_cdb_findnext");
-
+	if (r < 0) c_err_die(1, "c_cdb_findnext");
 	return found ? 0 : 100;
 }
 
@@ -104,8 +93,7 @@ qmode(ctype_fd fd, char *key, usize n)
 static void
 getall(ctype_ioq *p, char *s, usize n)
 {
-	if (c_ioq_get(p, s, n) < 0)
-		c_err_die(1, "c_ioq_getall");
+	if (c_ioq_get(p, s, n) < 0) c_err_die(1, "c_ioq_getall");
 }
 
 static void
@@ -116,7 +104,7 @@ getseek(ctype_ioq *p, usize n)
 }
 
 static void
-get32num(ctype_ioq *p, u32int *x)
+get32num(ctype_ioq *p, u32 *x)
 {
 	char buf[4];
 	getall(p, buf, sizeof(buf));
@@ -128,9 +116,9 @@ static void
 dmode(ctype_fd fd)
 {
 	ctype_ioq ioq;
-	u32int eod, pos;
-	u32int dlen, klen;
-	char buf[C_SMALLBIOSIZ];
+	u32 eod, pos;
+	u32 dlen, klen;
+	char buf[C_IOQ_SMALLBSIZ];
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
 	get32num(&ioq, &eod);
@@ -156,11 +144,11 @@ smode(ctype_fd fd)
 	ctype_cdb c;
 	ctype_ioq ioq;
 	ctype_fssize rest;
-	u32int numrec, numd[11];
-	u32int eod, pos;
-	u32int dlen, klen;
+	u32 numrec, numd[11];
+	u32 eod, pos;
+	u32 dlen, klen;
 	char key[1024];
-	char buf[C_SMALLBIOSIZ];
+	char buf[C_IOQ_SMALLBSIZ];
 
 	c_cdb_init(&c, fd);
 	c_mem_set(&numd, sizeof(numd), 0);
@@ -180,7 +168,7 @@ smode(ctype_fd fd)
 		} else {
 			getall(&ioq, key, klen);
 			pos += klen;
-			rest = c_nix_seek(fd, 0, C_SEEKCUR);
+			rest = c_nix_seek(fd, 0, C_NIX_SEEKCUR);
 			c_cdb_findstart(&c);
 			do {
 				switch (c_cdb_findnext(&c, key, klen)) {
@@ -196,7 +184,7 @@ smode(ctype_fd fd)
 				++numd[10];
 			else
 				++numd[c.loop - 1];
-			c_nix_seek(fd, rest, C_SEEKSET);
+			c_nix_seek(fd, rest, C_NIX_SEEKSET);
 		}
 		getseek(&ioq, dlen);
 		pos += dlen;
@@ -239,6 +227,7 @@ main(int argc, char **argv)
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
+	key = nil;
 	mode = 0;
 	n = -1;
 
@@ -253,7 +242,7 @@ main(int argc, char **argv)
 			mode = argmain->opt;
 			break;
 		case 'n':
-			n = estrtouvl(argmain->arg, 0, 0, C_USIZEMAX);
+			n = estrtouvl(argmain->arg, 0, 0, -1);
 			break;
 		default:
 			usage();
@@ -262,16 +251,13 @@ main(int argc, char **argv)
 	argc -= argmain->idx;
 	argv += argmain->idx;
 
-	if (!mode || argc - 1)
-		usage();
-
 	if (mode == 'c') {
-		if (argc - 1)
-			usage();
+		if (argc - 1) usage();
 		cmode(*argv);
 	} else {
-		if ((fd = c_nix_fdopen2(*argv, C_OREAD)) < 0)
-			c_err_die(1, "c_nix_fdopen2 %s", *argv);
+		if (argc - 1) usage();
+		fd = c_nix_fdopen2(*argv, C_NIX_OREAD);
+		if (fd < 0) c_err_die(1, "c_nix_fdopen2 %s", *argv);
 		switch (mode) {
 		case 'd':
 			dmode(fd);

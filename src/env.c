@@ -30,19 +30,16 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 
 	if (!argc) {
-		for (; *environ; ++environ)
-			c_ioq_fmt(ioq1, "%s\n", *environ);
+		for (; *environ; ++environ) c_ioq_fmt(ioq1, "%s\n", *environ);
 		c_std_exit(0);
 	}
-
-	for (; *argv; --argc, ++argv) {
-		if (!(s = c_str_chr(*argv, C_USIZEMAX, '=')))
-			break;
+	for (; *argv; ++argv) {
+		if (!(s = c_str_chr(*argv, -1, '='))) break;
 		c_exc_setenv(*argv, s + 1);
 	}
 
 	c_exc_run(*argv, argv);
-	c_err_die(126 + (errno == C_ENOENT), "c_exc_run %s", *argv);
+	c_err_die(126 + (errno == C_ERR_ENOENT), "c_exc_run %s", *argv);
 	/* NOT REACHED */
 	return 0;
 }

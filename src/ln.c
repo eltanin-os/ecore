@@ -12,15 +12,13 @@ enum {
 static ctype_status
 linkit(char *src, char *dest, uint opts)
 {
-	if (opts & FFLAG)
-		c_nix_unlink(dest);
-
+	if (opts & FFLAG) c_nix_unlink(dest);
 	if (opts & SFLAG) {
 		if (c_nix_symlink(dest, src) < 0)
 			return c_err_warn("c_nix_symlink %s <- %s", dest, src);
 	} else if (opts & LFLAG) {
-		if (c_sys_linkat(C_AT_FDCWD, src,
-		    C_AT_FDCWD, dest, C_AT_SYMLINK_NOFOLLOW) < 0)
+		if (c_sys_linkat(C_NIX_FDCWD, src,
+		    C_NIX_FDCWD, dest, C_NIX_SLNOFLW) < 0)
 			return c_err_warn("c_sys_linkat %s %s", src, dest);
 	} else {
 		if (c_nix_link(dest, src) < 0)
@@ -72,7 +70,6 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
 	switch (argc) {
 	case 0:
 		usage();
@@ -85,15 +82,11 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-	if (c_nix_stat(&st, dest) < 0)
-		c_err_die(1, "c_nix_stat %s", dest);
-
-	if (!C_ISDIR(st.mode))
-		usage();
+	if (c_nix_stat(&st, dest) < 0) c_err_die(1, "c_nix_stat %s", dest);
+	if (!C_NIX_ISDIR(st.mode)) usage();
 
 	r = 0;
-	for (; *argv; --argc, ++argv)
+	for (; *argv; ++argv)
 		r |= linkit(*argv, pathcat(*argv, dest, 1), opts);
-
 	return r;
 }

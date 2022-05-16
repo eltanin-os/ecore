@@ -16,43 +16,36 @@ static ctype_arr arr;
 static void
 sethash(struct hash *p, char *s)
 {
-	if (!CSTRCMP("FLETCHER32", s)) {
-		p->name = "FLETCHER32";
-		p->md = c_hsh_fletcher32;
-		p->siz = C_H32GEN_DIGEST;
-	} else if (!CSTRCMP("MD5", s)) {
+	if (!CSTRCMP("MD5", s)) {
 		p->name = "MD5";
 		p->md = c_hsh_md5;
-		p->siz = C_HMD5_DIGEST;
+		p->siz = C_HSH_MD5DIG;
 	} else if (!CSTRCMP("SHA1", s)) {
 		p->name = "SHA1";
 		p->md = c_hsh_sha1;
-		p->siz = C_HSHA1_DIGEST;
+		p->siz = C_HSH_SHA1DIG;
 	} else if (!CSTRCMP("SHA256", s)) {
 		p->name = "SHA256";
 		p->md = c_hsh_sha256;
-		p->siz = C_HSHA256_DIGEST;
+		p->siz = C_HSH_SHA256DIG;
 	} else if (!CSTRCMP("SHA512", s)) {
 		p->name = "SHA512";
 		p->md = c_hsh_sha512;
-		p->siz = C_HSHA512_DIGEST;
+		p->siz = C_HSH_SHA512DIG;
 	} else if (!CSTRCMP("WHIRLPOOL", s)) {
 		p->name = "WHIRLPOOL";
 		p->md = c_hsh_whirlpool;
-		p->siz = C_HWHIRLPOOL_DIGEST;
+		p->siz = C_HSH_WHIRLPOOLDIG;
 	} else {
 		c_err_diex(1, "%s: unknown algorithm", s);
 	}
 }
 
 static ctype_status
-cmpsum(struct hash *h, char *p, char *s)
+hexcmp(char *p, usize n, char *s)
 {
-	int i;
-
-	for (i = 0; i < h->siz; ++i) {
-		if (((HDEC(p[0]) << 4) | HDEC(p[1])) != (uchar)s[i])
-			return -1;
+	while (n--) {
+		if (((HDEC(p[0]) << 4) | HDEC(p[1])) != (uchar)*s++) return 1;
 		p += 2;
 	}
 	return 0;
@@ -61,16 +54,16 @@ cmpsum(struct hash *h, char *p, char *s)
 static ctype_status
 checkfile(struct hash *h, char *file)
 {
-	ctype_fd fd;
 	ctype_hst hs;
 	ctype_ioq ioq;
-	ctype_status r;
 	usize n;
+	ctype_fd fd;
+	ctype_status r;
 	char *p, *s;
-	char buf[C_SMALLBIOSIZ];
+	char buf[C_IOQ_SMALLBSIZ];
 	char out[64];
 
-	if ((fd = c_nix_fdopen2(file, C_OREAD)) < 0)
+	if ((fd = c_nix_fdopen2(file, C_NIX_OREAD)) < 0)
 		c_err_die(1, "c_nix_fdopen2 %s", file);
 
 	r = 0;
@@ -83,7 +76,6 @@ checkfile(struct hash *h, char *file)
 
 		if (!(p = c_mem_chr(s, n, ' ')))
 			c_err_diex(1, "%s: file in wrong format", file);
-
 		*p++ = 0;
 		sethash(h, s);
 
@@ -91,7 +83,6 @@ checkfile(struct hash *h, char *file)
 		s = p;
 		if (!(p = c_mem_chr(s, n, ' ')))
 			c_err_diex(1, "%s: file in wrong format", file);
-
 		*p++ = 0;
 
 		h->md->init(&hs);
@@ -102,9 +93,8 @@ checkfile(struct hash *h, char *file)
 		}
 		h->md->end(&hs, out);
 
-		if (cmpsum(h, s, out) < 0)
+		if (hexcmp(s, h->siz, out))
 			r = c_err_warnx("%s %s: checksum mismatch", h->name, s);
-
 		c_arr_trunc(&arr, 0, sizeof(uchar));
 	}
 	c_nix_fdclose(fd);
@@ -124,8 +114,7 @@ digest(struct hash *h, char *file)
 	h->md->end(&hs, buf);
 
 	c_ioq_fmt(ioq1, "%s ", h->name);
-	for (i = 0; i < h->siz; ++i)
-		c_ioq_fmt(ioq1, "%02x", (uchar)buf[i]);
+	for (i = 0; i < h->siz; ++i) c_ioq_fmt(ioq1, "%02x", (uchar)buf[i]);
 	c_ioq_fmt(ioq1, " %s\n", file);
 	return 0;
 }
@@ -150,7 +139,6 @@ main(int argc, char **argv)
 
 	func = digest;
 	sethash(&h, "WHIRLPOOL");
-
 	while (c_std_getopt(argmain, argc, argv, "a:c")) {
 		switch (argmain->opt) {
 		case 'a':
@@ -165,14 +153,11 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc)
-		argv = tmpargv("-");
+	if (!argc) argv = tmpargv("-");
 
 	r = 0;
 	for (; *argv; ++argv) {
-		if (C_ISDASH(*argv))
-			*argv = "<stdin>";
+		if (C_STD_ISDASH(*argv)) *argv = "<stdin>";
 		r |= func(&h, *argv);
 	}
 	c_dyn_free(&arr);

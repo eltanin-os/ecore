@@ -35,11 +35,11 @@ main(int argc, char **argv)
 	while (c_std_getopt(argmain, argc, argv, "HLaksx")) {
 		switch (argmain->opt) {
 		case 'H':
-			ropts |= C_FSCOM;
+			ropts |= C_DIR_FSCOM;
 			break;
 		case 'L':
-			ropts &= ~C_FSPHY;
-			ropts |= C_FSLOG;
+			ropts &= ~C_DIR_FSPHY;
+			ropts |= C_DIR_FSLOG;
 			break;
 		case 'a':
 			opts &= ~SFLAG;
@@ -53,7 +53,7 @@ main(int argc, char **argv)
 			opts |= SFLAG;
 			break;
 		case 'x':
-			ropts |= C_FSXDV;
+			ropts |= C_DIR_FSXDV;
 			break;
 		default:
 			usage();
@@ -61,37 +61,35 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
+	if (!argc) argv = tmpargv(".");
 
-	if (!argc)
-		argv = tmpargv(".");
-
-	if (c_dir_open(&dir, argv, ropts | C_FSFHT, nil) < 0)
+	if (c_dir_open(&dir, argv, ropts | C_DIR_FSFHT, nil) < 0)
 		c_err_die(1, "c_dir_open");
-
 	blksiz /= 512;
 	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
-		case C_FSD:
-		case C_FSDC:
+		case C_DIR_FSD:
+		case C_DIR_FSDC:
 			break;
-		case C_FSDP:
+		case C_DIR_FSDP:
 			if (!(opts & SFLAG) || !p->depth)
 				c_ioq_fmt(ioq1, "%lld\t%s\n",
-				    C_HOWMANY(p->num, blksiz), p->path);
+				    C_STD_HOWMANY(p->num, blksiz), p->path);
 			p->parent->num += p->num;
 			break;
-		case C_FSFC:
+		case C_DIR_FSFC:
 			break;
-		case C_FSDNR:
-		case C_FSNS:
-		case C_FSERR:
+		case C_DIR_FSDNR:
+		case C_DIR_FSNS:
+		case C_DIR_FSERR:
 			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		default:
 			if ((opts & AFLAG) || !p->depth)
 				c_ioq_fmt(ioq1, "%lld\t%s\n",
-				    C_HOWMANY(p->stp->blocks, blksiz), p->path);
+				    C_STD_HOWMANY(p->stp->blocks, blksiz),
+				    p->path);
 			p->parent->num += p->stp->blocks;
 		}
 	}

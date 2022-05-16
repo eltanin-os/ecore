@@ -21,7 +21,7 @@ main(int argc, char **argv)
 	while (c_std_getopt(argmain, argc, argv, "u")) {
 		switch (argmain->opt) {
 		case 'u':
-			c_ioq_init(ioq1, C_FD1, nil, 0, &c_nix_fdwrite);
+			c_ioq_init(ioq1, C_IOQ_FD1, nil, 0, &c_nix_fdwrite);
 			break;
 		default:
 			usage();
@@ -29,14 +29,11 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc)
-		argv = tmpargv("-");
+	if (!argc) argv = tmpargv("-");
 
 	r = 0;
-	for (; *argv; --argc, ++argv) {
-		if (C_ISDASH(*argv))
-			*argv = "<stdin>";
+	for (; *argv; ++argv) {
+		if (C_STD_ISDASH(*argv)) *argv = "<stdin>";
 		if (c_ioq_putfile(ioq1, *argv) < 0)
 			r = c_err_warn("putfile %s", *argv);
 	}

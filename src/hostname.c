@@ -16,21 +16,16 @@ main(int argc, char **argv)
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	if (c_std_noopt(argmain, *argv))
-		usage();
+	if (c_std_noopt(argmain, *argv)) usage();
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (argc > 1)
-		usage();
+	if (argc > 1) usage();
 
 	if (argc) {
-		if (c_sys_sethostname(*argv, c_str_len(*argv, C_USIZEMAX)) < 0)
+		if (c_sys_sethostname(*argv, c_str_len(*argv, -1)) < 0)
 			c_err_die(1, "c_sys_sethostname %s", *argv);
 	} else {
-		if (c_nix_uname(&uts) < 0)
-			c_err_die(1, "c_nix_uname");
-
+		if (c_nix_uname(&uts) < 0) c_err_die(1, "c_nix_uname");
 		c_ioq_fmt(ioq1, "%s\n", uts.nodename);
 		c_ioq_flush(ioq1);
 	}

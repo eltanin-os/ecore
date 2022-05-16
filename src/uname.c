@@ -58,24 +58,14 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
+	if (argc) usage();
 
-	if (argc)
-		usage();
-
-	if (c_nix_uname(&uts) < 0)
-		c_err_die(1, "c_nix_uname");
-
-	if (!opts || (opts & SFLAG))
-		DISPLAY(uts.sysname);
-	if (opts & NFLAG)
-		DISPLAY(uts.nodename);
-	if (opts & RFLAG)
-		DISPLAY(uts.release);
-	if (opts & VFLAG)
-		DISPLAY(uts.version);
-	if (opts & MFLAG)
-		DISPLAY(uts.machine);
-
+	if (c_nix_uname(&uts) < 0) c_err_die(1, "c_nix_uname");
+	if (!opts || (opts & SFLAG)) DISPLAY(uts.sysname);
+	if (opts & NFLAG) DISPLAY(uts.nodename);
+	if (opts & RFLAG) DISPLAY(uts.release);
+	if (opts & VFLAG) DISPLAY(uts.version);
+	if (opts & MFLAG) DISPLAY(uts.machine);
 	c_ioq_put(ioq1, "\n");
 	c_ioq_flush(ioq1);
 	return 0;

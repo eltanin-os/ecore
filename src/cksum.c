@@ -15,22 +15,19 @@ main(int argc, char **argv)
 {
 	ctype_hst hs;
 	ctype_status r;
-	char buf[C_H32GEN_DIGEST];
+	char buf[C_HSH_H32DIG];
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	if (c_std_noopt(argmain, *argv))
-		usage();
+	if (c_std_noopt(argmain, *argv)) usage();
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc)
-		argv = tmpargv("-");
+	if (!argc) argv = tmpargv("-");
 
 	r = 0;
-	for (; *argv; --argc, ++argv) {
-		if (C_ISDASH(*argv))
+	for (; *argv; ++argv) {
+		if (C_STD_ISDASH(*argv))
 			*argv = "<stdin>";
 		c_hsh_crc32p->init(&hs);
 		if (c_hsh_putfile(&hs, c_hsh_crc32p, *argv) < 0)

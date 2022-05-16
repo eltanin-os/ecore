@@ -25,8 +25,7 @@ unescape(char **s)
 		return;
 	}
 
-	if (*s[0] == 'c')
-		c_std_exit(0);
+	if (*s[0] == 'c') c_std_exit(0);
 
 	switch (*s[0]) {
 	case 'a':
@@ -54,9 +53,8 @@ stovl(char *s)
 		return (vlong)r;
 	}
 
-	x = c_std_strtovl(s, 0, C_VLONGMIN, C_VLONGMAX, nil, &e);
-	if (e < 0)
-		c_err_warn("stovl %s", s);
+	x = c_std_strtovl(s, 0, C_LIM_VLONGMIN, C_LIM_VLONGMAX, nil, &e);
+	if (e < 0) c_err_warn("c_std_strtovl %s", s);
 
 	return x;
 }
@@ -133,7 +131,7 @@ printfmt(char *s, int argc, char **argv)
 			}
 			break;
 		default:
-			errno = C_EINVAL;
+			errno = C_ERR_EINVAL;
 			c_err_die(1, nil);
 		}
 	}
@@ -156,22 +154,18 @@ main(int argc, char **argv)
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	if (!argc)
-		usage();
-
-	if (argc > 1 && !CSTRCMP("--", *argv))
-		--argc, ++argv;
+	if (c_std_noopt(argmain, *argv)) usage();
+	argc -= argmain->idx;
+	if (!argc) usage();
+	argv += argmain->idx;
 
 	fmt = *argv;
 	--argc, ++argv;
-
 	do {
-		if (!(r = printfmt(fmt, argc, argv)))
-			break;
+		if (!(r = printfmt(fmt, argc, argv))) break;
 		argv += r;
 		argc -= r;
 	} while(argc);
-
 	c_ioq_flush(ioq1);
 	return 0;
 }

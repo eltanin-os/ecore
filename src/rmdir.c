@@ -30,14 +30,10 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc)
-		usage();
+	if (!argc) usage();
 
 	r = 0;
-	for (; *argv; --argc, ++argv) {
-		if (func(*argv) < 0)
-			r = c_err_warn("remove %s", *argv);
-	}
+	for (; *argv; ++argv)
+		if (func(*argv) < 0) r = c_err_warn("remove %s", *argv);
 	return r;
 }

@@ -28,13 +28,13 @@ main(int argc, char **argv)
 	while (c_std_getopt(argmain, argc, argv, "HLPRfipr")) {
 		switch (argmain->opt) {
 		case 'H':
-			ropts |= C_FSCOM;
+			ropts |= C_DIR_FSCOM;
 			break;
 		case 'L':
-			ropts = (ropts & ~C_FSPHY) | C_FSLOG;
+			ropts = (ropts & ~C_DIR_FSPHY) | C_DIR_FSLOG;
 			break;
 		case 'P':
-			ropts = (ropts & ~C_FSLOG) | C_FSPHY;
+			ropts = (ropts & ~C_DIR_FSLOG) | C_DIR_FSPHY;
 			break;
 		case 'R':
 			opts |= CP_RFLAG;
@@ -57,13 +57,9 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
+	if (argc < 2) usage();
 
-	if (argc < 2)
-		usage();
-
-	if (!ropts)
-		ropts = (opts & CP_RFLAG) ? C_FSPHY : C_FSLOG;
-
+	if (!ropts) ropts = (opts & CP_RFLAG) ? C_DIR_FSPHY : C_DIR_FSLOG;
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
@@ -71,12 +67,12 @@ main(int argc, char **argv)
 		sverr = errno;
 		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
-			if (errno != C_ENOENT)
+			if (errno != C_ERR_ENOENT)
 				c_err_die(1, "c_nix_stat %s", dest);
 			st.mode = 0;
 		}
 	}
-	if (C_ISDIR(st.mode))
+	if (C_NIX_ISDIR(st.mode))
 		opts |= CP_TDIR;
 	else if (argc > 1)
 		usage();

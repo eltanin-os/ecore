@@ -40,8 +40,7 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 
 	if (!argc) {
-		if (!(opts & RM_FFLAG))
-			usage();
+		if (!(opts & RM_FFLAG)) usage();
 		c_std_exit(0);
 	}
 	return remove(argv, opts);

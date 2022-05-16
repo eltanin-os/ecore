@@ -6,22 +6,13 @@ enum {
 	SFLAG = 1 << 1,
 };
 
-struct file {
-	ctype_ioq ioq;
-	ctype_fd fd;
-	int ch;
-	char buf[C_BIOSIZ];
-};
-
 static int
 getbyte(ctype_ioq *p, char *s, uint opts)
 {
 	ctype_status r;
 	char ch;
-
 	if ((r = c_ioq_get(p, &ch, sizeof(ch))) < 0) {
-		if (!(opts & SFLAG))
-			c_err_warn("c_ioq_get %s", s);
+		if (!(opts & SFLAG)) c_err_warn("c_ioq_get %s", s);
 		c_std_exit(2);
 	}
 	return r ? ch : -1;
@@ -37,11 +28,13 @@ usage(void)
 ctype_status
 main(int argc, char **argv)
 {
-	struct file sf[2];
-	ctype_status r;
+	ctype_ioq file[2];
 	usize line, bno;
-	int i;
+	ctype_fd fd;
+	ctype_status r;
+	int ch[2], i;
 	uint opts;
+	char buf[2][C_IOQ_SMALLBSIZ];
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
@@ -62,36 +55,32 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (argc - 2)
-		usage();
+	if (argc - 2) usage();
 
 	for (i = 0; i < 2; ++i) {
-		if (C_ISDASH(argv[i])) {
-			sf[i].fd = C_FD0;
+		if (C_STD_ISDASH(argv[i])) {
+			fd = C_IOQ_FD0;
 			argv[i] = "<stdin>";
-		} else if ((sf[i].fd = c_nix_fdopen2(argv[i], C_OREAD)) < 0) {
+		} else if ((fd = c_nix_fdopen2(argv[i], C_NIX_OREAD)) < 0) {
 			if (!(opts & SFLAG))
 				c_err_warn("c_nix_fdopen2 %s", argv[i]);
 			c_std_exit(2);
 		}
-		c_ioq_init(&sf[i].ioq, sf[i].fd,
-		    sf[i].buf, sizeof(sf[i].buf), &c_nix_fdread);
+		c_ioq_init(&file[i], fd, buf[i], sizeof(buf[i]), &c_nix_fdread);
 	}
-
 	r = 0;
 	bno = line = 1;
 	for (;;) {
-		sf[0].ch = getbyte(&sf[0].ioq, argv[0], opts);
-		sf[1].ch = getbyte(&sf[1].ioq, argv[1], opts);
-		if (sf[0].ch == sf[1].ch) {
-			if (sf[0].ch < 0)
+		ch[0] = getbyte(&file[0], argv[0], opts);
+		ch[1] = getbyte(&file[1], argv[1], opts);
+		if (ch[0] == ch[1]) {
+			if (ch[0] < 0)
 				break;
-			if (sf[0].ch == '\n')
+			if (ch[0] == '\n')
 				++line;
-		} else if (sf[0].ch < 0 || sf[1].ch < 0) {
+		} else if (ch[0] < 0 || ch[1] < 0) {
 			if (!(opts & SFLAG))
-				c_err_warnx("EOF on %s", argv[sf[1].ch < 0]);
+				c_err_warnx("EOF on %s", argv[ch[1] < 0]);
 			r = 1;
 			break;
 		} else if (!(opts & LFLAG)) {
@@ -102,7 +91,7 @@ main(int argc, char **argv)
 			r = 1;
 			break;
 		} else {
-			c_ioq_fmt(ioq1, "%ud %o %o\n", bno, sf[0].ch, sf[1].ch);
+			c_ioq_fmt(ioq1, "%ud %o %o\n", bno, ch[0], ch[1]);
 			r = 1;
 		}
 		++bno;

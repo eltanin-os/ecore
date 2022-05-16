@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define CWTMODE (C_OCREATE | C_OWRITE | C_OTRUNC)
+#define CWTMODE (C_NIX_OCREATE | C_NIX_OWRITE | C_NIX_OTRUNC)
 
 /* copy routines */
 static ctype_status
@@ -31,7 +31,7 @@ regcopy(char *src, ctype_stat *stp, char *dest)
 		goto done;
 	}
 
-	if ((ifd = c_nix_fdopen2(src, C_OREAD)) < 0) {
+	if ((ifd = c_nix_fdopen2(src, C_NIX_OREAD)) < 0) {
 		r = c_err_warn("c_nix_fdopen2 %s", src);
 		goto done;
 	}
@@ -53,17 +53,15 @@ static ctype_status
 lncopy(char *src, ctype_stat *stp, char *dest)
 {
 	size r;
-	char buf[C_PATHMAX];
+	char buf[C_LIM_PATHMAX];
 
 	if ((r = c_nix_readlink(buf, sizeof(buf), src)) < 0)
 		return c_err_warn("c_nix_readlink %s", src);
 
-	if ((size)stp->size < r)
-		return c_err_warnx("%s: not same file\n", src);
+	if ((size)stp->size < r) return c_err_warnx("%s: not same file\n", src);
 
 	if (c_nix_symlink(dest, buf) < 0)
 		return c_err_warn("c_nix_symlink %s <- %s", dest, buf);
-
 	return 0;
 }
 
@@ -87,7 +85,6 @@ install(struct install *p, char **argv, char *dest)
 
 	if (c_dir_open(&dir, argv, p->ropts, nil) < 0)
 		c_err_die(1, "c_dir_open");
-
 	c_mem_set(&d, sizeof(d), 0);
 	edynfmt(&d, "%s", dest);
 	n = r = 0;
@@ -95,26 +92,27 @@ install(struct install *p, char **argv, char *dest)
 		c_arr_trunc(&d, c_arr_bytes(&d) - n, sizeof(uchar));
 		n = 0;
 		switch(ep->info) {
-		case C_FSD:
+		case C_DIR_FSD:
 			if (!(p->opts & CP_RFLAG)) {
-				c_dir_set(&dir, ep, C_FSSKP);
-				r = c_err_warnx("%s: %r", ep->path, C_EISDIR);
+				c_dir_set(&dir, ep, C_DIR_FSSKP);
+				r = c_err_warnx("%s: %r",
+				    ep->path, C_ERR_EISDIR);
 				continue;
 			}
 			if (ep->depth || (p->opts & CP_TDIR))
 				edynfmt(&d, "/%s", ep->name);
 			if (c_nix_mkdir(c_arr_data(&d), ep->stp->mode) < 0 &&
-			    errno != C_EEXIST)
+			    errno != C_ERR_EEXIST)
 				r = c_err_warn("c_nix_mkdir %s",
 				    c_arr_data(&d));
 			continue;
-		case C_FSDP:
+		case C_DIR_FSDP:
 			c_arr_trunc(&d, c_arr_bytes(&d) - (ep->nlen + 1),
 			    sizeof(uchar));
 			continue;
-		case C_FSDNR:
-		case C_FSERR:
-		case C_FSNS:
+		case C_DIR_FSDNR:
+		case C_DIR_FSERR:
+		case C_DIR_FSNS:
 			r = c_err_warnx("%s: %r", ep->path, ep->err);
 			continue;
 		}
@@ -126,11 +124,9 @@ install(struct install *p, char **argv, char *dest)
 			n = edynfmt(&d, "/%s", ep->name);
 		}
 
-		if ((p->opts & CP_IFLAG) && prompt(c_arr_data(&d)))
-			continue;
+		if ((p->opts & CP_IFLAG) && prompt(c_arr_data(&d))) continue;
 
-		if (p->opts & CP_FFLAG)
-			c_nix_unlink(c_arr_data(&d));
+		if (p->opts & CP_FFLAG) c_nix_unlink(c_arr_data(&d));
 
 		dest = c_arr_data(&d);
 		if (p->opts & CP_ATOMIC) {
@@ -150,17 +146,18 @@ install(struct install *p, char **argv, char *dest)
 			c_mem_cpy(dest + len, 15, "INST@XXXXXXXXX");
 			for (;;) {
 				c_rand_name(dest + len + 5, 9);
-				if (c_nix_stat(&st, dest) && errno == C_ENOENT)
+				if (c_nix_stat(&st, dest) &&
+				    errno == C_ERR_ENOENT)
 					break;
 			}
 		}
 
 		switch (ep->info) {
-		case C_FSF:
+		case C_DIR_FSF:
 			r = regcopy(ep->path, ep->stp, dest);
 			break;
-		case C_FSSL:
-		case C_FSSLN:
+		case C_DIR_FSSL:
+		case C_DIR_FSSLN:
 			r = lncopy(ep->path, ep->stp, dest);
 			break;
 		default:
@@ -174,7 +171,7 @@ install(struct install *p, char **argv, char *dest)
 			r = c_err_warn("c_nix_chown %s", dest);
 			continue;
 		}
-		if ((ep->info != C_FSSL) && (p->mode != (uint)-1) &&
+		if ((ep->info != C_DIR_FSSL) && (p->mode != (uint)-1) &&
 		    c_nix_chmod(dest, p->mode) < 0) {
 			r = c_err_warn("c_nix_chmod %s", dest);
 			continue;
@@ -208,35 +205,32 @@ remove(char **argv, uint opts)
 	ctype_dent *p;
 	ctype_status r;
 
-	if (c_dir_open(&dir, argv, 0, nil) < 0)
-		c_err_die(1, "c_dir_open");
-
+	if (c_dir_open(&dir, argv, 0, nil) < 0) c_err_die(1, "c_dir_open");
 	r = 0;
 	while ((p = c_dir_read(&dir))) {
-		if (p->info == C_FSNS) {
+		if (p->info == C_DIR_FSNS) {
 			if (!(opts & RM_FFLAG)) {
-				errno = C_ENOENT;
+				errno = C_ERR_ENOENT;
 				r = c_err_warn("remove %s", p->path);
 			}
 			continue;
 		}
-		if ((opts & RM_IFLAG) && yesno("remove", p->path))
-			continue;
+		if ((opts & RM_IFLAG) && yesno("remove", p->path)) continue;
 		switch (p->info) {
-		case C_FSD:
+		case C_DIR_FSD:
 			if (!(opts & RM_RFLAG)) {
-				c_dir_set(&dir, p, C_FSSKP);
-				r = c_err_warnx("%s: %r", p->path, C_EISDIR);
+				c_dir_set(&dir, p, C_DIR_FSSKP);
+				r = c_err_warnx("%s: %r",
+				    p->path, C_ERR_EISDIR);
 				continue;
 			}
 			break;
-		case C_FSDP:
-			if (!(opts & RM_RFLAG))
-				continue;
+		case C_DIR_FSDP:
+			if (!(opts & RM_RFLAG)) continue;
 			if (c_nix_rmdir(p->path) < 0)
 				r = c_err_warn("c_nix_rmdir %s", p->path);
 			break;
-		case C_FSERR:
+		case C_DIR_FSERR:
 			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		default:

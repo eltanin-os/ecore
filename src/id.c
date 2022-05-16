@@ -13,6 +13,7 @@ enum {
 	/* union flags */
 	UF0 = GGFLAG | GFLAG | UFLAG,
 	UF1 = NFLAG | RFLAG,
+	UF2 = (~UF0 | UF1),
 };
 
 static int putch;
@@ -21,15 +22,13 @@ static void
 pgrp(ctype_id id, uint opts)
 {
 	if (opts & (GGFLAG | GFLAG)) {
-		if (putch)
-			c_ioq_put(ioq1, " ");
+		if (putch) c_ioq_put(ioq1, " ");
 		if (opts & NFLAG)
 			c_ioq_fmt(ioq1, "%s", namefromgid(id));
 		else
 			c_ioq_fmt(ioq1, "%ud", id);
 	} else {
-		if (putch)
-			c_ioq_put(ioq1, ",");
+		if (putch) c_ioq_put(ioq1, ",");
 		c_ioq_fmt(ioq1, "%ud(%s)", id, namefromgid(id));
 	}
 	putch = 1;
@@ -43,22 +42,23 @@ printgroups(char *name, uint opts)
 	ctype_ioq ioq;
 	ctype_fd fd;
 	usize len, n;
-	char buf[C_BIOSIZ];
+	char buf[C_IOQ_BSIZ];
 	char *s;
 
-	if ((fd = c_nix_fdopen2(GRPFILE, C_OREAD)) < 0)
+	if ((fd = c_nix_fdopen2(GRPFILE, C_NIX_OREAD)) < 0)
 		c_err_die(1, "c_nix_fdopen2 " GRPFILE);
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	c_mem_set(&arr, sizeof(arr), 0);
-	n = c_str_len(name, C_USIZEMAX);
+	n = c_str_len(name, -1);
 	while (dbgetln(&db, &ioq, &arr) > 0) {
 		s = db.p[3];
 		len = c_arr_bytes(&arr) - (db.p[3] - db.p[0]);
 		while ((s = c_str_str(s, len, name))) {
 			if ((s[n] == ',' || s[n] == '\n') &&
 			    (s[-1] == ',' || s[-1] == '\0')) {
-				pgrp(estrtovl(db.p[2], 0, 0, C_UINTMAX), opts);
+				pgrp(estrtovl(db.p[2],
+				    0, 0, C_LIM_UINTMAX), opts);
 				break;
 			}
 		}
@@ -109,22 +109,19 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
+	if (argc > 1 || ((opts & UF1) && !(opts & UF0))) usage();
 
-	if (argc > 1 || ((opts & UF1) && !(opts & UF0)))
-		usage();
-
-	if ((id = c_sys_geteuid()) < 0)
-		c_err_die(1, "c_sys_geteuid");
+	if ((id = c_sys_geteuid()) < 0) c_err_die(1, "c_sys_geteuid");
 
 	if (argc) {
 		if (*argv[0] >= '0' && *argv[0] <= '9')
-			uid = estrtovl(*argv, 0, 0, C_UINTMAX);
+			uid = estrtovl(*argv, 0, 0, C_LIM_UINTMAX);
 		else if ((uid = uidfromname(*argv)) < 0)
 			c_err_diex(1, "%s: user not found", *argv);
 	} else {
 		if (opts & RFLAG) {
-			if ((uid = c_sys_getuid()) < 0)
-				c_err_die(1, "c_sys_getuid");
+			uid = c_sys_getuid();
+			if (uid < 0) c_err_die(1, "c_sys_getuid");
 		} else {
 			uid = id;
 		}

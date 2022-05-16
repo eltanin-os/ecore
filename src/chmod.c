@@ -45,35 +45,31 @@ main(int argc, char **argv)
 done:
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (argc < 2)
-		usage();
+	if (argc < 2) usage();
 
 	mask = c_nix_getumask();
 	m = *argv;
 	--argc, ++argv;
 
-	if (c_dir_open(&dir, argv, 0, nil) < 0)
-		c_err_die(1, "c_dir_open");
-
+	if (c_dir_open(&dir, argv, 0, nil) < 0) c_err_die(1, "c_dir_open");
 	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
-		case C_FSD:
+		case C_DIR_FSD:
 			if (!Rflag)
-				c_dir_set(&dir, p, C_FSSKP);
+				c_dir_set(&dir, p, C_DIR_FSSKP);
 			break;
-		case C_FSDNR:
+		case C_DIR_FSDNR:
 			r = c_err_warnx("%s: %r", p->name, p->err);
 			continue;
-		case C_FSDP:
+		case C_DIR_FSDP:
 			continue;
-		case C_FSERR:
-		case C_FSNS:
+		case C_DIR_FSERR:
+		case C_DIR_FSNS:
 			r = c_err_warnx("%s: %r", p->name, p->err);
 			continue;
-		case C_FSSL:
-		case C_FSSLN:
+		case C_DIR_FSSL:
+		case C_DIR_FSSLN:
 			continue;
 		}
 

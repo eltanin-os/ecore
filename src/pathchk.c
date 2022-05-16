@@ -11,8 +11,8 @@ enum {
  ((uchar)(a) - '0' > 9) && \
  (!c_str_chr("._-", 3, (uchar)(a))))
 
-static usize pathmax = C_PATHMAX;
-static usize namemax = C_NAMEMAX;
+static usize pathmax = C_LIM_PATHMAX;
+static usize namemax = C_LIM_NAMEMAX;
 
 static ctype_status
 pathchk(char *path, uint opts)
@@ -23,9 +23,7 @@ pathchk(char *path, uint opts)
 	char *s;
 
 	r = 0;
-	if ((opts & PFLAG) && !*path)
-		r =  c_err_warnx("empty pathname");
-
+	if ((opts & PFLAG) && !*path) r =  c_err_warnx("empty pathname");
 	s = path;
 	for (len = n = 0; *s; ++len, ++n, ++s) {
 		if (*s == '/') {
@@ -33,7 +31,7 @@ pathchk(char *path, uint opts)
 				r = c_err_warnx("leading <hyphen-minus>"
 				    " found in component of pathname", path);
 			if (n > namemax) {
-				errno = C_ENAMETOOLONG;
+				errno = C_ERR_ENAMETOOLONG;
 				r = c_err_warn("%s", path);
 			}
 			n = 0;
@@ -43,15 +41,13 @@ pathchk(char *path, uint opts)
 			r = c_err_warnx("non-portable character found in"
 			    " component of pathname", path);
 	}
-
 	if (n > namemax || len > pathmax) {
-		errno = C_ENAMETOOLONG;
+		errno = C_ERR_ENAMETOOLONG;
 		r = c_err_warn("%s", path);
 	}
 
-	if ((c_nix_lstat(&st, s) < 0) && errno != C_ENOENT)
+	if ((c_nix_lstat(&st, s) < 0) && errno != C_ERR_ENOENT)
 		r = c_err_warn("c_nix_lstat %s", path);
-
 	return r;
 }
 
@@ -90,13 +86,9 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc)
-		usage();
+	if (!argc) usage();
 
 	r = 0;
-	for (; *argv; ++argv)
-		r |= pathchk(*argv, opts);
-
+	for (; *argv; ++argv) r |= pathchk(*argv, opts);
 	return r;
 }

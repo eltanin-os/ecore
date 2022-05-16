@@ -16,11 +16,9 @@ main(int argc, char **argv)
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	if (c_std_noopt(argmain, *argv))
-		usage();
+	if (c_std_noopt(argmain, *argv)) usage();
 	argc -= argmain->idx;
 	argv -= argmain->idx;
-
 	switch (argc) {
 	case 0:
 		for (; *environ; ++environ)

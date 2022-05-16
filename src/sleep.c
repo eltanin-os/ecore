@@ -18,17 +18,15 @@ main(int argc, char **argv)
 
 	if (c_std_noopt(argmain, *argv)) {
 		if (c_utf8_isdigit(argmain->opt)) {
-			errno = C_ERANGE;
+			errno = C_ERR_ERANGE;
 			c_err_die(1, nil);
 		}
 		usage();
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
+	if (argc - 1) usage();
 
-	if (argc - 1)
-		usage();
-
-	deepsleep(estrtouvl(*argv, 0, 0, C_UVLONGMAX));
+	deepsleep(estrtouvl(*argv, 0, 0, C_LIM_UVLONGMAX));
 	return 0;
 }

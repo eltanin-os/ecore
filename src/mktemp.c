@@ -28,7 +28,7 @@ main(int argc, char **argv)
 	ctype_fd fd;
 	uint mko, opts;
 	char *dir, *template, *tmp;
-	char buf[C_PATHMAX];
+	char buf[C_LIM_PATHMAX];
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
@@ -40,7 +40,7 @@ main(int argc, char **argv)
 	while (c_std_getopt(argmain, argc, argv, "dp:qtu")) {
 		switch (argmain->opt) {
 		case 'd':
-			mko |= C_OTMPDIR;
+			mko |= C_NIX_OTMPDIR;
 			break;
 		case 'p':
 			opts |= TFLAG;
@@ -53,7 +53,7 @@ main(int argc, char **argv)
 			opts |= TFLAG;
 			break;
 		case 'u':
-			mko |= C_OTMPANON;
+			mko |= C_NIX_OTMPANON;
 			break;
 		default:
 			usage();
@@ -77,22 +77,15 @@ main(int argc, char **argv)
 
 	c_arr_init(&arr, buf, sizeof(buf));
 	if (!argc || (opts & TFLAG)) {
-		if (c_str_chr(template, C_USIZEMAX, '/'))
+		if (c_str_chr(template, -1, '/'))
 			DIEX("Template must not contain directory "
 			    "separators in -t mode");
-		if (!(tmp = c_std_getenv("TMPDIR"))) {
-			if (dir)
-				tmp = dir;
-			else
-				tmp = "/tmp";
-		}
+		if (!(tmp = c_std_getenv("TMPDIR"))) tmp = dir ? dir : "/tmp";
 		c_str_rtrim(tmp, -1, "/");
-		if (c_arr_fmt(&arr, "%s/", tmp) < 0)
-			DIE("c_arr_fmt");
+		if (c_arr_fmt(&arr, "%s/", tmp) < 0) DIE("c_arr_fmt");
 	}
-	if (c_arr_fmt(&arr, "%s", template) < 0)
-		DIE("c_arr_fmt");
-	if ((fd = c_nix_mktemp(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
+	if (c_arr_fmt(&arr, "%s", template) < 0) DIE("c_arr_fmt");
+	if ((fd = c_nix_mktemp3(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
 		DIE("c_nix_mktemp %s", c_arr_data(&arr));
 	c_nix_fdclose(fd);
 

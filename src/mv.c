@@ -13,12 +13,10 @@ move(char *src, char *dest, uint opts)
 	char *s;
 
 	s = pathcat(src, dest, opts & CP_TDIR);
-	if ((opts & CP_IFLAG) && prompt(s))
-		return 0;
+	if ((opts & CP_IFLAG) && prompt(s)) return 0;
 
-	if (!c_nix_rename(s, src))
-		return 0;
-	if (errno != C_EXDEV)
+	if (!c_nix_rename(s, src)) return 0;
+	if (errno != C_ERR_EXDEV)
 		return c_err_warn("c_nix_rename %s <- %s", s, src);
 
 	argv[0] = src;
@@ -62,9 +60,7 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (argc < 2)
-		usage();
+	if (argc < 2) usage();
 
 	--argc;
 	dest = argv[argc];
@@ -73,19 +69,17 @@ main(int argc, char **argv)
 		sverr = errno;
 		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
-			if (errno != C_ENOENT)
+			if (errno != C_ERR_ENOENT)
 				c_err_die(1, "c_nix_stat %s", dest);
 			st.mode = 0;
 		}
 	}
-	if (C_ISDIR(st.mode))
+	if (C_NIX_ISDIR(st.mode))
 		opts |= CP_TDIR;
 	else if (argc > 1)
 		usage();
 
 	r = 0;
-	for (; *argv; --argc, ++argv)
-		r |= move(*argv, dest, opts);
-
+	for (; *argv; --argc, ++argv) r |= move(*argv, dest, opts);
 	return 0;
 }

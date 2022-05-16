@@ -14,16 +14,11 @@ main(int argc, char **argv)
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	if (c_std_noopt(argmain, *argv))
-		usage();
+	if (c_std_noopt(argmain, *argv)) usage();
 	argc -= argmain->idx;
 	argv += argmain->idx;
+	if (argc - 1) usage();
 
-	if (argc - 1)
-		usage();
-
-	if (c_nix_unlink(*argv) < 0)
-		c_err_die(1, "c_nix_unlink %s", *argv);
-
+	if (c_nix_unlink(*argv) < 0) c_err_die(1, "c_nix_unlink %s", *argv);
 	return 0;
 }

@@ -9,11 +9,11 @@ head(ctype_arr *p, char *s, usize n)
 	ctype_ioq ioq;
 	ctype_fd fd;
 	size r;
-	char buf[C_BIOSIZ];
+	char buf[C_IOQ_BSIZ];
 
-	if (C_ISDASH(s)) {
-		fd = C_FD0;
-	} else if ((fd = c_nix_fdopen2(s, C_OREAD)) < 0) {
+	if (C_STD_ISDASH(s)) {
+		fd = C_IOQ_FD0;
+	} else if ((fd = c_nix_fdopen2(s, C_NIX_OREAD)) < 0) {
 		c_err_warn("c_nix_fdopen2 %s", s);
 		return 1;
 	}
@@ -21,10 +21,12 @@ head(ctype_arr *p, char *s, usize n)
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
 	while (n--) {
 		c_arr_trunc(p, 0, sizeof(uchar));
-		if ((r = c_ioq_getln(&ioq, p)) < 0)
+		switch ((r = c_ioq_getln(&ioq, p))) {
+		case -1:
 			c_err_die(1, "c_ioq_getln %s", s);
-		if (!r)
-			break;
+		case 0:
+			return 0;
+		}
 		c_ioq_fmt(ioq1, "%s", c_arr_data(p));
 	}
 	return 0;
@@ -53,7 +55,7 @@ main(int argc, char **argv)
 	while (c_std_getopt(argmain, argc, argv, "n:")) {
 		switch (argmain->opt) {
 		case 'n':
-			n = estrtovl(argmain->arg, 0, 0, C_USIZEMAX);
+			n = estrtovl(argmain->arg, 0, 0, -1);
 			break;
 		default:
 			usage();
@@ -62,9 +64,7 @@ main(int argc, char **argv)
 	argc -= argmain->idx;
 	argv += argmain->idx;
 
-	if (!n)
-		return 0;
-
+	if (!n) return 0;
 	c_mem_set(&arr, sizeof(arr), 0);
 	switch (argc) {
 	case 0:
@@ -72,14 +72,14 @@ main(int argc, char **argv)
 		break;
 	case 1:
 		r = head(&arr, *argv, n);
-		--argc, ++argv;
+		++argv;
 		break;
 	default:
 		c_ioq_fmt(ioq1, "==> %s <==\n", *argv);
 		r = head(&arr, *argv, n);
-		--argc, ++argv;
+		++argv;
 	}
-	for (; *argv; --argc, ++argv) {
+	for (; *argv; ++argv) {
 		c_ioq_fmt(ioq1, "\n==> %s <==\n", *argv);
 		r |= head(&arr, *argv, n);
 	}

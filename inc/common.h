@@ -34,7 +34,7 @@ struct pdb {
 };
 
 ctype_status copy(char **, char *, uint, uint);
-void deepsleep(u64int);
+void deepsleep(u64);
 ctype_status dbgetln(struct pdb *, ctype_ioq *, ctype_arr *);
 size edyncat(ctype_arr *, void *, usize, usize);
 size edynfmt(ctype_arr *, char *, ...);
