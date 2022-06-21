@@ -10,18 +10,18 @@ case all
 case clean
 	rm -f `{redo-targets}
 case install
-	redo-ifalways
+	redo-always
 	redo-ifchange all install-man
 	install -dm 755 $"DESTDIR/$"BINDIR
 	install -cm 755 $PROGS $"DESTDIR/$"BINDIR
 case install-ecore
-	redo-ifalways
+	redo-always
 	redo-ifchange ecore install-man
 	install -dm 755 $"DESTDIR/$"BINDIR
 	install -cm 755 ecore $"DESTDIR/$"BINDIR
 	for (prog in `{./ecore}) ln -s ecore $"DESTDIR/$"BINDIR/$prog
 case install-man
-	redo-ifalways
+	redo-always
 	redo-ifchange $MANPAGES
 	install -dm 755 $"DESTDIR/$"MANDIR/man1
 	install -cm 644 $MANPAGES $"DESTDIR/$"MANDIR/man1
