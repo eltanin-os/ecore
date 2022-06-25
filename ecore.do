@@ -1,6 +1,6 @@
 #!/bin/rc -e
 MAINDIR=$PWD
-. $MAINDIR/config.rc
+if (test -e config.rc) . $MAINDIR/config.rc ||;
 CFILES=$MAINDIR'/'^`{find src -type f -name '*.c' | sort}
 redo-always
 redo-ifchange $MAINDIR/lib/libcommon.a
