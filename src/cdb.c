@@ -221,6 +221,7 @@ main(int argc, char **argv)
 {
 	usize n;
 	ctype_fd fd;
+	ctype_status r;
 	int mode;
 	char *key;
 
@@ -251,6 +252,7 @@ main(int argc, char **argv)
 	argc -= argmain->idx;
 	argv += argmain->idx;
 
+	r = 0;
 	if (mode == 'c') {
 		if (argc - 1) usage();
 		cmode(*argv);
@@ -263,7 +265,7 @@ main(int argc, char **argv)
 			dmode(fd);
 			break;
 		case 'q':
-			qmode(fd, key, n);
+			r = qmode(fd, key, n);
 			break;
 		case 's':
 			smode(fd);
@@ -271,5 +273,5 @@ main(int argc, char **argv)
 		c_nix_fdclose(fd);
 	}
 	c_ioq_flush(ioq1);
-	return 0;
+	return r;
 }

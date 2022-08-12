@@ -1,57 +1,71 @@
-#!/bin/rc -e
-MAINDIR=$PWD
-if (test -e config.rc) . $MAINDIR/config.rc ||;
-CFILES=$MAINDIR'/'^`{find src -type f -name '*.c' | sort}
-redo-always
-redo-ifchange $MAINDIR/lib/libcommon.a
-fn sigexit {
-	rm -Rf $dir
+#!/bin/execlineb -S3
+backtick tmpdir { mktemp -d }
+backtick PROGS { pipeline { find src -type f -name  "*.c" } pipeline { sed -e "s;.c$;;" -e "s;src/;;" } sort }
+multisubstitute {
+	importas -D "cc" CC CC
+	importas -sD "-O0 -g -std=c99 -Wall -Wextra -pedantic" CFLAGS CFLAGS
+	importas -sD "" CPPFLAGS CPPFLAGS
+	importas -sD "" LDFLAGS LDFLAGS
+	importas -iu tmpdir tmpdir
+	importas -isu PROGS PROGS
 }
-dir=`{mktemp -d}
-cp $CFILES $dir
-for (file in $CFILES) {
-	tmp=`{basename $file}
-	f=`{basename $file .c | sed 's/-/_/g'}
-	sed 's/^main(/'$"f'_&/' <$file >$dir/$tmp
-}
-cat <<EOF >$dir/ecore.c
-#include <tertium/cpu.h>
+foreground { redo-always }
+foreground { redo-ifchange lib/libcommon.a }
+foreground {
+	foreground {
+		forx -E file { $PROGS }
+		foreground {
+			redirfd -r 0 src/${file}.c
+			redirfd -w 1 ${tmpdir}/${file}.c
+			sed "s;^main(;${file}_&;"
+		}
+		redirfd -a 1 ${tmpdir}/prototypes.h
+		echo "ctype_status ${file}_main(int, char **);"
+	}
+	foreground {
+		backtick -E PROGNAMES { echo "\" ${PROGS}\"" }
+		redirfd -w 1 ${tmpdir}/ecore.c
+		heredoc 0
+"#include <tertium/cpu.h>
 #include <tertium/std.h>
-#include "common.h"
+#include \"common.h\"
+#include \"prototypes.h\"
 
-EOF
-for (file in $CFILES) {
-	f=`{basename $file .c | sed 's/-/_/g'}
-	echo 'ctype_status '$"f'_main(int, char **);'
-} >> $dir/ecore.c
-echo >>$dir/ecore.c
-echo 'static char *names = ""\' >>$dir/ecore.c
-{ for (file in $CFILES) echo "`{basename $file .c}"'\' } >>$dir/ecore.c
-cat <<EOF >>$dir/ecore.c
-"\n";
+static char *names = \"\"
+${PROGNAMES}
+\"\\n\";
 
 ctype_status
 main(int argc, char **argv)
 {
 	char *s;
 	s = c_gen_basename(argv[0]);
-	if (!C_STR_CMP("ecore", s)) {
+	if (!C_STR_CMP(\"ecore\", s)) {
 		--argc, ++argv;
 		if (argc) s = *argv;
 	}
 	if (0) ;
-EOF
-for (file in $CFILES) {
-	f=`{basename $file .c | sed 's/-/_/g'}
-	printf '\telse if (!C_STR_CMP("'$"f'", s)) return '$"f'_main(argc, argv);\n'
-} >> $dir/ecore.c
-cat <<EOF >>$dir/ecore.c
-	else {
-		c_ioq_put(ioq1, names);
+"
+		cat
+	}
+	foreground {
+		forx -E file { $PROGS }
+		redirfd -a 1 ${tmpdir}/ecore.c
+		echo "\telse if (!C_STR_CMP(\"${file}\", s)) return ${file}_main(argc, argv);"
+	}
+	foreground {
+		redirfd -a 1 ${tmpdir}/ecore.c
+		heredoc 0
+"	else {
+		c_ioq_put(ioq1, names+1);
 		c_ioq_flush(ioq1);
 	}
 	return 0;
 }
-EOF
-LIBS=$MAINDIR/lib/libcommon.a
-$CC $CFLAGS $CPPFLAGS $LDFLAGS -I$MAINDIR/inc -o $3 $dir/*.c $LIBS -ltertium
+"
+		cat
+	}
+	elglob C "${tmpdir}/*.c"
+	$CC $CFLAGS $CPPFLAGS $LDFLAGS -Iinc -o $3 $C lib/libcommon.a -ltertium
+}
+rm -Rf $tmpdir

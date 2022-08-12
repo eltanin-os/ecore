@@ -1,36 +1,38 @@
-#!/bin/rc -e
-if (~ $1 *.[1ch]) exit
-MAINDIR=$PWD
-if (test -e config.rc) {
-	redo-ifchange config.rc
-	. $MAINDIR/config.rc ||;
-}; if not {
-	redo-ifcreate config.rc
+#!/bin/execlineb -S3
+backtick PROGS { pipeline { find src -type f -name  "*.c" } sed -e "s;.c$;;" -e "s;src/;;" }
+multisubstitute {
+	importas -D "/usr/local" DESTDIR DESTDIR
+	importas -D "/include" INCDIR INCDIR
+	importas -D "/bin" BINDIR BINDIR
+	importas -D "/lib" LIBDIR LIBDIR
+	importas -D "/share/man" MANDIR MANDIR
+	importas -is PROGS PROGS
+	elglob MANPAGES "man/*"
 }
-PROGS=`{find src -type f -name '*.c' | sed 's;.c$;;'}
-MANPAGES=man/*
-switch ($1) {
-case all
-	redo-ifchange $PROGS
-case clean
-	rm -f `{redo-targets}
-case install
-	redo-always
-	redo-ifchange all install-man
-	install -dm 755 $"DESTDIR/$"BINDIR
-	install -cm 755 $PROGS $"DESTDIR/$"BINDIR
-case install-ecore
-	redo-always
-	redo-ifchange ecore install-man
-	install -dm 755 $"DESTDIR/$"BINDIR
-	install -cm 755 ecore $"DESTDIR/$"BINDIR
-	for (prog in `{./ecore}) ln -s ecore $"DESTDIR/$"BINDIR/$prog
-case install-man
-	redo-always
-	redo-ifchange $MANPAGES
-	install -dm 755 $"DESTDIR/$"MANDIR/man1
-	install -cm 644 $MANPAGES $"DESTDIR/$"MANDIR/man1
-case *
-	echo no rule for ''''$1'''' >[1=2]
-	exit 1
+ifelse { test "${1}" = "all" } {
+	redo-ifchange src/${PROGS}
 }
+ifelse { test "${1}" = "clean" } {
+	backtick targets { redo-targets }
+	importas -isu targets targets
+	rm -Rf $targets
+}
+ifelse { test "${1}" = "install" } {
+	foreground { redo-ifalways }
+	foreground { redo-ifchange install-man }
+	foreground { install -dm 755 "${DESTDIR}${BINDIR}" }
+	install -cm 755 $PROGS "${DESTDIR}${BINDIR}"
+}
+ifelse { test "${1}" = "install-ecore" } {
+	foreground { redo-ifalways }
+	foreground { redo-ifchange ecore install-man }
+	foreground { install -dm 755 "${DESTDIR}${BINDIR}" }
+	foreground { install -cm 755 ecore "${DESTDIR}${BINDIR}" }
+	forx -E prog { $PROGS } ln -s ecore "${DESTDIR}${BINDIR}/${prog}"
+}
+ifelse { test "${1}" = "install-man" } {
+	foreground { redo-ifalways }
+	foreground { install -dm 755 "${DESTDIR}${MANDIR}/man1" }
+	install -cm 644 $MANPAGES "${DESTDIR}${MANDIR}/man1"
+}
+exit 0
