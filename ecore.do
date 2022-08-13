@@ -9,7 +9,6 @@ multisubstitute {
 	importas -iu tmpdir tmpdir
 	importas -isu PROGS PROGS
 }
-foreground { redo-always }
 foreground { redo-ifchange lib/libcommon.a }
 foreground {
 	foreground {
