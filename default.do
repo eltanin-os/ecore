@@ -2,9 +2,7 @@
 backtick PROGS { pipeline { find src -type f -name  "*.c" } sed -e "s;.c$;;" -e "s;src/;;" }
 multisubstitute {
 	importas -D "/usr/local" DESTDIR DESTDIR
-	importas -D "/include" INCDIR INCDIR
 	importas -D "/bin" BINDIR BINDIR
-	importas -D "/lib" LIBDIR LIBDIR
 	importas -D "/share/man" MANDIR MANDIR
 	importas -isu PROGS PROGS
 	elglob MANPAGES "man/*"
@@ -15,7 +13,7 @@ ifelse { test "${1}" = "all" } {
 ifelse { test "${1}" = "clean" } {
 	backtick targets { redo-targets }
 	importas -isu targets targets
-	rm -Rf $targets
+	rm -f $targets
 }
 ifelse { test "${1}" = "install" } {
 	foreground { redo-ifchange install-man }
