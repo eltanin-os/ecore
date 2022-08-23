@@ -18,7 +18,7 @@ ifelse { test "${1}" = "clean" } {
 ifelse { test "${1}" = "install" } {
 	foreground { redo-ifchange all install-man }
 	foreground { install -dm 755 "${DESTDIR}${BINDIR}" }
-	install -cm 755 $PROGS "${DESTDIR}${BINDIR}"
+	install -cm 755 src/$PROGS "${DESTDIR}${BINDIR}"
 }
 ifelse { test "${1}" = "install-ecore" } {
 	foreground { redo-ifchange ecore install-man }
