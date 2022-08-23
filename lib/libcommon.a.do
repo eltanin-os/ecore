@@ -1,7 +1,7 @@
 #!/bin/execlineb -S3
 multisubstitute {
-	importas -D "ar" AR AR
-	importas -D "ranlib" RANLIB RANLIB
+	importas -sD "ar" AR AR
+	importas -sD "ranlib" RANLIB RANLIB
 	elglob DEPS "*.c"
 }
 foreground { redo-ifchange ${DEPS}.o }
