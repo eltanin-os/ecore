@@ -16,23 +16,23 @@ static ctype_arr arr;
 static void
 sethash(struct hash *p, char *s)
 {
-	if (!CSTRCMP("MD5", s)) {
+	if (!c_str_casecmp(s, -1, "MD5")) {
 		p->name = "MD5";
 		p->md = c_hsh_md5;
 		p->siz = C_HSH_MD5DIG;
-	} else if (!CSTRCMP("SHA1", s)) {
+	} else if (!c_str_casecmp(s, -1, "SHA1")) {
 		p->name = "SHA1";
 		p->md = c_hsh_sha1;
 		p->siz = C_HSH_SHA1DIG;
-	} else if (!CSTRCMP("SHA256", s)) {
+	} else if (!c_str_casecmp(s, -1, "SHA256")) {
 		p->name = "SHA256";
 		p->md = c_hsh_sha256;
 		p->siz = C_HSH_SHA256DIG;
-	} else if (!CSTRCMP("SHA512", s)) {
+	} else if (!c_str_casecmp(s, -1, "SHA512")) {
 		p->name = "SHA512";
 		p->md = c_hsh_sha512;
 		p->siz = C_HSH_SHA512DIG;
-	} else if (!CSTRCMP("WHIRLPOOL", s)) {
+	} else if (!c_str_casecmp(s, -1, "WHIRLPOOL")) {
 		p->name = "WHIRLPOOL";
 		p->md = c_hsh_whirlpool;
 		p->siz = C_HSH_WHIRLPOOLDIG;
@@ -64,7 +64,7 @@ checkfile(struct hash *h, char *file)
 	char out[64];
 
 	if ((fd = c_nix_fdopen2(file, C_NIX_OREAD)) < 0)
-		c_err_die(1, "c_nix_fdopen2 %s", file);
+		c_err_die(1, "failed to open \"%s\"", file);
 
 	r = 0;
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
@@ -77,17 +77,10 @@ checkfile(struct hash *h, char *file)
 		if (!(p = c_mem_chr(s, n, ' ')))
 			c_err_diex(1, "%s: file in wrong format", file);
 		*p++ = 0;
-		sethash(h, s);
-
-		n -= p - s;
-		s = p;
-		if (!(p = c_mem_chr(s, n, ' ')))
-			c_err_diex(1, "%s: file in wrong format", file);
-		*p++ = 0;
 
 		h->md->init(&hs);
 		if (c_hsh_putfile(&hs, h->md, p) < 0) {
-			r = c_err_warn("c_hsh_putfile %s", s);
+			r = c_err_warn("failed to read \"%s\"", s);
 			c_arr_trunc(&arr, 0, sizeof(uchar));
 			continue;
 		}
@@ -110,10 +103,9 @@ digest(struct hash *h, char *file)
 
 	h->md->init(&hs);
 	if (c_hsh_putfile(&hs, h->md, file) < 0)
-		return c_err_warn("c_hsh_putfile %s", file);
+		return c_err_warn("failed to read \"%s\"", file);
 	h->md->end(&hs, buf);
 
-	c_ioq_fmt(ioq1, "%s ", h->name);
 	for (i = 0; i < h->siz; ++i) c_ioq_fmt(ioq1, "%02x", (uchar)buf[i]);
 	c_ioq_fmt(ioq1, " %s\n", file);
 	return 0;
@@ -134,11 +126,23 @@ main(int argc, char **argv)
 	ctype_status (*func)(struct hash *, char *);
 	ctype_status r;
 
+
+	if (!CSTRCMP("md5sum", argv[0])) {
+		sethash(&h, "md5sum");
+	} else if (!CSTRCMP("sha1sum", argv[0])) {
+		sethash(&h, "SHA1SUM");
+	} else if (!CSTRCMP("sha256sum", argv[0])) {
+		sethash(&h, "SHA256SUM");
+	} else if (!CSTRCMP("sha512sum", argv[0])) {
+		sethash(&h, "SHA512SUM");
+	} else {
+		sethash(&h, "WHIRLPOOL");
+	}
+
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
 	func = digest;
-	sethash(&h, "WHIRLPOOL");
 	while (c_std_getopt(argmain, argc, argv, "a:c")) {
 		switch (argmain->opt) {
 		case 'a':
