@@ -37,6 +37,6 @@ main(int argc, char **argv)
 	r = 0;
 	for (; *argv; ++argv)
 		if (c_sys_mknod(*argv, C_NIX_IFIFO | mode, 0) < 0)
-			r = c_err_warn("c_sys_mknod %s", *argv);
+			r = c_err_warn("failed to create FIFO \"%s\"", *argv);
 	return r;
 }

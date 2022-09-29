@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define STR(a) estrtovl((a), 0, 0, C_LIM_ULONGMAX);
+#define STR(a) estrtovl((a), 0, 0, C_LIM_ULONGMAX)
 #define MAKEDEV(a, b) C_NIX_MAKEDEV(STR((a)), STR((b)))
 
 static void
@@ -49,14 +49,15 @@ main(int argc, char **argv)
 		/* FALLTHROUGH */
 	case 'c':
 		if (argc - 4) usage();
-		dev = C_NIX_MAKEDEV(argv[2], argv[3]);
+		dev = MAKEDEV(argv[2], argv[3]);
 		if (c_sys_mknod(argv[0], type | mode, dev) < 0)
-			c_err_die(1, "c_sys_mknod %s", argv[0]);
+			c_err_die(1, "failed to create special file \"%s\"",
+			    argv[0]);
 		break;
 	case 'p':
 		if (argc - 2) usage();
 		if (c_sys_mknod(argv[0], C_NIX_IFIFO | mode, 0) < 0)
-			c_err_die(1, "c_sys_mknod %s", argv[0]);
+			c_err_die(1, "failed to create FIFO \"%s\"", argv[0]);
 		break;
 	default:
 		usage();

@@ -16,15 +16,17 @@ cmode(char *path)
 
 	c_mem_set(&arr, sizeof(arr), 0);
 	if (c_dyn_fmt(&arr, "%s.tmp.XXXXXXXXX", path) < 0)
-		c_err_die(1, "c_dyn_fmt");
+		c_err_diex(1, "no memory");
 	c_dyn_shrink(&arr);
 	tmp = c_arr_data(&arr);
 
 	if ((tmpfd = c_nix_mktemp(tmp, c_arr_bytes(&arr))) < 0)
-		c_err_die(1, "c_nix_mktemp");
+		c_err_die(1, "failed to obtain temporary file");
 
-	if (c_cdb_mkstart(&cdbmk, tmpfd) < 0)
-		c_err_die(1, "c_cdb_mkstart %s", tmp);
+	if (c_cdb_mkstart(&cdbmk, tmpfd) < 0) {
+		c_err_warn("failed to initialize the database");
+		goto error;
+	}
 
 	c_mem_set(&arr, sizeof(arr), 0);
 	while ((r = c_ioq_getln(ioq0, &arr)) > 0) {
@@ -47,17 +49,25 @@ cmode(char *path)
 		c_arr_trunc(&arr, 0, sizeof(uchar));
 		continue;
 invalid:
-		c_nix_unlink(tmp);
-		errno = C_ERR_EINVAL;
-		c_err_die(1, nil);
+		c_err_warnx("input in wrong format");
+		goto error;
 	}
 	c_dyn_free(&arr);
 
-	if (c_cdb_mkfinish(&cdbmk) < 0) c_err_die(1, "c_cdb_mkfinish");
+	if (c_cdb_mkfinish(&cdbmk) < 0) {
+		c_err_warn("failed to write the database");
+		goto error;
+	}
 	c_nix_fdclose(tmpfd);
 
-	if (c_nix_rename(path, tmp) < 0)
-		c_err_die(1, "c_nix_rename %s <- %s", path, tmp);
+	if (c_nix_rename(path, tmp) < 0) {
+		c_err_warn("failed to move \"%s\" to \"%s\"", tmp, path);
+		goto error;
+	}
+	return;
+error:
+	c_nix_unlink(tmp);
+	c_std_exit(1);
 }
 
 /* query mode */
@@ -70,7 +80,8 @@ qmode(ctype_fd fd, char *key, usize n)
 	ctype_status r;
 	int found;
 
-	if (c_cdb_init(&cdb, fd) < 0) c_err_die(1, "c_cdb_init");
+	if (c_cdb_init(&cdb, fd) < 0)
+		c_err_die(1, "failed to initialize the database");
 	c_mem_set(&arr, sizeof(arr), 0);
 	found  = 0;
 	len = c_str_len(key, -1);
@@ -78,14 +89,14 @@ qmode(ctype_fd fd, char *key, usize n)
 		if (!n--) break;
 		++found;
 		if (c_dyn_ready(&arr, c_cdb_datalen(&cdb), sizeof(uchar)) < 0)
-			c_err_die(1, "c_dyn_ready");
+			c_err_diex(1, "no memory");
 		if (c_cdb_read(&cdb, c_arr_data(&arr),
 		    c_cdb_datalen(&cdb), c_cdb_datapos(&cdb)) < 0)
-			c_err_die(1, "c_cdb_read");
+			c_err_die(1, "failed to read the database");
 		c_ioq_nput(ioq1, c_arr_data(&arr), c_cdb_datalen(&cdb));
 	}
 	c_dyn_free(&arr);
-	if (r < 0) c_err_die(1, "c_cdb_findnext");
+	if (r < 0) c_err_die(1, "failed to search the next key");
 	return found ? 0 : 100;
 }
 
@@ -93,7 +104,7 @@ qmode(ctype_fd fd, char *key, usize n)
 static void
 getall(ctype_ioq *p, char *s, usize n)
 {
-	if (c_ioq_get(p, s, n) < 0) c_err_die(1, "c_ioq_getall");
+	if (c_ioq_get(p, s, n) < 0) c_err_die(1, "truncated file");
 }
 
 static void
@@ -175,15 +186,12 @@ smode(ctype_fd fd)
 					case -1:
 						c_err_die(1, nil);
 					case 0:
-						c_err_die(1, "truncated file");
+						c_err_diex(1, "truncated file");
 				}
 			} while (c_cdb_datapos(&c) != pos);
 			if (!c.loop) c_err_diex(1, "truncated file");
 			++numrec;
-			if (c.loop > 10)
-				++numd[10];
-			else
-				++numd[c.loop - 1];
+			++numd[c.loop > 10 ? 10 : c.loop - 1];
 			c_nix_seek(fd, rest, C_NIX_SEEKSET);
 		}
 		getseek(&ioq, dlen);
@@ -259,7 +267,7 @@ main(int argc, char **argv)
 	} else {
 		if (argc - 1) usage();
 		fd = c_nix_fdopen2(*argv, C_NIX_OREAD);
-		if (fd < 0) c_err_die(1, "c_nix_fdopen2 %s", *argv);
+		if (fd < 0) c_err_die(1, "failed to open \"%s\"", *argv);
 		switch (mode) {
 		case 'd':
 			dmode(fd);

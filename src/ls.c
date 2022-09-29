@@ -334,10 +334,8 @@ print1(ctype_dir *dir, struct max *max)
 			    max->block, (uvlong)p->stp->blocks);
 		printmode(p->stp);
 		c_ioq_fmt(ioq1, "%*lud ", max->nlink, p->stp->nlink);
-		if (!(opts & GFLAG))
-			printid(0, p->stp->uid, max->uid);
-		if (!(opts & OFLAG))
-			printid(1, p->stp->gid, max->gid);
+		if (!(opts & GFLAG)) printid(0, p->stp->uid, max->uid);
+		if (!(opts & OFLAG)) printid(1, p->stp->gid, max->gid);
 		if (C_NIX_ISBLK(p->stp->mode) || C_NIX_ISCHR(p->stp->mode))
 			c_ioq_fmt(ioq1, "%3d, %3d ",
 			    C_NIX_MAJOR(p->stp->rdev),
@@ -367,7 +365,7 @@ printc(ctype_dir *dir, struct max *max)
 	}
 
 	if (!(pa = c_std_alloc(max->total, sizeof(ctype_dent *))))
-		c_err_die(1, "c_std_alloc");
+		c_err_diex(1, nil);
 
 	num = 0;
 	if (!(p = c_dir_list(dir))) return;
@@ -452,7 +450,9 @@ static int
 ttycheck(ctype_fd fd)
 {
 	ctype_stat st;
-	if (c_nix_fdstat(&st, fd) < 0) c_err_die(1, "c_nix_fdstat");
+	ctype_status r;
+	r = c_nix_fdstat(&st, fd);
+	if (r < 0) c_err_die(1, "failed to obtain tty info");
 	return C_NIX_ISCHR(st.mode);
 }
 
@@ -586,7 +586,7 @@ main(int argc, char **argv)
 	}
 
 	if (c_dir_open(&dir, argv, ropts, (opts & FFLAG) ? nil : &sort) < 0)
-		c_err_die(1, "c_dir_open");
+		c_err_die(1, nil);
 
 	blksize /= 512;
 	if ((tmp = c_std_getenv("COLUMNS")))

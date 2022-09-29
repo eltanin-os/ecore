@@ -82,11 +82,11 @@ main(int argc, char **argv)
 			    "separators in -t mode");
 		if (!(tmp = c_std_getenv("TMPDIR"))) tmp = dir ? dir : "/tmp";
 		c_str_rtrim(tmp, -1, "/");
-		if (c_arr_fmt(&arr, "%s/", tmp) < 0) DIE("c_arr_fmt");
+		if (c_arr_fmt(&arr, "%s/", tmp) < 0) DIE(nil);
 	}
-	if (c_arr_fmt(&arr, "%s", template) < 0) DIE("c_arr_fmt");
+	if (c_arr_fmt(&arr, "%s", template) < 0) DIE(nil);
 	if ((fd = c_nix_mktemp3(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
-		DIE("c_nix_mktemp %s", c_arr_data(&arr));
+		DIE("failed to create temp file \"%s\"", c_arr_data(&arr));
 	c_nix_fdclose(fd);
 
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));

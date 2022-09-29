@@ -37,8 +37,8 @@ wc(struct total *t, ctype_fd fd, char *fname, uint opts)
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	nc = nl = nw = 0;
 	for (;;) {
-		if ((r = c_ioq_feed(&ioq)) < 0)
-			c_err_die(1, "c_ioq_feed %s", fname);
+		r = c_ioq_feed(&ioq);
+		if (r < 0) c_err_die(1, "failed to read \"%s\"", fname);
 		if (!r) break;
 		p = c_ioq_peek(&ioq);
 		c_ioq_seek(&ioq, r);
@@ -122,7 +122,7 @@ main(int argc, char **argv)
 			fd = C_IOQ_FD0;
 			*argv = "<stdin>";
 		} else if ((fd = c_nix_fdopen2(*argv, C_NIX_OREAD)) < 0) {
-			r = c_err_warn("c_nix_fdopen2 %s", *argv);
+			r = c_err_warn("failed to open \"%s\"", *argv);
 			continue;
 		}
 		wc(p, fd, *argv, opts);

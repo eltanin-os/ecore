@@ -70,7 +70,7 @@ main(int argc, char **argv)
 		uid = estrtovl(argv[0], 0, 0, C_LIM_UINTMAX);
 
 	++argv;
-	if (c_dir_open(&dir, argv, opts, nil) < 0) c_err_die(1, "c_dir_open");
+	if (c_dir_open(&dir, argv, opts, nil) < 0) c_err_die(1, nil);
 	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
@@ -89,14 +89,14 @@ main(int argc, char **argv)
 		case C_DIR_FSSL:
 			if (c_nix_lchown(p->path,
 			    uid, ID(gid, p->stp->gid)) < 0)
-				r = c_err_warn("c_nix_chown %s", p->path);
+				r = c_err_warn("%s", p->path);
 			continue;
 		case C_DIR_FSSLN:
 			continue;
 		}
 
 		if (c_nix_chown(p->path, uid, ID(gid, p->stp->gid)) < 0)
-			r = c_err_warn("c_nix_chown %s", p->path);
+			r = c_err_warn("%s", p->path);
 	}
 	c_dir_close(&dir);
 	return r;

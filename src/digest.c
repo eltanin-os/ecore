@@ -126,7 +126,6 @@ main(int argc, char **argv)
 	ctype_status (*func)(struct hash *, char *);
 	ctype_status r;
 
-
 	if (!CSTRCMP("md5sum", argv[0])) {
 		sethash(&h, "md5sum");
 	} else if (!CSTRCMP("sha1sum", argv[0])) {

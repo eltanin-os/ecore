@@ -12,7 +12,6 @@ static void
 unescape(char **s)
 {
 	int ch, i;
-	char tab[] = "\\\t \v \a\b   \f     \' \n   \r";
 
 	++*s;
 	if (IS_ODIGIT(*s[0])) {
@@ -25,38 +24,50 @@ unescape(char **s)
 		return;
 	}
 
-	if (*s[0] == 'c') c_std_exit(0);
-
 	switch (*s[0]) {
 	case 'a':
+		ch = '\a';
+		break;
 	case 'b':
+		ch = '\b';
+		break;
+	case 'c':
+		c_std_exit(0);
 	case 't':
+		ch = '\t';
+		break;
 	case 'n':
+		ch = '\n';
+		break;
 	case 'v':
+		ch = '\v';
+		break;
 	case 'f':
+		ch = '\f';
+		break;
 	case 'r':
+		ch = '\r';
+		break;
 	case '\'':
+		ch = '\'';
+		break;
 	case '\\':
-		c_ioq_nput(ioq1, tab + (*s[0] % (sizeof(tab) - 1)), 1);
+		ch = '\\';
 	}
+	c_ioq_nput(ioq1, (char *)&ch, 1);
 }
 
 static vlong
 stovl(char *s)
 {
 	ctype_rune r;
-	vlong x;
-	int e;
+	ctype_status e;
 
 	if (*s == '\'' || *s == '"') {
 		c_utf8_chartorune(&r, s + 1);
 		return (vlong)r;
 	}
-
-	x = c_std_strtovl(s, 0, C_LIM_VLONGMIN, C_LIM_VLONGMAX, nil, &e);
-	if (e < 0) c_err_warn("c_std_strtovl %s", s);
-
-	return x;
+	return estrtovl(s, 0, C_LIM_VLONGMIN, C_LIM_VLONGMAX);
 }
 
 static int

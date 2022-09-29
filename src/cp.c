@@ -67,8 +67,10 @@ main(int argc, char **argv)
 		sverr = errno;
 		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
-			if (errno != C_ERR_ENOENT)
-				c_err_die(1, "c_nix_stat %s", dest);
+			if (errno != C_ERR_ENOENT) {
+				c_err_die(1,
+				    "failed to obtain file info \"%s\"", dest);
+			}
 			st.mode = 0;
 		}
 	}

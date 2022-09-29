@@ -34,6 +34,7 @@ main(int argc, char **argv)
 
 	r = 0;
 	for (; *argv; ++argv)
-		if (func(*argv) < 0) r = c_err_warn("remove %s", *argv);
+		if (func(*argv) < 0)
+			r = c_err_warn("failed to remove dir \"%s\"", *argv);
 	return r;
 }

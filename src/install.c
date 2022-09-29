@@ -80,7 +80,8 @@ main(int argc, char **argv)
 		r = 0;
 		for (; *argv; ++argv)
 			if (c_nix_mkpath(*argv, mode, dmode) < 0)
-				r = c_err_warn("c_nix_mkpath %s", *argv);
+				r = c_err_warn("failed to create path \"%s\"",
+				    *argv);
 		c_std_exit(r);
 	}
 
@@ -90,10 +91,10 @@ main(int argc, char **argv)
 	dest = argv[argc];
 	argv[argc] = nil;
 	if (opts & DDFLAG) {
-		if (!(s = c_str_dup(dest, -1))) c_err_die(1, "c_str_dup");
+		if (!(s = c_str_dup(dest, -1))) c_err_diex(1, "no memory");
 		if (c_gen_dirname(s) == s) {
 			if (c_nix_mkpath(s, mode, dmode) < 0)
-				c_err_die(1, "c_nix_mkpath %s", s);
+				c_err_die(1, "failed to make path \"%s\"", s);
 			st.mode = C_NIX_IFDIR;
 		} else {
 			st.mode = 0;
@@ -105,7 +106,9 @@ main(int argc, char **argv)
 		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
 			if (errno != C_ERR_ENOENT)
-				c_err_die(1, "c_nix_stat %s", dest);
+				c_err_die(1,
+				    "failed to obtain file info \"%s\"",
+				    dest);
 			st.mode = 0;
 		}
 	}

@@ -22,7 +22,7 @@ prompt(char *s)
 	ctype_stat st;
 	if (c_nix_stat(&st, s) < 0) {
 		if (errno == C_ERR_ENOENT) return 0;
-		return c_err_warn("c_nix_stat %s", s);
+		return c_err_warn("failed to obtain file info \"%s\"", s);
 	}
 	return yesno("overwrite", s);
 }

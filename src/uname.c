@@ -60,7 +60,7 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 	if (argc) usage();
 
-	if (c_nix_uname(&uts) < 0) c_err_die(1, "c_nix_uname");
+	if (c_nix_uname(&uts) < 0) c_err_die(1, "failed to obtain system info");
 	if (!opts || (opts & SFLAG)) DISPLAY(uts.sysname);
 	if (opts & NFLAG) DISPLAY(uts.nodename);
 	if (opts & RFLAG) DISPLAY(uts.release);

@@ -46,10 +46,13 @@ main(int argc, char **argv)
 	r = 0;
 	for (; *argv; ++argv) {
 		c_str_rtrim(*argv, -1, "/");
-		if (pflag)
-			r |= c_nix_mkpath(*argv, mode, dmode);
-		else if (c_nix_mkdir(*argv, mode) < 0)
-			r = c_err_warn("c_nix_mkdir %s", *argv);
+		if (pflag) {
+			if (c_nix_mkpath(*argv, mode, dmode) < 0)
+				r = c_err_warn("failed to make path \"%s\"",
+				    *argv);
+		} else if (c_nix_mkdir(*argv, mode) < 0) {
+			r = c_err_warn("failed to make dir \"%s\"", *argv);
+		}
 	}
 	return r;
 }

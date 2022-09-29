@@ -21,12 +21,10 @@ main(int argc, char **argv)
 	argv -= argmain->idx;
 	switch (argc) {
 	case 0:
-		for (; *environ; ++environ)
-			c_ioq_fmt(ioq1, "%s\n", *environ);
+		for (; *environ; ++environ) c_ioq_fmt(ioq1, "%s\n", *environ);
 		break;
 	case 1:
-		if (!(s = c_std_getenv(*argv)))
-			c_std_exit(1);
+		if (!(s = c_std_getenv(*argv))) c_std_exit(1);
 		c_ioq_fmt(ioq1, "%s\n", s);
 		break;
 	default:

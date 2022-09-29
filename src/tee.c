@@ -36,21 +36,20 @@ main(int argc, char **argv)
 	argc -= argmain->idx;
 	argv += argmain->idx;
 
-	if (!(fds = c_std_alloc(argc + 1, sizeof(*fds))))
-		c_err_die(1, "c_std_alloc");
+	if (!(fds = c_std_alloc(argc + 1, sizeof(*fds)))) c_err_die(1, nil);
 
 	for (i = 0; i < argc; ++i)
 		if ((fds[i] = c_nix_fdopen3(argv[i],
 		    opts, C_NIX_DEFFILEMODE)) < 0)
-			c_err_die(1, "c_nix_fdopen3 %s", argv[i]);
+			c_err_die(1, "failed to open \"%s\"", argv[i]);
 
 	fds[i] = C_IOQ_FD1;
 	++argc;
 	while ((r = c_nix_fdread(C_IOQ_FD0, buf, sizeof(buf))) > 0)
 		for (i = 0; i < argc; ++i)
 			if (c_nix_allrw(&c_nix_fdwrite, fds[i], buf, r) < 0)
-				c_err_die(1, "c_nix_fdwrite %s",
+				c_err_die(1, "failed to write to \"%s\"",
 				    argv[i] ? argv[i] : "<stdout>");
-	if (r < 0) c_err_die(1, "c_nix_fdread");
+	if (r < 0) c_err_die(1, "failed to read input");
 	return 0;
 }

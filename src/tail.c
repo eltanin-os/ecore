@@ -54,8 +54,7 @@ tailb(ctype_ioq *p, usize cnt)
 	char *d, *s;
 
 	c_mem_set(&arr, sizeof(arr), 0);
-	if (c_dyn_ready(&arr, ++cnt, sizeof(uchar)) < 0)
-		c_err_die(1, "c_dyn_ready");
+	if (c_dyn_ready(&arr, ++cnt, sizeof(uchar)) < 0) c_err_die(1, nil);
 	while ((len = c_ioq_feed(p)) > 0) {
 		s = c_ioq_peek(p);
 		if (len >= (size)cnt) {
@@ -149,8 +148,8 @@ main(int argc, char **argv)
 		c_ioq_init(&ioq, C_IOQ_FD0, buf, sizeof(buf), &c_nix_fdread);
 		tailfn(&ioq, cnt);
 	} else {
-		if ((fd = c_nix_fdopen2(*argv, C_NIX_OREAD)) < 0)
-			c_err_die(1, "c_nix_fdopen2 %s", *argv);
+		fd = c_nix_fdopen2(*argv, C_NIX_OREAD);
+		if (fd < 0) c_err_die(1, "failed to open \"%s\"", *argv);
 		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 		tailfn(&ioq, cnt);
 		if (fflag) {

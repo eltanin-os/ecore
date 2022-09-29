@@ -30,7 +30,7 @@ main(int argc, char **argv)
 
 	blksiz = 512;
 	opts = 0;
-	ropts = 0;
+	ropts = C_DIR_FSFHT;
 
 	while (c_std_getopt(argmain, argc, argv, "HLaksx")) {
 		switch (argmain->opt) {
@@ -63,8 +63,7 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 	if (!argc) argv = tmpargv(".");
 
-	if (c_dir_open(&dir, argv, ropts | C_DIR_FSFHT, nil) < 0)
-		c_err_die(1, "c_dir_open");
+	if (c_dir_open(&dir, argv, ropts, nil) < 0) c_err_die(1, nil);
 	blksiz /= 512;
 	r = 0;
 	while ((p = c_dir_read(&dir))) {

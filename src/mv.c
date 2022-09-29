@@ -17,7 +17,7 @@ move(char *src, char *dest, uint opts)
 
 	if (!c_nix_rename(s, src)) return 0;
 	if (errno != C_ERR_EXDEV)
-		return c_err_warn("c_nix_rename %s <- %s", s, src);
+		return c_err_warn("failed to move \"%s\" to \"%s\"", src, s);
 
 	argv[0] = src;
 	argv[1] = nil;

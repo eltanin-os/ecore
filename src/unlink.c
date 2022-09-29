@@ -19,6 +19,7 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 	if (argc - 1) usage();
 
-	if (c_nix_unlink(*argv) < 0) c_err_die(1, "c_nix_unlink %s", *argv);
+	if (c_nix_unlink(*argv) < 0)
+		c_err_die(1, "failed to unlink \"%s\"", *argv);
 	return 0;
 }

@@ -12,7 +12,7 @@ getbyte(ctype_ioq *p, char *s, uint opts)
 	ctype_status r;
 	char ch;
 	if ((r = c_ioq_get(p, &ch, sizeof(ch))) < 0) {
-		if (!(opts & SFLAG)) c_err_warn("c_ioq_get %s", s);
+		if (!(opts & SFLAG)) c_err_warn("failed to read \"%s\"", s);
 		c_std_exit(2);
 	}
 	return r ? ch : -1;
@@ -63,7 +63,7 @@ main(int argc, char **argv)
 			argv[i] = "<stdin>";
 		} else if ((fd = c_nix_fdopen2(argv[i], C_NIX_OREAD)) < 0) {
 			if (!(opts & SFLAG))
-				c_err_warn("c_nix_fdopen2 %s", argv[i]);
+				c_err_warn("failed to open \"%s\"", argv[i]);
 			c_std_exit(2);
 		}
 		c_ioq_init(&file[i], fd, buf[i], sizeof(buf[i]), &c_nix_fdread);

@@ -35,7 +35,7 @@ main(int argc, char **argv)
 	for (; *argv; ++argv) {
 		if (C_STD_ISDASH(*argv)) *argv = "<stdin>";
 		if (c_ioq_putfile(ioq1, *argv) < 0)
-			r = c_err_warn("putfile %s", *argv);
+			r = c_err_warn("failed to read file \"%s\"", *argv);
 	}
 	c_ioq_flush(ioq1);
 	return r;

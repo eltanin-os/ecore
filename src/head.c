@@ -14,7 +14,7 @@ head(ctype_arr *p, char *s, usize n)
 	if (C_STD_ISDASH(s)) {
 		fd = C_IOQ_FD0;
 	} else if ((fd = c_nix_fdopen2(s, C_NIX_OREAD)) < 0) {
-		c_err_warn("c_nix_fdopen2 %s", s);
+		c_err_warn("failed to open \"%s\"", s);
 		return 1;
 	}
 
@@ -23,7 +23,7 @@ head(ctype_arr *p, char *s, usize n)
 		c_arr_trunc(p, 0, sizeof(uchar));
 		switch ((r = c_ioq_getln(&ioq, p))) {
 		case -1:
-			c_err_die(1, "c_ioq_getln %s", s);
+			c_err_die(1, "failed to read \"%s\"", s);
 		case 0:
 			return 0;
 		}

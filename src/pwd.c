@@ -13,7 +13,7 @@ getpwd(void)
 	    (n = c_str_len(s, C_LIM_PATHMAX)) == C_LIM_PATHMAX ||
 	    (c_mem_mem(s, n, "/./", sizeof("/./") - 1) ||
 	    c_mem_mem(s, n, "/../", sizeof("/../") - 1)) ||
-	    (c_nix_stat(&pwd, s) < 0 || c_nix_stat(&dot, ".")) ||
+	    (c_nix_stat(&pwd, s) < 0 || c_nix_stat(&dot, ".") < 0) ||
 	    (pwd.dev != dot.dev || pwd.ino != dot.ino))
 		return nil;
 	return s;
@@ -56,12 +56,11 @@ main(int argc, char **argv)
 
 	switch (mode) {
 	case 1:
-		if ((s = getpwd()))
-			break;
+		if ((s = getpwd())) break;
 		/* FALLTHROUGH */
 	case 0:
-		if (!(s = c_nix_getcwd(buf, sizeof(buf))))
-			c_err_die(1, "c_nix_getcwd");
+		s = c_nix_getcwd(buf, sizeof(buf));
+		if (!s) c_err_die(1, "failed to get current dir path");
 	}
 	c_ioq_fmt(ioq1, "%s\n", s);
 	c_ioq_flush(ioq1);

@@ -51,13 +51,12 @@ done:
 	m = *argv;
 	--argc, ++argv;
 
-	if (c_dir_open(&dir, argv, 0, nil) < 0) c_err_die(1, "c_dir_open");
+	if (c_dir_open(&dir, argv, 0, nil) < 0) c_err_die(1, nil);
 	r = 0;
 	while ((p = c_dir_read(&dir))) {
 		switch (p->info) {
 		case C_DIR_FSD:
-			if (!Rflag)
-				c_dir_set(&dir, p, C_DIR_FSSKP);
+			if (!Rflag) c_dir_set(&dir, p, C_DIR_FSSKP);
 			break;
 		case C_DIR_FSDNR:
 			r = c_err_warnx("%s: %r", p->name, p->err);
@@ -75,7 +74,7 @@ done:
 
 		if (c_nix_chmod(p->path,
 		    c_nix_strtomode(m, p->stp->mode, mask)) < 0)
-			r = c_err_warn("c_nix_chmod %s", p->path);
+			r = c_err_warn("%s", p->path);
 	}
 	c_dir_close(&dir);
 	return r;

@@ -47,7 +47,7 @@ pathchk(char *path, uint opts)
 	}
 
 	if ((c_nix_lstat(&st, s) < 0) && errno != C_ERR_ENOENT)
-		r = c_err_warn("c_nix_lstat %s", path);
+		r = c_err_warn("failed to obtain file info \"%s\"", path);
 	return r;
 }
 
