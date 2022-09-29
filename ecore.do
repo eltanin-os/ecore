@@ -50,7 +50,7 @@ main(int argc, char **argv)
 	foreground {
 		forx -E file { $PROGS }
 		redirfd -a 1 ${tmpdir}/ecore.c
-		echo "\telse if (!C_STR_CMP(\"${file}\", s)) return ${file}_main(argc, argv);"
+		echo "\telse if (!C_STR_SCMP(\"${file}\", s)) return ${file}_main(argc, argv);"
 	}
 	foreground {
 		redirfd -a 1 ${tmpdir}/ecore.c
