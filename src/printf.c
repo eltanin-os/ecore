@@ -97,14 +97,18 @@ printfmt(char *s, int argc, char **argv)
 	c_mem_set(&fmt, sizeof(fmt), 0);
 	for (; *s; ++s) {
 		ch = *s;
-		if (ch == '\\') {
+		switch (ch) {
+		case '\\':
 			unescape(&s);
 			continue;
-		} else if (ch != '%') {
+		case '%':
+			++s;
+			if (*s != '%') break;
+			/* FALLTHROUGH */
+		default:
 			c_ioq_nput(ioq1, (char *)&ch, 1);
 			continue;
 		}
-		++s;
 		c_arr_trunc(&fmt, 0, sizeof(uchar));
 		edyncat(&fmt, "%", 1, sizeof(uchar));
 		for (; c_str_chr("#-+", 3, *s); ++s)
@@ -143,7 +147,7 @@ printfmt(char *s, int argc, char **argv)
 			break;
 		default:
 			errno = C_ERR_EINVAL;
-			c_err_die(1, nil);
+			c_err_die(1, "%%%c", ch);
 		}
 	}
 	return ac - argc;
