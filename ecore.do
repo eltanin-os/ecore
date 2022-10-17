@@ -2,7 +2,7 @@
 backtick tmpdir { mktemp -d }
 backtick PROGS { pipeline { find src -type f -name  "*.c" } pipeline { sed -e "s;.c$;;" -e "s;src/;;" } sort }
 multisubstitute {
-	importas -D "cc" CC CC
+	importas -sD "cc" CC CC
 	importas -sD "-O0 -g -std=c99 -Wall -Wextra -pedantic" CFLAGS CFLAGS
 	importas -sD "" CPPFLAGS CPPFLAGS
 	importas -sD "" LDFLAGS LDFLAGS
