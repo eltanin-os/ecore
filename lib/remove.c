@@ -46,7 +46,8 @@ remove(char **argv, uint opts)
 			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		default:
-			if (c_nix_unlink(p->path) < 0)
+			if ((c_nix_unlink(p->path) < 0) &&
+			    (!FFLAG && errno != C_ERR_ENOENT))
 				r = c_err_warn("failed to remove \"%s\"",
 				    p->path);
 		}
