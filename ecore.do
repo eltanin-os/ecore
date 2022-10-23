@@ -55,7 +55,15 @@ main(int argc, char **argv)
 	foreground {
 		redirfd -a 1 ${tmpdir}/ecore.c
 		heredoc 0
-"	else {
+"	else if (!C_STR_CMP(\"md5sum\", s)) {
+		return digest_main(argc, argv);
+	} else if (!C_STR_CMP(\"sha1sum\", s)) {
+		return digest_main(argc, argv);
+	} else if (!C_STR_CMP(\"sha256sum\", s)) {
+		return digest_main(argc, argv);
+	} else if (!C_STR_CMP(\"sha512sum\", s)) {
+		return digest_main(argc, argv);
+	} else {
 		c_ioq_put(ioq1, names+1);
 		c_ioq_flush(ioq1);
 	}

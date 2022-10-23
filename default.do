@@ -33,6 +33,10 @@ case -- $1 {
 	foreground { redo-ifchange ecore install-man }
 	foreground { install -dm 755 "${DESTDIR}${PREFIX}${BINDIR}" }
 	foreground { install -cm 755 ecore "${DESTDIR}${PREFIX}${BINDIR}" }
+	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/md5sum" }
+	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha1sum" }
+	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha256sum" }
+	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha512sum" }
 	forx -E prog { $PROGS } ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/${prog}"
 }
 "install-man" {
