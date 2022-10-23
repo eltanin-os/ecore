@@ -125,17 +125,19 @@ main(int argc, char **argv)
 	struct hash h;
 	ctype_status (*func)(struct hash *, char *);
 	ctype_status r;
+	char *s;
 
-	if (!CSTRCMP("md5sum", argv[0])) {
-		sethash(&h, "md5sum");
-	} else if (!CSTRCMP("sha1sum", argv[0])) {
-		sethash(&h, "SHA1SUM");
-	} else if (!CSTRCMP("sha256sum", argv[0])) {
-		sethash(&h, "SHA256SUM");
-	} else if (!CSTRCMP("sha512sum", argv[0])) {
-		sethash(&h, "SHA512SUM");
+	s = c_gen_basename(argv[0]);
+	if (!CSTRCMP("md5sum", s)) {
+		sethash(&h, "md5");
+	} else if (!CSTRCMP("sha1sum", s)) {
+		sethash(&h, "sha1");
+	} else if (!CSTRCMP("sha256sum", s)) {
+		sethash(&h, "sha256");
+	} else if (!CSTRCMP("sha512sum", s)) {
+		sethash(&h, "sha512");
 	} else {
-		sethash(&h, "WHIRLPOOL");
+		sethash(&h, "whirlpool");
 	}
 
 	c_std_setprogname(argv[0]);
