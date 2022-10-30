@@ -21,26 +21,26 @@ case -- $1 {
 	rm -f $targets
 }
 "install" {
-	foreground { redo-ifchange all install-man }
-	foreground { install -dm 755 "${DESTDIR}${PREFIX}${BINDIR}" }
-	foreground { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/md5sum" }
-	foreground { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/sha1sum" }
-	foreground { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/sha256sum" }
-	foreground { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/sha512sum" }
+	if { redo-ifchange all install-man }
+	if { install -dm 755 "${DESTDIR}${PREFIX}${BINDIR}" }
+	if { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/md5sum" }
+	if { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/sha1sum" }
+	if { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/sha256sum" }
+	if { ln -s digest "${DESTDIR}${PREFIX}${BINDIR}/sha512sum" }
 	install -cm 755 src/$PROGS "${DESTDIR}${PREFIX}${BINDIR}"
 }
 "install-ecore" {
-	foreground { redo-ifchange ecore install-man }
-	foreground { install -dm 755 "${DESTDIR}${PREFIX}${BINDIR}" }
-	foreground { install -cm 755 ecore "${DESTDIR}${PREFIX}${BINDIR}" }
-	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/md5sum" }
-	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha1sum" }
-	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha256sum" }
-	foreground { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha512sum" }
+	if { redo-ifchange ecore install-man }
+	if { install -dm 755 "${DESTDIR}${PREFIX}${BINDIR}" }
+	if { install -cm 755 ecore "${DESTDIR}${PREFIX}${BINDIR}" }
+	if { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/md5sum" }
+	if { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha1sum" }
+	if { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha256sum" }
+	if { ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/sha512sum" }
 	forx -E prog { $PROGS } ln -s ecore "${DESTDIR}${PREFIX}${BINDIR}/${prog}"
 }
 "install-man" {
-	foreground { install -dm 755 "${DESTDIR}${PREFIX}${MANDIR}/man1" }
+	if { install -dm 755 "${DESTDIR}${PREFIX}${MANDIR}/man1" }
 	install -cm 644 $MANPAGES "${DESTDIR}${PREFIX}${MANDIR}/man1"
 }
 }

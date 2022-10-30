@@ -9,11 +9,11 @@ multisubstitute {
 	importas -iu tmpdir tmpdir
 	importas -isu PROGS PROGS
 }
-foreground { redo-ifchange lib/libcommon.a }
+if { redo-ifchange lib/libcommon.a }
 foreground {
-	foreground {
-		forx -E file { $PROGS }
-		foreground {
+	if {
+		forx -Eo 0 file { $PROGS }
+		if {
 			redirfd -r 0 src/${file}.c
 			redirfd -w 1 ${tmpdir}/${file}.c
 			sed "s;^main(;${file}_&;"
@@ -21,7 +21,7 @@ foreground {
 		redirfd -a 1 ${tmpdir}/prototypes.h
 		echo "ctype_status ${file}_main(int, char **);"
 	}
-	foreground {
+	if {
 		backtick -E PROGNAMES { echo "\" ${PROGS}\"" }
 		redirfd -w 1 ${tmpdir}/ecore.c
 		heredoc 0
@@ -47,12 +47,12 @@ main(int argc, char **argv)
 "
 		cat
 	}
-	foreground {
+	if {
 		forx -E file { $PROGS }
 		redirfd -a 1 ${tmpdir}/ecore.c
 		echo "\telse if (!C_STR_SCMP(\"${file}\", s)) return ${file}_main(argc, argv);"
 	}
-	foreground {
+	if {
 		redirfd -a 1 ${tmpdir}/ecore.c
 		heredoc 0
 "	else if (!C_STR_CMP(\"md5sum\", s)) {
@@ -75,4 +75,6 @@ main(int argc, char **argv)
 	elglob C "${tmpdir}/*.c"
 	$CC $CFLAGS $CPPFLAGS $LDFLAGS -Iinc -o $3 $C lib/libcommon.a -ltertium
 }
-rm -Rf $tmpdir
+importas -iu status ?
+foreground { rm -Rf $tmpdir }
+exit $status

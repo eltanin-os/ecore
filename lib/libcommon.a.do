@@ -4,6 +4,6 @@ multisubstitute {
 	importas -sD "ranlib" RANLIB RANLIB
 	elglob DEPS "*.c"
 }
-foreground { redo-ifchange ${DEPS}.o }
-foreground { $AR rc $3 ${DEPS}.o }
+if { redo-ifchange ${DEPS}.o }
+if { $AR rc $3 ${DEPS}.o }
 $RANLIB $3
