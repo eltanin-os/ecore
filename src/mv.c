@@ -70,7 +70,7 @@ main(int argc, char **argv)
 		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
 			if (errno != C_ERR_ENOENT)
-				c_err_die(1, "c_nix_stat %s", dest);
+				c_err_die(1, "failed to obtain info %s", dest);
 			st.mode = 0;
 		}
 	}
