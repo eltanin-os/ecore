@@ -137,6 +137,7 @@ noprint(ctype_dent *p)
 	switch (p->info) {
 	case C_DIR_FSD:
 		if (!(opts & DFLAG) && !p->depth) return 1;
+		if (C_STD_ISDOT(p->name)) return 0;
 		break;
 	case C_DIR_FSDNR:
 	case C_DIR_FSNS:
