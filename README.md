@@ -3,6 +3,8 @@
 It is a set of unix utilities, aiming to be POSIX compliant, while being
 secure, small and fast.
 
+[How to build](https://eltaninos.org/?docs/build)
+
 #### Binaries
 * basename
 * cat
@@ -43,16 +45,6 @@ secure, small and fast.
 * wc
 * whoami
 * yes
-
-#### Build
-```
-	## Separated Binaries
-	$ make
-	# make install
-	## Single Binary
-	$ make ecore
-	# make install-ecore
-```
 
 #### Source
 https://git.tuxfamily.org/eltaninos/ecore  
