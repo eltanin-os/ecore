@@ -15,9 +15,8 @@ install(struct install *p, char **argv, char *dest)
 	ctype_arr d;
 	ctype_dir dir;
 	ctype_dent *ep;
-	ctype_stat st;
 	ctype_status r;
-	usize len, n;
+	usize n;
 
 	if (c_dir_open(&dir, argv, p->ropts, nil) < 0) c_err_die(1, nil);
 	c_mem_set(&d, sizeof(d), 0);
