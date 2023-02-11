@@ -61,7 +61,6 @@ static vlong
 stovl(char *s)
 {
 	ctype_rune r;
-	ctype_status e;
 
 	if (*s == '\'' || *s == '"') {
 		c_utf8_chartorune(&r, s + 1);
