@@ -1,6 +1,8 @@
 #include <tertium/cpu.h>
 #include <tertium/std.h>
 
+#define isword(a, b) (!c_utf8_isspace((a)) && c_utf8_isspace((b)))
+
 enum {
 	CFLAG = 1 << 0,
 	MFLAG = 1 << 1,
@@ -8,57 +10,60 @@ enum {
 	WFLAG = 1 << 3,
 };
 
-struct total {
-	usize nc;
-	usize nl;
-	usize nw;
+struct clw {
+	usize c;
+	usize l;
+	usize w;
 };
 
+static uint opts;
+static struct clw *clw;
+
 static void
-display(char *fname, usize nc, usize nl, usize nw, uint opts)
+display(char *fname, struct clw *p)
 {
-	if (opts & LFLAG) c_ioq_fmt(ioq1, "%llud ", (uvlong)nl);
-	if (opts & WFLAG) c_ioq_fmt(ioq1, "%llud ", (uvlong)nw);
-	if (opts & (CFLAG|MFLAG)) c_ioq_fmt(ioq1, "%llud ", (uvlong)nc);
+	if (opts & LFLAG) c_ioq_fmt(ioq1, "%llud ", (uvlong)p->l);
+	if (opts & WFLAG) c_ioq_fmt(ioq1, "%llud ", (uvlong)p->w);
+	if (opts & (CFLAG|MFLAG)) c_ioq_fmt(ioq1, "%llud ", (uvlong)p->c);
 	c_ioq_fmt(ioq1, "%s\n", fname);
 }
 
 static void
-wc(struct total *t, ctype_fd fd, char *fname, uint opts)
+wc(char *fname, ctype_fd fd)
 {
-	ctype_rune rune;
+	struct clw n;
 	ctype_ioq ioq;
+	ctype_rune rune;
 	size r;
-	usize nc, nl, nw;
-	int nr;
+	int len;
 	char buf[C_IOQ_BSIZ];
 	char *p;
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
-	nc = nl = nw = 0;
+	rune = 0;
+	c_mem_set(&n, sizeof(n), 0);
 	for (;;) {
 		r = c_ioq_feed(&ioq);
 		if (r < 0) c_err_die(1, "failed to read \"%s\"", fname);
 		if (!r) break;
 		p = c_ioq_peek(&ioq);
 		c_ioq_seek(&ioq, r);
-		while (r) {
-			nr  = c_utf8_chartorune(&rune, p);
-			nc += (opts & CFLAG) ? nr : 1;
-			nw += !c_utf8_isspace(*(p - 1)) && c_utf8_isspace(*p);
-			nl += (*p == '\n');
-			p += nr;
-			r -= nr;
+		for (;;) {
+			if (rune) n.w += isword(rune, *p);
+			if (!r) break;
+			len = c_utf8_chartorune(&rune, p);
+			n.c += (opts & CFLAG) ? len : 1;
+			n.l += (*p == '\n');
+			p += len;
+			r -= len;
 		}
 	}
-
 	if (fd != C_IOQ_FD0) c_nix_fdclose(fd);
-
-	display(fname, nc, nl, nw, opts);
-	if (t) {
-		t->nc += nc;
-		t->nl += nl;
-		t->nw += nw;
+	display(fname, &n);
+	if (clw) {
+		clw->c += n.c;
+		clw->l += n.l;
+		clw->w += n.w;
 	}
 }
 
@@ -73,16 +78,12 @@ usage(void)
 ctype_status
 main(int argc, char **argv)
 {
-	struct total total;
-	struct total *p;
+	struct clw total;
 	ctype_fd fd;
 	ctype_status r;
-	uint opts;
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
-
-	opts = 0;
 
 	while (c_std_getopt(argmain, argc, argv, "cmlw")) {
 		switch (argmain->opt) {
@@ -110,12 +111,13 @@ main(int argc, char **argv)
 	if (!opts) opts = CFLAG|LFLAG|WFLAG;
 
 	if (!argc) {
-		wc(nil, C_IOQ_FD0, "", opts);
+		wc("", C_IOQ_FD0);
 		c_std_exit(0);
+	} else if (argc > 1) {
+		c_mem_set(&total, sizeof(total), 0);
+		clw = &total;
 	}
 
-	c_mem_set(&total, sizeof(total), 0);
-	p = argc > 1 ? &total : nil;
 	r = 0;
 	for (; *argv; ++argv) {
 		if (C_STD_ISDASH(*argv)) {
@@ -125,9 +127,9 @@ main(int argc, char **argv)
 			r = c_err_warn("failed to open \"%s\"", *argv);
 			continue;
 		}
-		wc(p, fd, *argv, opts);
+		wc(*argv, fd);
 	}
-	if (p) display("total", p->nc, p->nl, p->nw, opts);
+	if (clw) display("total", &total);
 	c_ioq_flush(ioq1);
 	return r;
 }
