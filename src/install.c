@@ -38,7 +38,7 @@ main(int argc, char **argv)
 	dmode = mode | C_NIX_IWUSR | C_NIX_IXUSR;
 	in.gid = in.mode = in.uid = -1;
 	in.opts = CP_ATOMIC | CP_PFLAG;
-	in.ropts = 0;
+	in.ropts = C_DIR_FSLOG;
 
 	while (c_std_getopt(argmain, argc, argv, "Dcdg:m:o:s")) {
 		switch (argmain->opt) {
