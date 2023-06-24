@@ -5,7 +5,7 @@
 
 #define ODIGIT(x) ((x) >= '0' && (x) <= '7')
 #define NUMCAT(a, b, c) \
-{ int r; s += (r = numcat((a), (b), (c)) < 0) ? (--argc, ++argv, 1) : r; }
+{ int r; s += ((r = numcat((a), (b), (c))) < 0) ? (--argc, ++argv, 1) : r; }
 
 static void
 unescape(char **s)
