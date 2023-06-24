@@ -3,10 +3,9 @@
 
 #include "common.h"
 
-#define IS_ODIGIT(x) ((x) >= '0' && (x) <= '7')
-
+#define ODIGIT(x) ((x) >= '0' && (x) <= '7')
 #define NUMCAT(a, b, c) \
-{ if ((r = numcat((a), (b), (c))) < 0) --argc, ++argv, ++s; else s += r; }
+{ int r; s += (r = numcat((a), (b), (c)) < 0) ? (--argc, ++argv, 1) : r; }
 
 static void
 unescape(char **s)
@@ -14,8 +13,8 @@ unescape(char **s)
 	int ch, i;
 
 	++*s;
-	if (IS_ODIGIT(*s[0])) {
-		for (ch = i = 0; i < 4 && IS_ODIGIT(*s[0]); ++i) {
+	if (ODIGIT(*s[0])) {
+		for (ch = i = 0; i < 4 && ODIGIT(*s[0]); ++i) {
 			ch = ch << 3 | (*s[0] - '0');
 			++*s;
 		}
@@ -88,12 +87,13 @@ numcat(ctype_arr *fmt, char *s, char *argv)
 static int
 printfmt(char *s, int argc, char **argv)
 {
-	ctype_arr fmt;
-	int ac, r;
+	static ctype_arr fmt; /* "memory leak" */
+	ctype_rune rune;
+	int ac;
 	uchar ch;
 
 	ac = argc;
-	c_mem_set(&fmt, sizeof(fmt), 0);
+	c_arr_trunc(&fmt, 0, sizeof(uchar));
 	for (; *s; ++s) {
 		ch = *s;
 		switch (ch) {
@@ -137,6 +137,9 @@ printfmt(char *s, int argc, char **argv)
 			c_ioq_fmt(ioq1, c_arr_data(&fmt), stovl(*argv));
 			--argc, ++argv;
 			break;
+		case 'c':
+			argv[0][c_utf8_chartorune(&rune, *argv)] = 0;
+			/* FALLTHROUGH */
 		case 's':
 			if (argc) {
 				edyncat(&fmt, "s", 1, sizeof(uchar));
