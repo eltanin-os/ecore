@@ -31,14 +31,14 @@ reads from the standard input.
 .Sh OPTIONS
 .Bl -tag -width Ds
 .It Fl a Ar algorithm
-Set the digest algorithm. Supported algorithms include
-md5, sha1, sha256, sha512, and whirlpool.
+Set the digest algorithm. The supported algorithms are:
+blake2b256, md5, sha1, sha256, sha512, and whirlpool.
 .It Fl c
 Set the operation to check.
 .El
 .Pp
 The default is as if the
-.Fl a Ar whirlpool
+.Fl a Ar blake2b256
 option had been specified.
 .Sh EXIT STATUS
 .Ex -std

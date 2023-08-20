@@ -16,7 +16,11 @@ static ctype_arr arr;
 static void
 sethash(struct hash *p, char *s)
 {
-	if (!c_str_casecmp(s, -1, "MD5")) {
+	if (!c_str_casecmp(s, -1, "BLAKE2B256")) {
+		p->name = "BLAKE2B256";
+		p->md = c_hsh_blake2b256;
+		p->siz = C_HSH_BLAKE2B256DIG;
+	} else if (!c_str_casecmp(s, -1, "MD5")) {
 		p->name = "MD5";
 		p->md = c_hsh_md5;
 		p->siz = C_HSH_MD5DIG;
@@ -63,8 +67,9 @@ checkfile(struct hash *h, char *file)
 	char buf[C_IOQ_SMALLBSIZ];
 	char out[64];
 
-	if ((fd = c_nix_fdopen2(file, C_NIX_OREAD)) < 0)
+	if ((fd = c_nix_fdopen2(file, C_NIX_OREAD)) < 0) {
 		c_err_die(1, "failed to open \"%s\"", file);
+	}
 
 	r = 0;
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
@@ -74,8 +79,9 @@ checkfile(struct hash *h, char *file)
 		n = c_arr_bytes(&arr);
 		s[n - 1] = 0;
 
-		if (!(p = c_mem_chr(s, n, ' ')))
+		if (!(p = c_mem_chr(s, n, ' '))) {
 			c_err_diex(1, "%s: file in wrong format", file);
+		}
 		*p++ = 0;
 
 		h->md->init(&hs);
@@ -86,8 +92,9 @@ checkfile(struct hash *h, char *file)
 		}
 		h->md->end(&hs, out);
 
-		if (hexcmp(s, h->siz, out))
+		if (hexcmp(s, h->siz, out)) {
 			r = c_err_warnx("%s %s: checksum mismatch", h->name, s);
+		}
 		c_arr_trunc(&arr, 0, sizeof(uchar));
 	}
 	c_nix_fdclose(fd);
@@ -102,8 +109,9 @@ digest(struct hash *h, char *file)
 	char buf[64];
 
 	h->md->init(&hs);
-	if (c_hsh_putfile(&hs, h->md, file) < 0)
+	if (c_hsh_putfile(&hs, h->md, file) < 0) {
 		return c_err_warn("failed to read \"%s\"", file);
+	}
 	h->md->end(&hs, buf);
 
 	for (i = 0; i < h->siz; ++i) c_ioq_fmt(ioq1, "%02x", (uchar)buf[i]);
@@ -136,8 +144,10 @@ main(int argc, char **argv)
 		sethash(&h, "sha256");
 	} else if (!CSTRCMP("sha512sum", s)) {
 		sethash(&h, "sha512");
-	} else {
+	} else if (!CSTRCMP("whirlpool", s)) {
 		sethash(&h, "whirlpool");
+	} else {
+		sethash(&h, "blake2b256");
 	}
 
 	c_std_setprogname(argv[0]);
