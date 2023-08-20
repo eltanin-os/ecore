@@ -10,25 +10,45 @@ enum {
 };
 
 static ctype_status
+link(char *dest, char *src, int opts)
+{
+	int flags = (opts & LFLAG) ? C_NIX_SLNOFLW : 0;
+	if (opts & FFLAG) c_nix_unlink(dest);
+	return c_sys_linkat(C_NIX_FDCWD, src, C_NIX_FDCWD, dest, flags);
+}
+
+static ctype_status
 linkit(char *src, char *dest, uint opts)
 {
-	if (opts & FFLAG) c_nix_unlink(dest);
+	ctype_stat sta, stb;
+	ctype_status (*statf)(ctype_stat *, char *);
+	ctype_status error;
+
 	if (opts & SFLAG) {
-		if (c_nix_symlink(dest, src) < 0)
+		if (opts & FFLAG) c_nix_unlink(dest);
+		if (c_nix_symlink(dest, src) < 0) {
 			return c_err_warn(
 			    "failed to create symlink \"%s\" to \"%s\"",
 			    src, dest);
-	} else if (opts & LFLAG) {
-		if (c_sys_linkat(C_NIX_FDCWD, src,
-		    C_NIX_FDCWD, dest, C_NIX_SLNOFLW) < 0)
-			return c_err_warn(
-			    "failed to create link \"%s\" to \"%s\"",
-			    src, dest);
-	} else {
-		if (c_nix_link(dest, src) < 0)
-			return c_err_warn(
-			    "failed to create link \"%s\" to \"%s\"",
-			    src, dest);
+		}
+		return 0;
+	}
+
+	error = 0;
+	if (!c_nix_lstat(&sta, dest)) {
+		statf = (opts & LFLAG) ? c_nix_stat : c_nix_lstat;
+		if (statf(&stb, src) < 0) {
+			error = 1;
+		} else if (sta.dev == stb.dev && sta.ino == stb.ino) {
+			if (opts & FFLAG) return 0;
+			c_std_werrstr("same file");
+			error = 1;
+		}
+	}
+	if (error || link(dest, src, opts) < 0) {
+		return c_err_warn(
+		    "failed to link \"%s\" to \"%s\"",
+		    src, dest);
 	}
 	return 0;
 }
@@ -80,7 +100,7 @@ main(int argc, char **argv)
 	case 0:
 		usage();
 	case 1:
-		c_std_exit(linkit(argv[0], pathcat(argv[0], ".", 0), opts));
+		c_std_exit(linkit(argv[0], pathcat(argv[0], ".", 1), opts));
 	case 2:
 		c_std_exit(linkit(argv[0], pathcat(argv[0], argv[1], 0), opts));
 	}
@@ -88,9 +108,9 @@ main(int argc, char **argv)
 	--argc;
 	dest = argv[argc];
 	argv[argc] = nil;
-	if (c_nix_stat(&st, dest) < 0)
+	if (c_nix_stat(&st, dest) < 0) {
 		c_err_die(1, "failed to obtain file info \"%s\"", dest);
-
+	}
 	if (!C_NIX_ISDIR(st.mode)) usage();
 
 	r = 0;
