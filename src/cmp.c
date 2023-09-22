@@ -10,12 +10,13 @@ static int
 getbyte(ctype_ioq *p, char *s, uint opts)
 {
 	ctype_status r;
-	char ch;
-	if ((r = c_ioq_get(p, &ch, sizeof(ch))) < 0) {
+	char buf;
+	if ((r = c_ioq_get(&buf, sizeof(buf), p)) < 0) {
 		if (!(opts & SFLAG)) c_err_warn("failed to read \"%s\"", s);
 		c_std_exit(2);
 	}
-	return r ? ch : -1;
+	if (r) return buf;
+	return -1;
 }
 
 static void
@@ -62,8 +63,9 @@ main(int argc, char **argv)
 			fd = C_IOQ_FD0;
 			argv[i] = "<stdin>";
 		} else if ((fd = c_nix_fdopen2(argv[i], C_NIX_OREAD)) < 0) {
-			if (!(opts & SFLAG))
+			if (!(opts & SFLAG)) {
 				c_err_warn("failed to open \"%s\"", argv[i]);
+			}
 			c_std_exit(2);
 		}
 		c_ioq_init(&file[i], fd, buf[i], sizeof(buf[i]), &c_nix_fdread);
@@ -74,20 +76,20 @@ main(int argc, char **argv)
 		ch[0] = getbyte(&file[0], argv[0], opts);
 		ch[1] = getbyte(&file[1], argv[1], opts);
 		if (ch[0] == ch[1]) {
-			if (ch[0] < 0)
-				break;
-			if (ch[0] == '\n')
-				++line;
+			if (ch[0] < 0) break;
+			if (ch[0] == '\n') ++line;
 		} else if (ch[0] < 0 || ch[1] < 0) {
-			if (!(opts & SFLAG))
+			if (!(opts & SFLAG)) {
 				c_err_warnx("EOF on %s", argv[ch[1] < 0]);
+			}
 			r = 1;
 			break;
 		} else if (!(opts & LFLAG)) {
-			if (!(opts & SFLAG))
+			if (!(opts & SFLAG)) {
 				c_ioq_fmt(ioq1,
 				    "%s %s differ: char %ud, line %ud\n",
 				    argv[0], argv[1], bno, line);
+			}
 			r = 1;
 			break;
 		} else {

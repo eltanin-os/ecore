@@ -23,10 +23,11 @@ pgrp(ctype_id id, uint opts)
 {
 	if (opts & (GGFLAG | GFLAG)) {
 		if (putch) c_ioq_put(ioq1, " ");
-		if (opts & NFLAG)
+		if (opts & NFLAG) {
 			c_ioq_fmt(ioq1, "%s", namefromgid(id));
-		else
+		} else {
 			c_ioq_fmt(ioq1, "%ud", id);
+		}
 	} else {
 		if (putch) c_ioq_put(ioq1, ",");
 		c_ioq_fmt(ioq1, "%ud(%s)", id, namefromgid(id));
@@ -51,7 +52,7 @@ printgroups(char *name, uint opts)
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	c_mem_set(&arr, sizeof(arr), 0);
 	n = c_str_len(name, -1);
-	while (dbgetln(&db, &ioq, &arr) > 0) {
+	while (dbgetln(&db, &arr, &ioq) > 0) {
 		s = db.p[3];
 		len = c_arr_bytes(&arr) - (db.p[3] - db.p[0]);
 		while ((s = c_str_str(s, len, name))) {

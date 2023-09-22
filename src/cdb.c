@@ -29,7 +29,7 @@ cmode(char *path)
 	}
 
 	c_mem_set(&arr, sizeof(arr), 0);
-	while ((r = c_ioq_getln(ioq0, &arr)) > 0) {
+	while ((r = c_ioq_getln(&arr, ioq0)) > 0) {
 		if (*(s = c_arr_data(&arr)) == '\n') break;
 		if (*s != '+') goto invalid;
 		++s;
@@ -104,7 +104,7 @@ qmode(ctype_fd fd, char *key, usize n)
 static void
 getall(ctype_ioq *p, char *s, usize n)
 {
-	if (c_ioq_get(p, s, n) < 0) c_err_die(1, "truncated file");
+	if (c_ioq_get(s, n, p) < 0) c_err_die(1, "truncated file");
 }
 
 static void

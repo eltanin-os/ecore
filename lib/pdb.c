@@ -4,14 +4,14 @@
 #include "common.h"
 
 ctype_status
-dbgetln(struct pdb *p, ctype_ioq *ioq, ctype_arr *arr)
+dbgetln(struct pdb *p, ctype_arr *arr, ctype_ioq *ioq)
 {
 	ctype_status r;
 	int i;
 	char *s;
 
 	c_arr_trunc(arr, 0, sizeof(uchar));
-	if ((r = c_ioq_getln(ioq, arr)) <= 0) return r;
+	if ((r = c_ioq_getln(arr, ioq)) <= 0) return r;
 
 	s = p->p[0] = c_arr_data(arr);
 	i = 1;
@@ -35,7 +35,7 @@ readfile(struct pdb *p, char *file, char *search, int pos)
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	c_mem_set(&arr, sizeof(arr), 0);
-	while (dbgetln(p, &ioq, &arr) > 0) {
+	while (dbgetln(p, &arr, &ioq) > 0) {
 		if (c_str_cmp(p->p[pos], c_arr_bytes(&arr), search)) continue;
 		c_nix_fdclose(fd);
 		return 0;

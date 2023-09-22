@@ -64,8 +64,8 @@ tailb(ctype_ioq *p, usize cnt)
 		} else {
 			if ((n = c_arr_bytes(&arr)) > len) {
 				d = c_arr_data(&arr);
-				c_mem_cpy(d, n - len, d + len);
-				c_mem_cpy(d + (n - len), len, s);
+				c_mem_cpy(d, d + len, n - len);
+				c_mem_cpy(d + (n - len), s, len);
 			} else {
 				c_arr_trunc(&arr, 0, sizeof(uchar));
 				c_arr_cat(&arr, s, len, sizeof(uchar));
@@ -87,13 +87,13 @@ tail(ctype_ioq *p, usize cnt)
 
 	c_mem_set(&arr, sizeof(arr), 0);
 	cur = 0;
-	while (c_ioq_getln(p, &arr) > 0) {
+	while (c_ioq_getln(&arr, p) > 0) {
 		if (cur > cnt) {
 			s = c_arr_data(&arr);
 			n = c_arr_bytes(&arr);
 			left = (char *)c_mem_chr(s, n, '\n') + 1;
 			n -= left - s;
-			c_mem_cpy(s, n, left);
+			c_mem_cpy(s, left, n);
 			c_arr_trunc(&arr, n, sizeof(uchar));
 		} else {
 			++cur;

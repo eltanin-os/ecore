@@ -3,17 +3,25 @@
 
 #include "common.h"
 
+static void
+getline(void)
+{
+	char buf;
+	buf = 0;
+	while (buf != '\n') c_ioq_get(&buf, sizeof(buf), ioq0);
+}
+
 int
 yesno(char *msg, char *file)
 {
-	int ans;
-	char ch;
+	char buf;
+
 	c_ioq_fmt(ioq2, "%s: %s '%s'? ", c_std_getprogname(), msg, file);
 	c_ioq_flush(ioq2);
-	c_ioq_get(ioq0, &ch, 1);
-	ans = (ch | 32) != 'y';
-	while (ch != '\n') c_ioq_get(ioq0, &ch, 1);
-	return ans;
+
+	c_ioq_get(&buf, sizeof(buf), ioq0);
+	getline();
+	return (buf | 32) != 'y';
 }
 
 int

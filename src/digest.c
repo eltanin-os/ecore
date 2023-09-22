@@ -74,7 +74,7 @@ checkfile(struct hash *h, char *file)
 	r = 0;
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
 	c_arr_trunc(&arr, 0, sizeof(uchar));
-	while (c_ioq_getln(&ioq, &arr) > 0) {
+	while (c_ioq_getln(&arr, &ioq) > 0) {
 		s = c_arr_data(&arr);
 		n = c_arr_bytes(&arr);
 		s[n - 1] = 0;

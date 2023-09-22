@@ -242,7 +242,7 @@ printmode(ctype_stat *p)
 	char mode[11];
 	char *s;
 
-	c_mem_cpy(mode, sizeof(mode), "?---------");
+	c_mem_cpy(mode, "?---------", sizeof(mode));
 	switch (p->mode & C_NIX_IFMT) {
 	case C_NIX_IFBLK:
 		mode[0] = 'b';
