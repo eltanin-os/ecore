@@ -5,7 +5,6 @@ enum {
 	CP_RFLAG = 1 << 2,
 	CP_IFLAG = 1 << 3,
 	CP_TDIR = 1 << 4,
-	CP_ATOMIC = 1 << 5,
 
 	/* rm flags */
 	RM_FFLAG = 1 << 0,

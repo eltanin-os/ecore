@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-#define CPOPTS (CP_ATOMIC | CP_PFLAG | CP_RFLAG)
+#define CPOPTS (CP_PFLAG | CP_RFLAG)
 #define RMOPTS (RM_FFLAG | RM_RFLAG)
 
 static ctype_status

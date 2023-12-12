@@ -64,6 +64,12 @@ install(struct install *p, char **argv, char *dest)
 
 		if (p->uid != -1) ep->stp->uid = p->uid;
 		if (p->gid != -1) ep->stp->gid = p->gid;
+
+		if (p->mode != (uint)-1) {
+			ep->stp->mode &= ~C_NIX_ACCESSPERMS;
+			ep->stp->mode |= p->mode;
+		}
+
 		if (c_nix_fscopy(dest, PFLAG, ep->path, ep->stp) < 0) {
 			r = c_err_warn("failed to copy \"%s\" to \"%s\"",
 			    ep->path, dest);
@@ -79,7 +85,6 @@ ctype_status
 copy(char **argv, char *dest, uint ropts, uint opts)
 {
 	struct install in;
-
 	in.gid = in.mode = in.uid = -1;
 	in.opts = opts;
 	in.ropts = ropts;
