@@ -19,8 +19,15 @@ install(struct install *p, char **argv, char *dest)
 	usize n;
 
 	if (c_dir_open(&dir, argv, p->ropts, nil) < 0) c_err_die(1, nil);
+
 	c_mem_set(&d, sizeof(d), 0);
-	edynfmt(&d, "%s", dest);
+	n = edynfmt(&d, "%s", dest);
+	/* normalize and recalculate */
+	dest = c_arr_data(&d);
+	n = c_str_len(c_nix_normalizepath(dest, n), n);
+	if (dest[n - 1] == '/') dest[--n] = 0;
+	c_arr_trunc(&d, n, sizeof(uchar));
+
 	n = r = 0;
 	while ((ep = c_dir_read(&dir))) {
 		c_arr_trunc(&d, c_arr_bytes(&d) - n, sizeof(uchar));
@@ -33,12 +40,14 @@ install(struct install *p, char **argv, char *dest)
 				    ep->path, C_ERR_EISDIR);
 				continue;
 			}
-			if (ep->depth || (p->opts & CP_TDIR))
+			if (ep->depth || (p->opts & CP_TDIR)) {
 				edynfmt(&d, "/%s", ep->name);
+			}
 			if (c_nix_mkdir(c_arr_data(&d), ep->stp->mode) < 0 &&
-			    errno != C_ERR_EEXIST)
+			    errno != C_ERR_EEXIST) {
 				r = c_err_warn("failed to create dir \"%s\"",
 				    c_arr_data(&d));
+			}
 			continue;
 		case C_DIR_FSDP:
 			c_arr_trunc(&d, c_arr_bytes(&d) - (ep->nlen + 1),
