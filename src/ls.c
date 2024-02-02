@@ -77,8 +77,7 @@ sort(void *va, void *vb)
 	if (opts & SSFLAG) {
 		cmp = b->stp->size - a->stp->size;
 	} else if (opts & TFLAG) {
-		if (!(cmp = TMSEC(b) - TMSEC(a)))
-			cmp = TMNSEC(b) - TMNSEC(a);
+		if (!(cmp = TMSEC(b) - TMSEC(a))) cmp = TMNSEC(b) - TMNSEC(a);
 	} else {
 		cmp = c_str_cmp(a->name, -1, b->name);
 	}
@@ -124,8 +123,9 @@ idsize(int type, ctype_fsid id)
 	char *s;
 	int n;
 
-	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id)))
+	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id))) {
 		return c_str_fmtcnt("%llud", (uvlong)id);
+	}
 	n = c_str_fmtcnt("%s", s);
 	c_std_free(s);
 	return n;
@@ -163,12 +163,15 @@ mkmax(struct max *max, ctype_dir *dir)
 		if (noprint(p)) continue;
 		++max->total;
 		max->len = C_STD_MAX(max->len, p->nlen);
-		if (opts & IFLAG)
+		if (opts & IFLAG) {
 			ino = C_STD_MAX(ino, (ctype_fsid)p->stp->ino);
-		if (opts & SFLAG)
+		}
+		if (opts & SFLAG) {
 			block = C_STD_MAX(block, (ctype_fssize)p->stp->blocks);
-		if (opts & (GFLAG | IFLAG | LFLAG | OFLAG | SFLAG))
+		}
+		if (opts & (GFLAG | IFLAG | LFLAG | OFLAG | SFLAG)) {
 			max->btotal += C_STD_HOWMANY(p->stp->blocks, blksize);
+		}
 		/* long format */
 		if (!(opts & LFLAG)) continue;
 		nlink = C_STD_MAX(nlink, p->stp->nlink);
@@ -197,14 +200,16 @@ printtype(ctype_stat *st)
 	if ((opts & (FFFLAG | PFLAG)) && C_NIX_ISDIR(st->mode)) {
 		return c_ioq_fmt(ioq1, "/");
 	} else if ((opts & FFFLAG)) {
-		if (C_NIX_ISFIFO(st->mode))
+		if (C_NIX_ISFIFO(st->mode)) {
 			return c_ioq_fmt(ioq1, "|");
-		else if (C_NIX_ISLNK(st->mode))
+		} else if (C_NIX_ISLNK(st->mode)) {
 			return c_ioq_fmt(ioq1, "@");
-		else if (C_NIX_ISSCK(st->mode))
+		} else if (C_NIX_ISSCK(st->mode)) {
 			return c_ioq_fmt(ioq1, "=");
-		else if (st->mode & (C_NIX_IXUSR | C_NIX_IXGRP | C_NIX_IXOTH))
+		} else if (st->mode &
+		    (C_NIX_IXUSR | C_NIX_IXGRP | C_NIX_IXOTH)) {
 			return c_ioq_fmt(ioq1, "*");
+		}
 	}
 	return 0;
 }
@@ -218,17 +223,20 @@ printname(ctype_dent *p, int ino, int blk)
 	char *s;
 
 	n = 0;
-	if ((opts & IFLAG) && ino)
+	if ((opts & IFLAG) && ino) {
 		n += c_ioq_fmt(ioq1, "%*llud ", ino, (uvlong)p->stp->ino);
-	if ((opts & SFLAG) && blk)
+	}
+	if ((opts & SFLAG) && blk) {
 		n += c_ioq_fmt(ioq1, "%*llud ", blk, (uvlong)p->stp->blocks);
+	}
 
 	for (s = p->depth ? p->name : p->path; *s; s += len) {
 		len = c_utf8_chartorune(&rune, s);
-		if (!(opts & QFLAG) || c_utf8_isprint(rune))
+		if (!(opts & QFLAG) || c_utf8_isprint(rune)) {
 			c_ioq_nput(ioq1, s, len);
-		else
+		} else {
 			c_ioq_put(ioq1, "?");
+		}
 		++n;
 	}
 	n += printtype(p->stp);
@@ -327,23 +335,26 @@ print1(ctype_dir *dir, struct max *max)
 			c_ioq_put(ioq1, "\n");
 			continue;
 		}
-		if (opts & IFLAG)
+		if (opts & IFLAG) {
 			c_ioq_fmt(ioq1, "%*llud ",
 			    max->ino, (uvlong)p->stp->ino);
-		if (opts & SFLAG)
+		}
+		if (opts & SFLAG) {
 			c_ioq_fmt(ioq1, "%*llud ",
 			    max->block, (uvlong)p->stp->blocks);
+		}
 		printmode(p->stp);
 		c_ioq_fmt(ioq1, "%*lud ", max->nlink, p->stp->nlink);
 		if (!(opts & GFLAG)) printid(0, p->stp->uid, max->uid);
 		if (!(opts & OFLAG)) printid(1, p->stp->gid, max->gid);
-		if (C_NIX_ISBLK(p->stp->mode) || C_NIX_ISCHR(p->stp->mode))
+		if (C_NIX_ISBLK(p->stp->mode) || C_NIX_ISCHR(p->stp->mode)) {
 			c_ioq_fmt(ioq1, "%3d, %3d ",
 			    C_NIX_MAJOR(p->stp->rdev),
 			    C_NIX_MINOR(p->stp->rdev));
-		else
+		} else {
 			c_ioq_fmt(ioq1, "%*s%*lld ",
 			    8 - max->size, "", max->size, (vlong)p->stp->size);
+		}
 		printtime(p);
 		printname(p, max->ino, max->block);
 		if (C_NIX_ISLNK(p->stp->mode)) printlink(p->path);
@@ -365,8 +376,9 @@ printc(ctype_dir *dir, struct max *max)
 		return;
 	}
 
-	if (!(pa = c_std_alloc(max->total, sizeof(ctype_dent *))))
+	if (!(pa = c_std_alloc(max->total, sizeof(ctype_dent *)))) {
 		c_err_diex(1, nil);
+	}
 
 	num = 0;
 	if (!(p = c_dir_list(dir))) return;
@@ -586,12 +598,17 @@ main(int argc, char **argv)
 		ropts |= C_DIR_FSNOI;
 	}
 
-	if (c_dir_open(&dir, argv, ropts, (opts & FFLAG) ? nil : &sort) < 0)
+	/* some tests expects the path as given (i.e autoconf) */
+	ropts |= C_DIR_FSNON;
+	if (c_dir_open(&dir, argv, ropts, (opts & FFLAG) ? nil : &sort) < 0) {
 		c_err_die(1, nil);
+	}
 
 	blksize /= 512;
-	if ((tmp = c_std_getenv("COLUMNS")))
+
+	if ((tmp = c_std_getenv("COLUMNS"))) {
 		termwidth = estrtovl(tmp, 0, 0, C_LIM_UINTMAX);
+	}
 
 	c_mem_set(&max, sizeof(max), 0);
 	mkmax(&max, &dir);
@@ -625,9 +642,9 @@ main(int argc, char **argv)
 		c_mem_set(&max, sizeof(max), 0);
 		mkmax(&max, &dir);
 
-		if (opts & (GFLAG | LFLAG | OFLAG | SFLAG))
+		if (opts & (GFLAG | LFLAG | OFLAG | SFLAG)) {
 			c_ioq_fmt(ioq1, "total %ud\n", max.btotal);
-
+		}
 		plist(&dir, &max);
 	}
 	c_dir_close(&dir);
