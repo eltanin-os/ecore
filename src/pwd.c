@@ -5,18 +5,17 @@ static char *
 getpwd(void)
 {
 	ctype_stat pwd, dot;
-	usize n;
 	char *s;
 
-	if (!(s = c_std_getenv("PWD")) ||
-	    *s != '/' ||
-	    (n = c_str_len(s, C_LIM_PATHMAX)) == C_LIM_PATHMAX ||
-	    (c_mem_mem(s, n, "/./", sizeof("/./") - 1) ||
-	    c_mem_mem(s, n, "/../", sizeof("/../") - 1)) ||
-	    (c_nix_stat(&pwd, s) < 0 || c_nix_stat(&dot, ".") < 0) ||
-	    (pwd.dev != dot.dev || pwd.ino != dot.ino))
-		return nil;
-	return s;
+	if (!(s = c_std_getenv("PWD"))) return nil;
+	s = c_nix_normalizepath(s, -1);
+	if (s[0] != '/') return nil;
+
+	if (c_str_str(s, -1, "/../")) return nil;
+
+	if (c_nix_stat(&pwd, s) < 0 || c_nix_stat(&dot, ".") < 0) return nil;
+	if (pwd.dev == dot.dev && pwd.ino == dot.ino) return s;
+	return nil;
 }
 
 static void
@@ -59,8 +58,9 @@ main(int argc, char **argv)
 		if ((s = getpwd())) break;
 		/* FALLTHROUGH */
 	case 0:
-		s = c_nix_getcwd(buf, sizeof(buf));
-		if (!s) c_err_die(1, "failed to get current dir path");
+		if (!(s = c_nix_getcwd(buf, sizeof(buf)))) {
+			c_err_die(1, "failed to get current dir path");
+		}
 	}
 	c_ioq_fmt(ioq1, "%s\n", s);
 	c_ioq_flush(ioq1);
