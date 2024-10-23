@@ -3,7 +3,15 @@
 
 #include "common.h"
 
-#define HORT(a, b, c) (*(a) == '+') ? (++a, b) : (a += (*(a) == '-'), c)
+#define HEAD_OR_TAIL(a, b) \
+((*(a) == '+') ? (++a, ((b) | HEAD)) : (a += (*(a) == '-'), ((b) & ~HEAD)))
+
+enum {
+	DEFAULT_LINES_AMOUNT = 10,
+	FFLAG = 1 << 0,
+	BYTES = 1 << 2,
+	HEAD  = 1 << 3,
+};
 
 static void
 usage(void)
@@ -14,127 +22,123 @@ usage(void)
 }
 
 static void
-headb(ctype_ioq *p, usize cnt)
+start(ctype_ioq *p, usize cnt, uint opts)
 {
 	size r;
-
+	char *nl, *s;
 	while (cnt) {
 		if ((r = c_ioq_feed(p)) <= 0) break;
-		cnt -= r = C_STD_MIN(cnt, (usize)r);
-		c_ioq_seek(p, r);
-	}
-	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1, c_ioq_peek(p), c_ioq_feed(p));
-	c_nix_fdcat(C_IOQ_FD1, c_ioq_fileno(p));
-}
-
-static void
-head(ctype_ioq *p, usize cnt)
-{
-	size r;
-	char *s, *nl;
-
-	while (cnt) {
-		if ((r = c_ioq_feed(p)) <= 0) break;
-		s = c_ioq_peek(p);
-		if ((nl = c_mem_chr(s, r, '\n'))) {
-			r = (nl - s) + 1;
-			--cnt;
-		}
-		c_ioq_seek(p, r);
-	}
-	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1, c_ioq_peek(p), c_ioq_feed(p));
-	c_nix_fdcat(C_IOQ_FD1, c_ioq_fileno(p));
-}
-
-static void
-tailb(ctype_ioq *p, usize cnt)
-{
-	ctype_arr arr;
-	size len, n;
-	char *d, *s;
-
-	c_mem_set(&arr, sizeof(arr), 0);
-	if (c_dyn_ready(&arr, ++cnt, sizeof(uchar)) < 0) c_err_die(1, nil);
-	while ((len = c_ioq_feed(p)) > 0) {
-		s = c_ioq_peek(p);
-		if (len >= (size)cnt) {
-			s += len - cnt;
-			c_arr_trunc(&arr, 0, sizeof(uchar));
-			c_arr_cat(&arr, s, cnt, sizeof(uchar));
+		if (opts & BYTES) {
+			cnt -= r = C_STD_MIN(cnt, (usize)r);
 		} else {
-			if ((n = c_arr_bytes(&arr)) > len) {
-				d = c_arr_data(&arr);
-				c_mem_cpy(d, d + len, n - len);
-				c_mem_cpy(d + (n - len), s, len);
-			} else {
-				c_arr_trunc(&arr, 0, sizeof(uchar));
-				c_arr_cat(&arr, s, len, sizeof(uchar));
+			s = c_ioq_peek(p);
+			if ((nl = c_mem_chr(s, r, '\n'))) {
+				r = (nl - s) + 1;
+				--cnt;
 			}
 		}
-		c_ioq_seek(p, len);
+		c_ioq_seek(p, r);
 	}
-	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1,
-	    c_arr_data(&arr), c_arr_bytes(&arr));
-	c_dyn_free(&arr);
+	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1, c_ioq_peek(p), c_ioq_feed(p));
+	c_nix_fdcat(C_IOQ_FD1, c_ioq_fileno(p));
 }
 
 static void
-tail(ctype_ioq *p, usize cnt)
+end(ctype_ioq *p, usize cnt, uint opts)
 {
 	ctype_arr arr;
 	usize cur, n;
-	char *left, *s;
+	size r;
+	char *nl, *s;
 
-	c_mem_set(&arr, sizeof(arr), 0);
 	cur = 0;
-	while (c_ioq_getln(&arr, p) > 0) {
-		if (cur > cnt) {
-			s = c_arr_data(&arr);
-			n = c_arr_bytes(&arr);
-			left = (char *)c_mem_chr(s, n, '\n') + 1;
-			n -= left - s;
-			c_mem_cpy(s, left, n);
-			c_arr_trunc(&arr, n, sizeof(uchar));
+	c_mem_set(&arr, sizeof(arr), 0);
+
+	while ((r = c_ioq_getln(&arr, p)) > 0) {
+		s = c_arr_data(&arr);
+		n = c_arr_bytes(&arr);
+		if (opts & BYTES) {
+			if (n > cnt) {
+				n -= cur = (n - cnt) - 1;
+				c_mem_cpy(s, s + cur, cnt + 1);
+				c_arr_trunc(&arr, n , sizeof(uchar));
+			}
 		} else {
-			++cur;
+			if (cur > cnt) {
+				nl = (char *)c_mem_chr(s, n, '\n') + 1;
+				n -= nl - s;
+				c_mem_cpy(s, nl, n);
+				c_arr_trunc(&arr, n, sizeof(uchar));
+			} else {
+				++cur;
+			}
 		}
 	}
-	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1,
-	    c_arr_data(&arr), c_arr_bytes(&arr));
+	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1, s, n);
 	c_dyn_free(&arr);
+}
+
+static ctype_status
+tail(int argc, char *s, usize cnt, uint opts)
+{
+	ctype_stat st;
+	ctype_ioq ioq;
+	ctype_fd fd;
+	char buf[C_IOQ_BSIZ];
+	void (*func)(ctype_ioq *, usize, uint);
+
+	func = (opts & HEAD) ? &start : &end;
+
+	if (!argc || C_STD_ISDASH(s)) {
+		c_ioq_init(&ioq, C_IOQ_FD0, buf, sizeof(buf), &c_nix_fdread);
+		func(&ioq, cnt, opts);
+	} else {
+		fd = c_nix_fdopen2(s, C_NIX_OREAD);
+		if (fd < 0) c_err_die(1, "failed to open \"%s\"", s);
+		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
+		func(&ioq, cnt, opts);
+		if (c_nix_fdstat(&st, fd) < 0) {
+			c_err_die(1, "failed to obtain file info \"%s\"", s);
+		}
+		if (!(C_NIX_ISFIFO(st.mode) || C_NIX_ISREG(st.mode))) {
+			opts &= ~FFLAG;
+		}
+		if (opts & FFLAG) {
+			for (;;) {
+				c_nix_fdcat(C_IOQ_FD1, fd);
+				deepsleep(1);
+			}
+		}
+		c_nix_fdclose(fd);
+	}
+	return 0;
 }
 
 ctype_status
 main(int argc, char **argv)
 {
-	ctype_ioq ioq;
 	usize cnt;
-	ctype_fd fd;
-	int fflag;
+	uint opts;
 	char *s;
-	char buf[C_IOQ_BSIZ];
-	void (*tailfn)(ctype_ioq *, usize);
 
 	c_std_setprogname(argv[0]);
 	--argc, ++argv;
 
-	cnt = 10;
-	fflag = 0;
-	tailfn = tail;
+	cnt = DEFAULT_LINES_AMOUNT;
+	opts = 0;
 
 	while (c_std_getopt(argmain, argc, argv, "c:fn:")) {
+		s = argmain->arg;
 		switch (argmain->opt) {
 		case 'c':
-			s = argmain->arg;
-			tailfn = HORT(s, headb, tailb);
+			opts = HEAD_OR_TAIL(s, opts) | BYTES;
 			cnt = estrtovl(s, 0, 1, -1) - 1;
 			break;
 		case 'f':
-			fflag = 1;
+			opts |= FFLAG;
 			break;
 		case 'n':
-			s = argmain->arg;
-			tailfn = HORT(s, head, tail);
+			opts = HEAD_OR_TAIL(s, opts) & ~BYTES;
 			cnt = estrtovl(s, 0, 1, -1) - 1;
 			break;
 		default:
@@ -143,21 +147,6 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-
-	if (!argc || C_STD_ISDASH(*argv)) {
-		c_ioq_init(&ioq, C_IOQ_FD0, buf, sizeof(buf), &c_nix_fdread);
-		tailfn(&ioq, cnt);
-	} else {
-		fd = c_nix_fdopen2(*argv, C_NIX_OREAD);
-		if (fd < 0) c_err_die(1, "failed to open \"%s\"", *argv);
-		c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
-		tailfn(&ioq, cnt);
-		if (fflag) {
-			for (;;) {
-				c_nix_fdcat(C_IOQ_FD1, fd);
-				deepsleep(1);
-			}
-		}
-	}
-	return 0;
+	if (argc > 1) usage();
+	return tail(argc, *argv, cnt, opts);
 }
