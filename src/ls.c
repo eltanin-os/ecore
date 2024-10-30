@@ -24,6 +24,7 @@ enum {
 	SFLAG  = 1 << 17,
 	TFLAG  = 1 << 18,
 	UFLAG  = 1 << 19,
+	ARGS   = 1 << 20,
 };
 
 #define STPFLAG (FFFLAG | GFLAG | IFLAG | OFLAG | PFLAG | SFLAG | TFLAG)
@@ -107,14 +108,12 @@ static void
 printid(int type, ctype_fsid id, usize max)
 {
 	char *s;
-
 	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id))) {
 		c_ioq_fmt(ioq1, "%-*llud ", max, (uvlong)id);
 	} else {
 		c_ioq_fmt(ioq1, "%-*s ", max, s);
 		c_std_free(s);
 	}
-
 }
 
 static int
@@ -122,7 +121,6 @@ idsize(int type, ctype_fsid id)
 {
 	char *s;
 	int n;
-
 	if ((opts & NFLAG) || !(s = type ? namefromgid(id) : namefromuid(id))) {
 		return c_str_fmtcnt("%llud", (uvlong)id);
 	}
@@ -191,6 +189,22 @@ mkmax(struct max *max, ctype_dir *dir)
 	if (opts & LFLAG) {
 		max->nlink = c_str_fmtcnt("%llud", (uvlong)nlink);
 		max->size = c_str_fmtcnt("%llud", (uvlong)size);
+	}
+}
+
+static void
+printheader(ctype_dent *ep, struct max *max)
+{
+	ctype_dent *p;
+
+	p = ep->parent;
+	if (p->info == C_DIR_FSINT) return;
+
+	if (opts & (RRFLAG | ARGS)) {
+		c_ioq_fmt(ioq1, "%s%s:\n", first ? "\n" : (first++, ""), p->path);
+	}
+	if (opts & (GFLAG | LFLAG | OFLAG | SFLAG)) {
+		c_ioq_fmt(ioq1, "total %ud\n", max->btotal);
 	}
 }
 
@@ -328,6 +342,7 @@ print1(ctype_dir *dir, struct max *max)
 	ctype_dent *p;
 
 	if (!(p = c_dir_list(dir))) return;
+	printheader(p, max);
 	do {
 		if (noprint(p)) continue;
 		if (!(opts & LFLAG)) {
@@ -382,6 +397,7 @@ printc(ctype_dir *dir, struct max *max)
 
 	num = 0;
 	if (!(p = c_dir_list(dir))) return;
+	printheader(p, max);
 	do {
 		if (noprint(p)) continue;
 		if (!(pa[num] = p)) break;
@@ -414,6 +430,7 @@ printm(ctype_dir *dir, struct max *max)
 	if ((opts & (FFFLAG | PFLAG))) ++width;
 
 	if (!(p = c_dir_list(dir))) return;
+	printheader(p, max);
 	chcnt = 0;
 	do {
 		if (noprint(p)) continue;
@@ -445,6 +462,7 @@ printx(ctype_dir *dir, struct max *max)
 	}
 
 	if (!(p = c_dir_list(dir))) return;
+	printheader(p, max);
 	chcnt = col = 0;
 	do {
 		if (noprint(p)) continue;
@@ -589,7 +607,11 @@ main(int argc, char **argv)
 	}
 	argc -= argmain->idx;
 	argv += argmain->idx;
-	if (!argc) argv = tmpargv(".");
+	if (!argc) {
+		argv = tmpargv(".");
+	} else if (argc > 1) {
+		opts |= ARGS;
+	}
 
 	if (opts & LFLAG) {
 		c_tai_now(&t);
@@ -626,9 +648,6 @@ main(int argc, char **argv)
 				c_dir_set(&dir, p, C_DIR_FSSKP);
 				continue;
 			}
-			if (opts & RRFLAG || p->depth || argc > 1)
-				c_ioq_fmt(ioq1, "%s%s:\n",
-				    first ? "\n" : (first++, ""), p->path);
 			break;
 		case C_DIR_FSDNR:
 		case C_DIR_FSNS:
@@ -636,15 +655,9 @@ main(int argc, char **argv)
 			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		}
-
 		if (p->parent->num) continue;
-
 		c_mem_set(&max, sizeof(max), 0);
 		mkmax(&max, &dir);
-
-		if (opts & (GFLAG | LFLAG | OFLAG | SFLAG)) {
-			c_ioq_fmt(ioq1, "total %ud\n", max.btotal);
-		}
 		plist(&dir, &max);
 	}
 	c_dir_close(&dir);
