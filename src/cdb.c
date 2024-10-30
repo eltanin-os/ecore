@@ -15,14 +15,15 @@ cmode(char *path)
 	char *s, *p, *tmp;
 
 	c_mem_set(&arr, sizeof(arr), 0);
-	if (c_dyn_fmt(&arr, "%s.tmp.XXXXXXXXX", path) < 0)
+	if (c_dyn_fmt(&arr, "%s.tmp.XXXXXXXXX", path) < 0) {
 		c_err_diex(1, "no memory");
-	c_dyn_shrink(&arr);
+	}
+	c_dyn_shrink(&arr, sizeof(uchar));
 	tmp = c_arr_data(&arr);
 
-	if ((tmpfd = c_nix_mktemp(tmp, c_arr_bytes(&arr))) < 0)
+	if ((tmpfd = c_nix_mktemp(tmp, c_arr_bytes(&arr))) < 0) {
 		c_err_die(1, "failed to obtain temporary file");
-
+	}
 	if (c_cdb_mkstart(&cdbmk, tmpfd) < 0) {
 		c_err_warn("failed to initialize the database");
 		goto error;
@@ -80,19 +81,22 @@ qmode(ctype_fd fd, char *key, usize n)
 	ctype_status r;
 	int found;
 
-	if (c_cdb_init(&cdb, fd) < 0)
+	if (c_cdb_init(&cdb, fd) < 0) {
 		c_err_die(1, "failed to initialize the database");
+	}
 	c_mem_set(&arr, sizeof(arr), 0);
 	found  = 0;
 	len = c_str_len(key, -1);
 	while ((r = c_cdb_findnext(&cdb, key, len)) > 0) {
 		if (!n--) break;
 		++found;
-		if (c_dyn_ready(&arr, c_cdb_datalen(&cdb), sizeof(uchar)) < 0)
+		if (c_dyn_ready(&arr, c_cdb_datalen(&cdb), sizeof(uchar)) < 0) {
 			c_err_diex(1, "no memory");
+		}
 		if (c_cdb_read(&cdb, c_arr_data(&arr),
-		    c_cdb_datalen(&cdb), c_cdb_datapos(&cdb)) < 0)
+		    c_cdb_datalen(&cdb), c_cdb_datapos(&cdb)) < 0) {
 			c_err_die(1, "failed to read the database");
+		}
 		c_ioq_nput(ioq1, c_arr_data(&arr), c_cdb_datalen(&cdb));
 	}
 	c_dyn_free(&arr);
@@ -183,10 +187,10 @@ smode(ctype_fd fd)
 			c_cdb_findstart(&c);
 			do {
 				switch (c_cdb_findnext(&c, key, klen)) {
-					case -1:
-						c_err_die(1, nil);
-					case 0:
-						c_err_diex(1, "truncated file");
+				case -1:
+					c_err_die(1, nil);
+				case 0:
+					c_err_diex(1, "truncated file");
 				}
 			} while (c_cdb_datapos(&c) != pos);
 			if (!c.loop) c_err_diex(1, "truncated file");

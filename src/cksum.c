@@ -29,8 +29,9 @@ main(int argc, char **argv)
 	for (; *argv; ++argv) {
 		if (C_STD_ISDASH(*argv)) *argv = "<stdin>";
 		c_hsh_crc32p->init(&hs);
-		if (c_hsh_putfile(&hs, c_hsh_crc32p, *argv) < 0)
+		if (c_hsh_putfile(&hs, c_hsh_crc32p, *argv) < 0) {
 			r = c_err_warn("failed to read \"%s\"", *argv);
+		}
 		c_hsh_crc32p->end(&hs, buf);
 		c_ioq_fmt(ioq1, "%ud %ud %s\n",
 		    c_uint_32unpack(buf), c_hsh_octets(&hs), *argv);

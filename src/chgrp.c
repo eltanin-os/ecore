@@ -56,11 +56,13 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 	if (argc < 2) usage();
 
-	if (!(ropts & RFLAG))
+	if (!(ropts & RFLAG)) {
 		opts = (ropts & HFLAG) ? C_DIR_FSCOM : 0;
+	}
 
-	if ((gid = gidfromname(argv[0])) < 0)
+	if ((gid = gidfromname(argv[0])) < 0) {
 		gid = estrtovl(argv[0], 0, 0, C_LIM_UINTMAX);
+	}
 
 	++argv;
 	if (c_dir_open(&dir, argv, opts, nil) < 0) c_err_die(1, nil);
@@ -80,15 +82,16 @@ main(int argc, char **argv)
 			r = c_err_warnx("%s: %r", p->name, p->err);
 			continue;
 		case C_DIR_FSSL:
-			if (c_nix_lchown(p->path, p->stp->uid, gid) < 0)
+			if (c_nix_lchown(p->path, p->stp->uid, gid) < 0) {
 				r = c_err_warn("%s", p->path);
+			}
 			continue;
 		case C_DIR_FSSLN:
 			continue;
 		}
-
-		if (c_nix_chown(p->path, p->stp->uid, gid) < 0)
+		if (c_nix_chown(p->path, p->stp->uid, gid) < 0) {
 			r = c_err_warn("%s", p->path);
+		}
 	}
 	c_dir_close(&dir);
 	return r;

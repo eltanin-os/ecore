@@ -38,18 +38,20 @@ remove(char **argv, uint opts)
 			break;
 		case C_DIR_FSDP:
 			if (!RFLAG) continue;
-			if (c_nix_rmdir(p->path) < 0)
+			if (c_nix_rmdir(p->path) < 0) {
 				r = c_err_warn("failed to remove dir \"%s\"",
 				    p->path);
+			}
 			break;
 		case C_DIR_FSERR:
 			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		default:
 			if ((c_nix_unlink(p->path) < 0) &&
-			    (!FFLAG && errno != C_ERR_ENOENT))
+			    (!FFLAG && errno != C_ERR_ENOENT)) {
 				r = c_err_warn("failed to remove \"%s\"",
 				    p->path);
+			}
 		}
 	}
 	c_dir_close(&dir);

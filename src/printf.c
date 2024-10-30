@@ -78,8 +78,9 @@ numcat(ctype_arr *fmt, char *s, char *argv)
 		edynfmt(fmt, "%d", stovl(argv));
 		return -1;
 	} else {
-		for (; c_str_chr("0123456789", 10, *p); ++p)
+		for (; c_str_chr("0123456789", 10, *p); ++p) {
 			edyncat(fmt, p, 1, sizeof(uchar));
+		}
 	}
 	return p - s;
 }
@@ -110,8 +111,9 @@ printfmt(char *s, int argc, char **argv)
 		}
 		c_arr_trunc(&fmt, 0, sizeof(uchar));
 		edyncat(&fmt, "%", 1, sizeof(uchar));
-		for (; c_str_chr("#-+", 3, *s); ++s)
+		for (; c_str_chr("#-+", 3, *s); ++s) {
 			edyncat(&fmt, s, 1, sizeof(uchar));
+		}
 		NUMCAT(&fmt, s, *argv);
 		if (*s == '.') {
 			edyncat(&fmt, s, 1, sizeof(uchar));

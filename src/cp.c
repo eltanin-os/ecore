@@ -74,10 +74,10 @@ main(int argc, char **argv)
 			st.mode = 0;
 		}
 	}
-	if (C_NIX_ISDIR(st.mode))
+	if (C_NIX_ISDIR(st.mode)) {
 		opts |= CP_TDIR;
-	else if (argc > 1)
+	} else if (argc > 1) {
 		usage();
-
+	}
 	return copy(argv, dest, ropts, opts);
 }

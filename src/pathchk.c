@@ -6,13 +6,14 @@ enum {
 	PFLAG  = 1 << 1,
 };
 
-#define is_invalid(a) \
-(((uchar)(a) - 'a' > 52) && \
- ((uchar)(a) - '0' > 9) && \
- (!c_str_chr("._-", 3, (uchar)(a))))
-
 static usize pathmax = C_LIM_PATHMAX;
 static usize namemax = C_LIM_NAMEMAX;
+
+static int
+check(uchar ch)
+{
+	return (ch - 'a' > 52) && (ch - '0' > 9) && !c_str_chr("._-", 3, ch);
+}
 
 static ctype_status
 pathchk(char *path, uint opts)
@@ -27,9 +28,10 @@ pathchk(char *path, uint opts)
 	s = path;
 	for (len = n = 0; *s; ++len, ++n, ++s) {
 		if (*s == '/') {
-			if ((opts & PFLAG) && (uchar)*(s + 1) == '-')
+			if ((opts & PFLAG) && (uchar)*(s + 1) == '-') {
 				r = c_err_warnx("leading <hyphen-minus>"
 				    " found in component of pathname", path);
+			}
 			if (n > namemax) {
 				errno = C_ERR_ENAMETOOLONG;
 				r = c_err_warn("%s", path);
@@ -37,17 +39,19 @@ pathchk(char *path, uint opts)
 			n = 0;
 			continue;
 		}
-		if ((opts & PPFLAG) && is_invalid(*s))
+		if ((opts & PPFLAG) && check(*s)) {
 			r = c_err_warnx("non-portable character found in"
 			    " component of pathname", path);
+		}
 	}
 	if (n > namemax || len > pathmax) {
 		errno = C_ERR_ENAMETOOLONG;
 		r = c_err_warn("%s", path);
 	}
 
-	if ((c_nix_lstat(&st, s) < 0) && errno != C_ERR_ENOENT)
+	if ((c_nix_lstat(&st, s) < 0) && errno != C_ERR_ENOENT) {
 		r = c_err_warn("failed to obtain file info \"%s\"", path);
+	}
 	return r;
 }
 

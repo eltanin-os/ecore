@@ -28,9 +28,10 @@ main(int argc, char **argv)
 	c_arr_init(&arr, buf, sizeof(buf));
 	while (c_arr_fmt(&arr, "%s\n", s) > 0) ;
 
-	for (;;)
+	for (;;) {
 		c_nix_allrw(c_nix_fdwrite, C_IOQ_FD1,
 		    c_arr_data(&arr), c_arr_bytes(&arr));
+	}
 	/* NOT REACHED */
 	return 1;
 }

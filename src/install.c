@@ -53,8 +53,9 @@ main(int argc, char **argv)
 			break;
 		case 'g':
 			s = argmain->arg;
-			if ((in.gid = gidfromname(s)) < 0)
+			if ((in.gid = gidfromname(s)) < 0) {
 				in.gid = estrtovl(s, 0, 0, C_LIM_UINTMAX);
+			}
 			break;
 		case 'm':
 			mode = c_nix_strtomode(argmain->arg,
@@ -63,8 +64,9 @@ main(int argc, char **argv)
 			break;
 		case 'o':
 			s = argmain->arg;
-			if ((in.uid = uidfromname(s)) < 0)
+			if ((in.uid = uidfromname(s)) < 0) {
 				in.uid = estrtovl(s, 0, 0, C_LIM_UINTMAX);
+			}
 			break;
 		case 's':
 			/* ignore */
@@ -79,9 +81,10 @@ main(int argc, char **argv)
 	if (opts & DFLAG) {
 		r = 0;
 		for (; *argv; ++argv)
-			if (c_nix_mkpath(*argv, mode, dmode) < 0)
+			if (c_nix_mkpath(*argv, mode, dmode) < 0) {
 				r = c_err_warn("failed to create path \"%s\"",
 				    *argv);
+			}
 		c_std_exit(r);
 	}
 
@@ -93,8 +96,9 @@ main(int argc, char **argv)
 	if (opts & DDFLAG) {
 		if (!(s = c_str_dup(dest, -1))) c_err_diex(1, "no memory");
 		if (c_gen_dirname(s) == s) {
-			if (c_nix_mkpath(s, mode, dmode) < 0)
+			if (c_nix_mkpath(s, mode, dmode) < 0) {
 				c_err_die(1, "failed to make path \"%s\"", s);
+			}
 			st.mode = C_NIX_IFDIR;
 		} else {
 			st.mode = 0;
@@ -105,17 +109,18 @@ main(int argc, char **argv)
 		sverr = errno;
 		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
-			if (errno != C_ERR_ENOENT)
+			if (errno != C_ERR_ENOENT) {
 				c_err_die(1,
 				    "failed to obtain file info \"%s\"",
 				    dest);
+			}
 			st.mode = 0;
 		}
 	}
-	if (C_NIX_ISDIR(st.mode))
+	if (C_NIX_ISDIR(st.mode)) {
 		in.opts |= CP_TDIR;
-	else if (argc > 1)
+	} else if (argc > 1) {
 		usage();
-
+	}
 	return install(&in, argv, dest);
 }

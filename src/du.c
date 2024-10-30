@@ -72,9 +72,10 @@ main(int argc, char **argv)
 		case C_DIR_FSDC:
 			break;
 		case C_DIR_FSDP:
-			if (!(opts & SFLAG) || !p->depth)
+			if (!(opts & SFLAG) || !p->depth) {
 				c_ioq_fmt(ioq1, "%lld\t%s\n",
 				    C_STD_HOWMANY(p->num, blksiz), p->path);
+			}
 			p->parent->num += p->num;
 			break;
 		case C_DIR_FSFC:
@@ -85,10 +86,11 @@ main(int argc, char **argv)
 			r = c_err_warnx("%s: %r", p->path, p->err);
 			break;
 		default:
-			if ((opts & AFLAG) || !p->depth)
+			if ((opts & AFLAG) || !p->depth) {
 				c_ioq_fmt(ioq1, "%lld\t%s\n",
 				    C_STD_HOWMANY(p->stp->blocks, blksiz),
 				    p->path);
+			}
 			p->parent->num += p->stp->blocks;
 		}
 	}

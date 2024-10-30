@@ -77,16 +77,19 @@ main(int argc, char **argv)
 
 	c_arr_init(&arr, buf, sizeof(buf));
 	if (!argc || (opts & TFLAG)) {
-		if (c_str_chr(template, -1, '/'))
+		if (c_str_chr(template, -1, '/')) {
 			DIEX("Template must not contain directory "
 			    "separators in -t mode");
+		}
 		if (!(tmp = c_std_getenv("TMPDIR"))) tmp = dir ? dir : "/tmp";
 		c_str_rtrim(tmp, -1, "/");
 		if (c_arr_fmt(&arr, "%s/", tmp) < 0) DIE(nil);
 	}
 	if (c_arr_fmt(&arr, "%s", template) < 0) DIE(nil);
-	if ((fd = c_nix_mktemp3(c_arr_data(&arr), c_arr_bytes(&arr), mko)) < 0)
+	if ((fd = c_nix_mktemp3(c_arr_data(&arr),
+	    c_arr_bytes(&arr), mko)) < 0) {
 		DIE("failed to create temp file \"%s\"", c_arr_data(&arr));
+	}
 	c_nix_fdclose(fd);
 
 	c_ioq_fmt(ioq1, "%s\n", c_arr_data(&arr));

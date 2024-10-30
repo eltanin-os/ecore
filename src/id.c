@@ -46,8 +46,9 @@ printgroups(char *name, uint opts)
 	char buf[C_IOQ_BSIZ];
 	char *s;
 
-	if ((fd = c_nix_fdopen2(GRPFILE, C_NIX_OREAD)) < 0)
+	if ((fd = c_nix_fdopen2(GRPFILE, C_NIX_OREAD)) < 0) {
 		c_err_die(1, "failed to open \"" GRPFILE "\"");
+	}
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	c_mem_set(&arr, sizeof(arr), 0);
@@ -112,14 +113,16 @@ main(int argc, char **argv)
 	argv += argmain->idx;
 	if (argc > 1 || ((opts & UF1) && !(opts & UF0))) usage();
 
-	if ((id = c_sys_geteuid()) < 0)
+	if ((id = c_sys_geteuid()) < 0) {
 		c_err_die(1, "failed to obtain effective user id");
+	}
 
 	if (argc) {
-		if (*argv[0] >= '0' && *argv[0] <= '9')
+		if (*argv[0] >= '0' && *argv[0] <= '9') {
 			uid = estrtovl(*argv, 0, 0, C_LIM_UINTMAX);
-		else if ((uid = uidfromname(*argv)) < 0)
+		} else if ((uid = uidfromname(*argv)) < 0) {
 			c_err_diex(1, "%s: user not found", *argv);
+		}
 	} else {
 		if (opts & RFLAG) {
 			uid = c_sys_getuid();
@@ -131,20 +134,21 @@ main(int argc, char **argv)
 
 	if (opts & (GGFLAG | GFLAG)) {
 		gid = gidfromuid(uid);
-		if (opts & NFLAG)
+		if (opts & NFLAG) {
 			c_ioq_fmt(ioq1, "%s", namefromgid(gid));
-		else
+		} else {
 			c_ioq_fmt(ioq1, "%ud", gid);
-
+		}
 		if (opts & GGFLAG) {
 			c_ioq_put(ioq1, " ");
 			printgroups(namefromuid(uid), opts);
 		}
 	} else if (opts & UFLAG) {
-		if (opts & NFLAG)
+		if (opts & NFLAG) {
 			c_ioq_fmt(ioq1, "%s", namefromuid(uid));
-		else
+		} else {
 			c_ioq_fmt(ioq1, "%ud", uid);
+		}
 	} else {
 		gid = gidfromuid(uid);
 		p = namefromgid(gid);

@@ -50,14 +50,16 @@ main(int argc, char **argv)
 	case 'c':
 		if (argc - 4) usage();
 		dev = MAKEDEV(argv[2], argv[3]);
-		if (c_sys_mknod(argv[0], type | mode, dev) < 0)
+		if (c_sys_mknod(argv[0], type | mode, dev) < 0) {
 			c_err_die(1, "failed to create special file \"%s\"",
 			    argv[0]);
+		}
 		break;
 	case 'p':
 		if (argc - 2) usage();
-		if (c_sys_mknod(argv[0], C_NIX_IFIFO | mode, 0) < 0)
+		if (c_sys_mknod(argv[0], C_NIX_IFIFO | mode, 0) < 0) {
 			c_err_die(1, "failed to create FIFO \"%s\"", argv[0]);
+		}
 		break;
 	default:
 		usage();

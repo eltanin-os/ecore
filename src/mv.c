@@ -13,11 +13,13 @@ move(char *src, char *dest, uint opts)
 	char *s;
 
 	s = pathcat(src, dest, opts & CP_TDIR);
+
 	if ((opts & CP_IFLAG) && prompt(s)) return 0;
 
 	if (!c_nix_rename(s, src)) return 0;
-	if (errno != C_ERR_EXDEV)
+	if (errno != C_ERR_EXDEV) {
 		return c_err_warn("failed to move \"%s\" to \"%s\"", src, s);
+	}
 
 	argv[0] = src;
 	argv[1] = nil;
@@ -69,16 +71,17 @@ main(int argc, char **argv)
 		sverr = errno;
 		if (c_nix_lstat(&st, dest) < 0) {
 			errno = sverr;
-			if (errno != C_ERR_ENOENT)
+			if (errno != C_ERR_ENOENT) {
 				c_err_die(1, "failed to obtain info %s", dest);
+			}
 			st.mode = 0;
 		}
 	}
-	if (C_NIX_ISDIR(st.mode))
+	if (C_NIX_ISDIR(st.mode)) {
 		opts |= CP_TDIR;
-	else if (argc > 1)
+	} else if (argc > 1) {
 		usage();
-
+	}
 	r = 0;
 	for (; *argv; --argc, ++argv) r |= move(*argv, dest, opts);
 	return 0;

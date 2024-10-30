@@ -8,7 +8,6 @@ head(ctype_arr *p, char *s, usize n)
 {
 	ctype_ioq ioq;
 	ctype_fd fd;
-	size r;
 	char buf[C_IOQ_BSIZ];
 
 	if (C_STD_ISDASH(s)) {
@@ -21,7 +20,7 @@ head(ctype_arr *p, char *s, usize n)
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), c_nix_fdread);
 	while (n--) {
 		c_arr_trunc(p, 0, sizeof(uchar));
-		switch ((r = c_ioq_getln(p, &ioq))) {
+		switch (c_ioq_getln(p, &ioq)) {
 		case -1:
 			c_err_die(1, "failed to read \"%s\"", s);
 		case 0:

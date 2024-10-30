@@ -63,11 +63,13 @@ main(int argc, char **argv)
 	gid = -1;
 	if ((grp = c_str_chr(argv[0], -1, ':'))) {
 		*grp++ = 0;
-		if ((gid = gidfromname(grp)) < 0)
+		if ((gid = gidfromname(grp)) < 0) {
 			gid = estrtovl(grp, 0, 0, C_LIM_UINTMAX);
+		}
 	}
-	if ((uid = uidfromname(argv[0])) < 0)
+	if ((uid = uidfromname(argv[0])) < 0) {
 		uid = estrtovl(argv[0], 0, 0, C_LIM_UINTMAX);
+	}
 
 	++argv;
 	if (c_dir_open(&dir, argv, opts, nil) < 0) c_err_die(1, nil);
@@ -94,9 +96,9 @@ main(int argc, char **argv)
 		case C_DIR_FSSLN:
 			continue;
 		}
-
-		if (c_nix_chown(p->path, uid, ID(gid, p->stp->gid)) < 0)
+		if (c_nix_chown(p->path, uid, ID(gid, p->stp->gid)) < 0) {
 			r = c_err_warn("%s", p->path);
+		}
 	}
 	c_dir_close(&dir);
 	return r;

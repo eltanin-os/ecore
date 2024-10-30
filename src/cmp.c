@@ -15,8 +15,8 @@ getbyte(ctype_ioq *p, char *s, uint opts)
 		if (!(opts & SFLAG)) c_err_warn("failed to read \"%s\"", s);
 		c_std_exit(2);
 	}
-	if (r) return buf;
-	return -1;
+	if (!r) return -1;
+	return buf;
 }
 
 static void

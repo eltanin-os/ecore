@@ -30,8 +30,9 @@ readfile(struct pdb *p, char *file, char *search, int pos)
 	ctype_fd fd;
 	char buf[C_IOQ_BSIZ];
 
-	if ((fd = c_nix_fdopen2(file, C_NIX_OREAD)) < 0)
+	if ((fd = c_nix_fdopen2(file, C_NIX_OREAD)) < 0) {
 		c_err_die(1, "failed to open \"%s\"", file);
+	}
 
 	c_ioq_init(&ioq, fd, buf, sizeof(buf), &c_nix_fdread);
 	c_mem_set(&arr, sizeof(arr), 0);

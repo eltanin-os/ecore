@@ -33,8 +33,10 @@ main(int argc, char **argv)
 	if (!argc) usage();
 
 	r = 0;
-	for (; *argv; ++argv)
-		if (func(*argv) < 0)
+	for (; *argv; ++argv) {
+		if (func(*argv) < 0) {
 			r = c_err_warn("failed to remove dir \"%s\"", *argv);
+		}
+	}
 	return r;
 }

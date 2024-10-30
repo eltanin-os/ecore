@@ -71,10 +71,10 @@ done:
 		case C_DIR_FSSLN:
 			continue;
 		}
-
 		if (c_nix_chmod(p->path,
-		    c_nix_strtomode(m, p->stp->mode, mask)) < 0)
+		    c_nix_strtomode(m, p->stp->mode, mask)) < 0) {
 			r = c_err_warn("%s", p->path);
+		}
 	}
 	c_dir_close(&dir);
 	return r;
