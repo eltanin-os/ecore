@@ -40,7 +40,7 @@ start(ctype_ioq *p, usize cnt, uint opts)
 		c_ioq_seek(p, r);
 	}
 	c_nix_allrw(&c_nix_fdwrite, C_IOQ_FD1, c_ioq_peek(p), c_ioq_feed(p));
-	c_nix_fdcat(C_IOQ_FD1, c_ioq_fileno(p));
+	c_nix_fdputfd(C_IOQ_FD1, c_ioq_fileno(p), 0);
 }
 
 static void
@@ -105,7 +105,7 @@ tail(int argc, char *s, usize cnt, uint opts)
 		}
 		if (opts & FFLAG) {
 			for (;;) {
-				c_nix_fdcat(C_IOQ_FD1, fd);
+				c_nix_fdputfd(C_IOQ_FD1, fd, 0);
 				deepsleep(1);
 			}
 		}
